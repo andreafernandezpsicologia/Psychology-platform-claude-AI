@@ -1,0 +1,12 @@
+Coloca aquí la foto profesional de Andrea con el nombre exacto:
+
+    andrea.jpg
+
+Recomendaciones:
+- Formato:        JPG (o WebP)
+- Tamaño:         entre 800×1000 y 1200×1500 px (vertical 4:5 ideal)
+- Peso:           < 250 KB (usa https://squoosh.app para optimizar)
+- Encuadre:       de medio cuerpo, mirada hacia cámara
+- Iluminación:    natural, fondo limpio (la imagen actual del sillón amarillo funciona perfecta)
+
+Si no añades la foto, la landing mostrará automáticamente un fallback elegante (gradiente azul con la inicial "A").

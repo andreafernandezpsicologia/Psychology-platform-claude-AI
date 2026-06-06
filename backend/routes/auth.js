@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const supabase = require('../services/supabaseClient');
 const supabaseAuth = require('../services/supabaseAuth');
-const { sendWelcomeEmail } = require('../services/emailService');
+const { sendWelcomeEmail, sendPasswordResetEmail } = require('../services/emailService');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 
@@ -192,6 +192,61 @@ router.post('/activar', authLimiter, async (req, res) => {
     res.json({ message: 'Cuenta activada correctamente' });
   } catch {
     res.status(400).json({ error: 'Token inválido o expirado' });
+  }
+});
+
+// ── Olvidé mi contraseña ──────────────────────────────────────────────────────
+router.post('/forgot-password', authLimiter, async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email obligatorio' });
+
+  try {
+    const { data: userData, error } = await supabase
+      .from('users')
+      .select('id, nombre_completo')
+      .eq('email', email.toLowerCase().trim())
+      .single();
+
+    // Responder siempre igual para no revelar si el email existe
+    if (error || !userData) {
+      return res.json({ message: 'Si el email existe, recibirás un enlace en breve.' });
+    }
+
+    const resetToken = jwt.sign(
+      { id: userData.id, email: email.toLowerCase().trim(), type: 'password_reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    await sendPasswordResetEmail(email, userData.nombre_completo, resetToken);
+    res.json({ message: 'Si el email existe, recibirás un enlace en breve.' });
+  } catch (err) {
+    console.error('[forgot-password]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Restablecer contraseña (desde el enlace del email) ────────────────────────
+router.post('/reset-password', authLimiter, async (req, res) => {
+  const { token, password } = req.body;
+  if (!token || !password) return res.status(400).json({ error: 'Token y contraseña obligatorios' });
+
+  const pwError = validatePassword(password);
+  if (pwError) return res.status(400).json({ error: pwError });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (decoded.type !== 'password_reset') {
+      return res.status(400).json({ error: 'Token no válido para este uso' });
+    }
+
+    const { error } = await supabase.auth.admin.updateUserById(decoded.id, { password });
+    if (error) return res.status(400).json({ error: 'No se pudo actualizar la contraseña' });
+
+    await audit(req, 'password_reset', 'auth', decoded.id);
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch {
+    res.status(400).json({ error: 'El enlace no es válido o ha expirado' });
   }
 });
 

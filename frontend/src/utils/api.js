@@ -5,13 +5,15 @@ const api = axios.create({
   withCredentials: true, // envía la cookie httpOnly en cada petición automáticamente
 });
 
-// Si el servidor devuelve 401, limpiar datos de usuario y redirigir al login
+const PUBLIC_PATHS = ['/login', '/forgot-password', '/reset-password', '/activate'];
+
 api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      const onPublicPage = PUBLIC_PATHS.some(p => window.location.pathname.startsWith(p));
+      if (!onPublicPage) window.location.href = '/login';
     }
     return Promise.reject(err);
   }

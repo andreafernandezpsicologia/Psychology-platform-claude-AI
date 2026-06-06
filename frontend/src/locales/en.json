@@ -6,7 +6,10 @@
     "password": "Password",
     "submit": "Sign in",
     "loading": "Signing in...",
-    "error": "Incorrect email or password"
+    "error": "Incorrect email or password",
+    "networkError": "Connection error. The server took too long to respond, please try again.",
+    "rateLimitError": "Too many attempts. Please wait 15 minutes and try again.",
+    "forgotPassword": "Forgot your password?"
   },
   "activate": {
     "title": "Activate your account",
@@ -56,7 +59,7 @@
     "statusArchived": "archived"
   },
   "patientDetail": {
-    "back": "← Back",
+    "back": "Back",
     "packs": "Session packs",
     "newPack": "+ New pack",
     "sessions": "sessions",

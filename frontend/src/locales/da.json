@@ -6,7 +6,10 @@
     "password": "Adgangskode",
     "submit": "Log ind",
     "loading": "Logger ind...",
-    "error": "Forkert e-mail eller adgangskode"
+    "error": "Forkert e-mail eller adgangskode",
+    "networkError": "Forbindelsesfejl. Serveren svarede for langsomt, prøv igen.",
+    "rateLimitError": "For mange forsøg. Vent 15 minutter og prøv igen.",
+    "forgotPassword": "Glemt din adgangskode?"
   },
   "activate": {
     "title": "Aktiver din konto",
@@ -56,7 +59,7 @@
     "statusArchived": "arkiveret"
   },
   "patientDetail": {
-    "back": "← Tilbage",
+    "back": "Tilbage",
     "packs": "Sessionspakker",
     "newPack": "+ Ny pakke",
     "sessions": "sessioner",

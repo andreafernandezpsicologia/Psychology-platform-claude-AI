@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 
 // ── Trust proxy: necesario para obtener la IP real del cliente detrás de Vercel/Render ──
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 // ── Cabeceras de seguridad (NIS2 / RGPD Art. 25) ─────────────────────────────
 app.use(helmet());
@@ -28,8 +28,10 @@ app.use(cors({
     // Sin Origin = petición servidor-a-servidor, health check, monitoreo — permitir siempre
     // CORS es un mecanismo del navegador; bloquearlo aquí no añade seguridad real
     if (!origin) return cb(null, true);
-    if (allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
-    cb(new Error('CORS: origen no permitido'));
+    if (allowedOrigins.some(o => o === origin)) return cb(null, true);
+    const err = new Error('CORS: origen no permitido');
+    err.status = 403;
+    cb(err);
   },
   credentials: true,
 }));
@@ -44,8 +46,6 @@ const globalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiadas peticiones. Inténtalo más tarde.' },
-  // Usar la IP real del cliente (X-Forwarded-For via trust proxy: true)
-  keyGenerator: (req) => req.ip,
   skip: (req) => req.path === '/health', // no limitar health checks
 });
 app.use('/api', globalLimiter);
@@ -66,8 +66,9 @@ app.get('/api/health', (req, res) => {
 
 // ── Manejador de errores global ───────────────────────────────────────────────
 app.use((err, req, res, next) => {
-  // Log interno completo, nunca exponer al cliente
+  const status = err.status || 500;
   console.error(`[${new Date().toISOString()}] ERROR ${req.method} ${req.path}:`, err.message);
+  if (status === 403) return res.status(403).json({ error: 'Origen no permitido' });
   res.status(500).json({ error: 'Error interno del servidor' });
 });
 

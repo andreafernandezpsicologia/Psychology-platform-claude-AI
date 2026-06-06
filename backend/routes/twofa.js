@@ -2,11 +2,21 @@ const express = require('express');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 
 const router = express.Router();
+
+const twoFaLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Inténtalo en 15 minutos.' },
+  skipSuccessfulRequests: true,
+});
 
 // ── Helper: cookie de sesión (igual que en auth.js) ────────────────────────────
 function setSessionCookie(res, token) {
@@ -22,7 +32,7 @@ function setSessionCookie(res, token) {
 
 // ── POST /auth/2fa/verify ──────────────────────────────────────────────────────
 // Segundo paso del login: verifica el código TOTP con el tempToken
-router.post('/verify', async (req, res) => {
+router.post('/verify', twoFaLimiter, async (req, res) => {
   const { tempToken, code } = req.body;
   if (!tempToken || !code) {
     return res.status(400).json({ error: 'Token temporal y código son obligatorios' });

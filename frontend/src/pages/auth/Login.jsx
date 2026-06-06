@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
@@ -31,8 +31,12 @@ export default function Login() {
         // Admin con 2FA: pasar al paso 2
         setTempToken(err.tempToken);
         setStep(2);
-      } else {
+      } else if (err.response?.status === 400 || err.response?.status === 401) {
         setError(t('login.error'));
+      } else if (err.response?.status === 429) {
+        setError(t('login.rateLimitError'));
+      } else {
+        setError(t('login.networkError'));
       }
     } finally {
       setLoading(false);
@@ -139,6 +143,12 @@ export default function Login() {
             >
               {loading ? t('login.loading') : t('login.submit')}
             </button>
+
+            <div className="text-center">
+              <Link to="/forgot-password" className="text-xs hover:underline" style={{ color: 'var(--text)' }}>
+                {t('login.forgotPassword')}
+              </Link>
+            </div>
           </form>
         )}
 

@@ -54,4 +54,30 @@ const sendSessionReminder = async (email, nombre, fechaHora, tipo) => {
   });
 };
 
-module.exports = { sendWelcomeEmail, sendSessionReminder };
+const sendPasswordResetEmail = async (email, nombre, resetToken) => {
+  const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Studio Renacer — Restablecer contraseña',
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        <p>Has solicitado restablecer tu contraseña en Studio Renacer.</p>
+        <p>Haz clic en el botón para crear una nueva contraseña:</p>
+        <a href="${resetLink}"
+           style="display:inline-block;background:#1a2d4a;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          Restablecer contraseña
+        </a>
+        <p style="color:#888;font-size:13px;">El enlace caduca en 1 hora. Si no solicitaste esto, ignora este correo.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendWelcomeEmail, sendSessionReminder, sendPasswordResetEmail };

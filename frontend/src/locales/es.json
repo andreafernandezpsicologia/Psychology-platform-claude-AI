@@ -6,7 +6,10 @@
     "password": "Contraseña",
     "submit": "Iniciar sesión",
     "loading": "Entrando...",
-    "error": "Email o contraseña incorrectos"
+    "error": "Email o contraseña incorrectos",
+    "networkError": "Error de conexión. El servidor tardó en responder, inténtalo de nuevo.",
+    "rateLimitError": "Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.",
+    "forgotPassword": "¿Olvidaste tu contraseña?"
   },
   "activate": {
     "title": "Activa tu cuenta",
@@ -56,7 +59,7 @@
     "statusArchived": "archivado"
   },
   "patientDetail": {
-    "back": "← Volver",
+    "back": "Volver",
     "packs": "Packs de sesiones",
     "newPack": "+ Nuevo pack",
     "sessions": "sesiones",

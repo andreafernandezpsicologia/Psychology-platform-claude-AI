@@ -21,13 +21,9 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, cb) => {
-    // Rechazar peticiones sin Origin en producción
-    if (!origin) {
-      if (process.env.NODE_ENV === 'production') {
-        return cb(new Error('CORS: origen requerido en producción'));
-      }
-      return cb(null, true); // permitir solo en desarrollo
-    }
+    // Sin Origin = petición servidor-a-servidor, health check, monitoreo — permitir siempre
+    // CORS es un mecanismo del navegador; bloquearlo aquí no añade seguridad real
+    if (!origin) return cb(null, true);
     if (allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
     cb(new Error('CORS: origen no permitido'));
   },

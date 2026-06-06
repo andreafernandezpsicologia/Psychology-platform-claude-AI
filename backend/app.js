@@ -8,7 +8,7 @@ require('dotenv').config();
 const app = express();
 
 // ── Trust proxy: necesario para obtener la IP real del cliente detrás de Vercel/Render ──
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 // ── Cabeceras de seguridad (NIS2 / RGPD Art. 25) ─────────────────────────────
 app.use(helmet());
@@ -40,10 +40,13 @@ app.use(cookieParser());
 // ── Rate limiting global ──────────────────────────────────────────────────────
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 200,
+  max: 500,                  // suficiente para un usuario normal, protege contra bots
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiadas peticiones. Inténtalo más tarde.' },
+  // Usar la IP real del cliente (X-Forwarded-For via trust proxy: true)
+  keyGenerator: (req) => req.ip,
+  skip: (req) => req.path === '/health', // no limitar health checks
 });
 app.use('/api', globalLimiter);
 

@@ -1,0 +1,154 @@
+const express = require('express');
+const multer = require('multer');
+const supabase = require('../services/supabaseClient');
+const { verifyToken, requireAdmin } = require('../middleware/auth');
+
+const router = express.Router();
+
+const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Tipo de archivo no permitido. Solo se aceptan PDF, Word e imágenes.'));
+  },
+});
+
+// Obtener URL firmada para descargar un archivo del bucket contratos
+async function getSignedUrl(path) {
+  const { data, error } = await supabase.storage.from('contratos').createSignedUrl(path, 3600);
+  if (error) return null;
+  return data.signedUrl;
+}
+
+// ── GET plantilla del contrato (público para pacientes autenticados) ──────
+router.get('/plantilla', verifyToken, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('documentos_legales')
+      .select('id, titulo, contenido, version')
+      .eq('tipo', 'contrato_servicios')
+      .single();
+
+    if (error || !data) return res.status(404).json({ error: 'Plantilla no encontrada' });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST paciente sube contrato firmado ───────────────────────────────────
+router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'), async (req, res) => {
+  const { packId } = req.params;
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
+
+  // Verificar que el pack pertenece al paciente autenticado
+  const { data: paciente } = await supabase
+    .from('pacientes').select('id').eq('user_id', req.user.id).single();
+
+  if (!paciente) return res.status(403).json({ error: 'Acceso denegado' });
+
+  const { data: pack } = await supabase
+    .from('packs').select('id').eq('id', packId).eq('paciente_id', paciente.id).single();
+
+  if (!pack) return res.status(403).json({ error: 'Pack no encontrado o no autorizado' });
+
+  try {
+    const ext = file.originalname.split('.').pop();
+    const storagePath = `${packId}/firmado_paciente.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('contratos')
+      .upload(storagePath, file.buffer, { contentType: file.mimetype, upsert: true });
+
+    if (uploadError) return res.status(400).json({ error: uploadError.message });
+
+    await supabase.from('packs').update({
+      contrato_estado: 'firmado_paciente',
+      contrato_path_paciente: storagePath,
+      contrato_fecha_paciente: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('id', packId);
+
+    res.json({ message: 'Contrato subido correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── POST admin sube contrato firmado por ambas partes ─────────────────────
+router.post('/pack/:packId/subir-admin', verifyToken, requireAdmin, upload.single('archivo'), async (req, res) => {
+  const { packId } = req.params;
+  const file = req.file;
+  if (!file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
+
+  try {
+    const ext = file.originalname.split('.').pop();
+    const storagePath = `${packId}/firmado_admin.${ext}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('contratos')
+      .upload(storagePath, file.buffer, { contentType: file.mimetype, upsert: true });
+
+    if (uploadError) return res.status(400).json({ error: uploadError.message });
+
+    await supabase.from('packs').update({
+      contrato_estado: 'completado',
+      contrato_path_admin: storagePath,
+      contrato_fecha_admin: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).eq('id', packId);
+
+    res.json({ message: 'Contrato definitivo subido correctamente' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET admin descarga contrato firmado por paciente ──────────────────────
+router.get('/pack/:packId/firmado-paciente', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: pack } = await supabase
+      .from('packs').select('contrato_path_paciente').eq('id', req.params.packId).single();
+
+    if (!pack?.contrato_path_paciente) return res.status(404).json({ error: 'Contrato del paciente no encontrado' });
+
+    const url = await getSignedUrl(pack.contrato_path_paciente);
+    if (!url) return res.status(500).json({ error: 'Error generando URL de descarga' });
+
+    res.json({ url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── GET paciente descarga contrato definitivo (firmado por ambos) ─────────
+router.get('/pack/:packId/firmado-admin', verifyToken, async (req, res) => {
+  try {
+    // Verificar que el pack pertenece al paciente
+    const { data: paciente } = await supabase
+      .from('pacientes').select('id').eq('user_id', req.user.id).single();
+
+    const { data: pack } = await supabase
+      .from('packs').select('contrato_path_admin, paciente_id').eq('id', req.params.packId).single();
+
+    if (!pack) return res.status(404).json({ error: 'Pack no encontrado' });
+    if (req.user.role !== 'admin' && pack.paciente_id !== paciente?.id) {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    if (!pack.contrato_path_admin) return res.status(404).json({ error: 'Contrato definitivo no disponible aún' });
+
+    const url = await getSignedUrl(pack.contrato_path_admin);
+    if (!url) return res.status(500).json({ error: 'Error generando URL de descarga' });
+
+    res.json({ url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;

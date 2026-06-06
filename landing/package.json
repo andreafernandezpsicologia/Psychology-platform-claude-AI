@@ -1,0 +1,13 @@
+{
+  "name": "studio-renacer-landing",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Landing page Coming Soon — Studio Renacer (Andrea Fernández, psicología online)",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  }
+}

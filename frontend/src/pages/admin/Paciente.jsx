@@ -1,0 +1,504 @@
+import { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { es, enUS, da } from 'date-fns/locale';
+import Layout from '../../components/common/Layout';
+import Button from '../../components/common/Button';
+import Badge from '../../components/common/Badge';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import { SkeletonCard } from '../../components/common/Skeleton';
+import api from '../../utils/api';
+
+const localeMap = { es, en: enUS, da };
+
+const actionStyle = {
+  completada:          { bg: '#e8f5e9', color: '#2e7d32' },
+  cancelada_con_cargo: { bg: '#fce4ec', color: '#c62828' },
+  reagendar:           { bg: '#fff8e1', color: '#f57f17' },
+};
+
+const pagoStyles = {
+  pagado:       { bg: '#e8f5e9', color: '#2e7d32' },
+  pago_parcial: { bg: '#fff8e1', color: '#f57f17' },
+  no_pagado:    { bg: '#fce4ec', color: '#c62828' },
+};
+
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function abrirVentanaImpresion(titulo, contenido, metadatos = '') {
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="utf-8">
+    <title>${escapeHtml(titulo)}</title>
+    <style>
+      body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #1a2d4a; line-height: 1.6; }
+      h1 { font-size: 1.3rem; border-bottom: 2px solid #1a2d4a; padding-bottom: 8px; margin-bottom: 4px; }
+      .meta { font-size: 0.85rem; color: #666; margin-bottom: 24px; }
+      pre { white-space: pre-wrap; font-family: Georgia, serif; font-size: 0.9rem; }
+      @media print { button { display: none; } }
+    </style>
+  </head><body>
+    <h1>${escapeHtml(titulo)}</h1>
+    <p class="meta">${escapeHtml(metadatos)}</p>
+    <pre>${escapeHtml(contenido)}</pre>
+    <br><br>
+    <button onclick="window.print()" style="padding:8px 16px;background:#1a2d4a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">
+      🖨 Imprimir / Guardar como PDF
+    </button>
+  </body></html>`);
+  win.document.close();
+}
+
+export default function PacienteDetalle() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const locale = localeMap[i18n.language] || es;
+  const fileInputRef = useRef(null);
+
+  const [paciente, setPaciente] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [showSesion, setShowSesion] = useState(false);
+  const [showPack, setShowPack] = useState(false);
+  const [sesionForm, setSesionForm] = useState({ fecha_hora: '', tipo: 'videollamada' });
+  const [packForm, setPackForm] = useState({ num_sesiones_total: 10 });
+  const [savingSesion, setSavingSesion] = useState(false);
+  const [savingPack, setSavingPack] = useState(false);
+  const [reagendando, setReagendando] = useState(null);
+  const [nuevaFecha, setNuevaFecha] = useState('');
+  const [tab, setTab] = useState('upcoming');
+  const [confirmPack, setConfirmPack] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [savingEstado, setSavingEstado] = useState(false);
+  const [savingPago, setSavingPago] = useState(null);  // packId en curso
+  const [uploadingContrato, setUploadingContrato] = useState(null); // packId en curso
+  const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
+
+  const cargar = () => {
+    setLoading(true);
+    api.get(`/pacientes/${id}`)
+      .then((res) => setPaciente(res.data))
+      .catch(() => toast.error('Error al cargar el paciente'))
+      .finally(() => setLoading(false));
+  };
+  useEffect(() => { cargar(); }, [id]);
+
+  // ── Sesiones ──────────────────────────────────────────────────────────────
+  const crearSesion = async (e) => {
+    e.preventDefault();
+    setSavingSesion(true);
+    const pacienteId = paciente.pacientes?.id;
+    const packActivo = paciente.pacientes?.packs?.find((p) => p.estado === 'activo');
+    try {
+      await api.post('/sesiones', { paciente_id: pacienteId, pack_id: packActivo?.id || null, ...sesionForm });
+      toast.success(t('patientDetail.sessionCreated', 'Sesión creada'));
+      setShowSesion(false);
+      setSesionForm({ fecha_hora: '', tipo: 'videollamada' });
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingSesion(false); }
+  };
+
+  const crearPack = async (e) => {
+    e.preventDefault();
+    setSavingPack(true);
+    const pacienteId = paciente.pacientes?.id;
+    try {
+      await api.post('/packs', { paciente_id: pacienteId, ...packForm });
+      toast.success(t('patientDetail.packCreated', 'Pack creado'));
+      setShowPack(false);
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingPack(false); }
+  };
+
+  const eliminarPack = async () => {
+    try {
+      await api.delete(`/packs/${confirmPack}`);
+      toast.success(t('patientDetail.packDeleted', 'Pack eliminado'));
+      setConfirmPack(null);
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); setConfirmPack(null); }
+  };
+
+  const cambiarEstado = async (sesionId, estado) => {
+    try {
+      await api.put(`/sesiones/${sesionId}/estado`, { estado });
+      toast.success(t('patientDetail.updated', 'Actualizado'));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+  };
+
+  const confirmarReagendar = async (sesionId) => {
+    if (!nuevaFecha) return;
+    try {
+      await api.put(`/sesiones/${sesionId}/reagendar`, { fecha_hora: nuevaFecha });
+      toast.success(t('patientDetail.rescheduled', 'Sesión reagendada'));
+      setReagendando(null); setNuevaFecha('');
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+  };
+
+  // ── Estado paciente ───────────────────────────────────────────────────────
+  const cambiarEstadoPaciente = async (nuevoEstado) => {
+    setSavingEstado(true);
+    const pacienteId = paciente?.pacientes?.id;
+    const estadoBD = nuevoEstado === 'inactivo' ? 'archivado' : nuevoEstado;
+    try {
+      await api.put(`/pacientes/${pacienteId}`, { estado: estadoBD });
+      toast.success(nuevoEstado === 'inactivo' ? t('patientDetail.markInactive') : t('patientDetail.reactivate'));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingEstado(false); }
+  };
+
+  const eliminarPaciente = async () => {
+    try {
+      await api.delete(`/pacientes/${id}`);
+      toast.success('Paciente eliminado');
+      navigate('/admin');
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); setConfirmDelete(false); }
+  };
+
+  // ── Pago ─────────────────────────────────────────────────────────────────
+  const cambiarPago = async (packId, estado_pago) => {
+    setSavingPago(packId);
+    try {
+      await api.put(`/packs/${packId}/pago`, { estado_pago });
+      toast.success(t(`patientDetail.${estado_pago}`));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingPago(null); }
+  };
+
+  // ── Contratos ─────────────────────────────────────────────────────────────
+  const descargarFirmadoPaciente = async (packId) => {
+    try {
+      const res = await api.get(`/contratos/pack/${packId}/firmado-paciente`);
+      window.open(res.data.url, '_blank');
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+  };
+
+  const subirContratoAdmin = async (packId, file) => {
+    if (!file) return;
+    setUploadingContrato(packId);
+    try {
+      const formData = new FormData();
+      formData.append('archivo', file);
+      await api.post(`/contratos/pack/${packId}/subir-admin`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success(t('patientDetail.contratoCompletado'));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setUploadingContrato(null); setContratoPackRef(null); }
+  };
+
+  // ── RGPD ─────────────────────────────────────────────────────────────────
+  const verRgpd = async () => {
+    try {
+      const res = await api.get(`/pacientes/${id}/rgpd`);
+      const { fecha_aceptacion, documentos_legales: doc } = res.data;
+      const fecha = format(new Date(fecha_aceptacion), "d 'de' MMMM 'de' yyyy 'a las' HH:mm", { locale });
+      abrirVentanaImpresion(
+        doc.titulo,
+        doc.contenido,
+        `${t('patientDetail.rgpdFecha')}: ${fecha} · ${paciente.nombre_completo} · ${paciente.email}`
+      );
+    } catch (err) {
+      toast.error(t('patientDetail.rgpdNoEncontrado'));
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  if (loading) return (
+    <Layout>
+      <div className="space-y-4">
+        <SkeletonCard lines={2} /><SkeletonCard lines={4} /><SkeletonCard lines={6} />
+      </div>
+    </Layout>
+  );
+  if (!paciente) return <Layout><p className="text-red-500">—</p></Layout>;
+
+  const info = paciente.pacientes;
+  const packs = info?.packs || [];
+  const todasSesiones = info?.sesiones || [];
+  const ahora = new Date();
+  const proximas = todasSesiones.filter((s) => s.estado === 'programada' && new Date(s.fecha_hora) >= ahora)
+    .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+  const pasadas = todasSesiones.filter((s) => s.estado !== 'programada' || new Date(s.fecha_hora) < ahora)
+    .sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+  const sesionesTab = tab === 'upcoming' ? proximas : pasadas;
+
+  return (
+    <Layout>
+      {/* File input oculto para subir contrato admin */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+        onChange={(e) => { if (contratoPackRef) subirContratoAdmin(contratoPackRef, e.target.files[0]); }}
+      />
+
+      <ConfirmDialog
+        open={!!confirmPack}
+        title={t('patientDetail.deletePack')}
+        description={t('patientDetail.deletePackConfirm', '¿Seguro que quieres eliminar este pack?')}
+        confirmLabel={t('patientDetail.deletePack')}
+        onConfirm={eliminarPack}
+        onCancel={() => setConfirmPack(null)}
+      />
+      <ConfirmDialog
+        open={confirmDelete}
+        title={t('patientDetail.deletePatientConfirmTitle')}
+        description={t('patientDetail.deletePatientConfirmDesc')}
+        confirmLabel={t('patientDetail.deletePatientConfirmBtn')}
+        onConfirm={eliminarPaciente}
+        onCancel={() => setConfirmDelete(false)}
+        danger
+      />
+
+      <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-5">
+        ← {t('patientDetail.back')}
+      </Button>
+
+      {/* ── Cabecera del paciente ── */}
+      <div className="bg-white rounded-xl p-5 mb-4" style={{ border: '1px solid var(--border)' }}>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <h2 className="heading-serif" style={{ fontSize: '1.25rem' }}>{paciente.nombre_completo}</h2>
+              <Badge estado={info?.estado || 'pendiente'} label={info?.estado || t('admin.statusPending')} />
+            </div>
+            <p className="text-sm" style={{ color: 'var(--text)' }}>{paciente.email}</p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="ghost" size="sm" onClick={verRgpd}>
+              📄 {t('patientDetail.rgpdDescargar')}
+            </Button>
+            {(info?.estado === 'inactivo' || info?.estado === 'archivado') ? (
+              <Button variant="ghost" size="sm" loading={savingEstado} onClick={() => cambiarEstadoPaciente('activo')}>
+                ↩ {t('patientDetail.reactivate')}
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" loading={savingEstado} onClick={() => cambiarEstadoPaciente('inactivo')}>
+                ⏸ {t('patientDetail.markInactive')}
+              </Button>
+            )}
+            <Button variant="danger" size="sm" onClick={() => setConfirmDelete(true)}>
+              🗑 {t('patientDetail.deletePatient')}
+            </Button>
+          </div>
+        </div>
+        {(info?.estado === 'inactivo' || info?.estado === 'archivado') && (
+          <div className="mt-3 text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#f5f5f5', color: '#757575' }}>
+            ⚠ {t('patientDetail.inactiveWarning')}
+          </div>
+        )}
+      </div>
+
+      {/* ── Packs ── */}
+      <div className="bg-white rounded-xl p-5 mb-4" style={{ border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>{t('patientDetail.packs')}</h3>
+          <Button variant="ghost" size="sm" onClick={() => setShowPack(!showPack)}>
+            {t('patientDetail.newPack')}
+          </Button>
+        </div>
+
+        {showPack && (
+          <form onSubmit={crearPack} className="flex gap-3 mb-4 items-center">
+            <input type="number" min="1" max="50" value={packForm.num_sesiones_total}
+              onChange={(e) => setPackForm({ num_sesiones_total: parseInt(e.target.value) })}
+              className="field-input w-24" />
+            <span className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDetail.sessions')}</span>
+            <Button type="submit" size="sm" loading={savingPack}>{t('patientDetail.create')}</Button>
+          </form>
+        )}
+
+        {packs.length === 0 ? (
+          <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDetail.noPacks')}</p>
+        ) : packs.map((pk) => {
+          const pagoEstado = pk.estado_pago || 'no_pagado';
+          const contratoEstado = pk.contrato_estado || 'sin_contrato';
+          const contratoLabel = {
+            sin_contrato:     t('patientDetail.contratoSinContrato'),
+            firmado_paciente: t('patientDetail.contratoFirmadoPaciente'),
+            completado:       t('patientDetail.contratoCompletado'),
+          }[contratoEstado] || contratoEstado;
+
+          return (
+            <div key={pk.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+              {/* Fila principal: info + estado pack + eliminar */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium" style={{ color: 'var(--navy)' }}>
+                  {pk.num_sesiones_usadas}/{pk.num_sesiones_total} {t('patientDetail.sessions')}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Badge estado={pk.estado} label={pk.estado} />
+                  <Button variant="danger" size="sm" onClick={() => setConfirmPack(pk.id)}>
+                    {t('patientDetail.deletePack')}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Fila pago */}
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                  {t('patientDetail.payment')}:
+                </span>
+                {['pagado', 'pago_parcial', 'no_pagado'].map((op) => (
+                  <button
+                    key={op}
+                    disabled={savingPago === pk.id}
+                    onClick={() => cambiarPago(pk.id, op)}
+                    className="text-xs font-semibold px-2.5 py-1 rounded-full transition"
+                    style={pagoEstado === op
+                      ? { ...pagoStyles[op], border: `1.5px solid ${pagoStyles[op].color}` }
+                      : { backgroundColor: 'var(--bg)', color: 'var(--text)', border: '1.5px solid var(--border)' }
+                    }
+                  >
+                    {t(`patientDetail.${op}`)}
+                  </button>
+                ))}
+              </div>
+
+              {/* Fila contrato */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                  {t('patientDetail.contratoTitle')}:
+                </span>
+                <span className="text-xs px-2 py-0.5 rounded-full"
+                  style={contratoEstado === 'completado'
+                    ? { backgroundColor: '#e8f5e9', color: '#2e7d32' }
+                    : contratoEstado === 'firmado_paciente'
+                    ? { backgroundColor: '#fff8e1', color: '#f57f17' }
+                    : { backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
+                  {contratoLabel}
+                </span>
+
+                {/* Admin puede descargar el que firmó el paciente */}
+                {contratoEstado === 'firmado_paciente' && (
+                  <Button variant="ghost" size="sm" onClick={() => descargarFirmadoPaciente(pk.id)}>
+                    ⬇ {t('patientDetail.contratoDescargarFirmadoPaciente')}
+                  </Button>
+                )}
+
+                {/* Admin sube el contrato definitivo firmado por ambos */}
+                {(contratoEstado === 'firmado_paciente' || contratoEstado === 'completado') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={uploadingContrato === pk.id}
+                    onClick={() => { setContratoPackRef(pk.id); fileInputRef.current?.click(); }}
+                  >
+                    ⬆ {t('patientDetail.contratoSubirFirmado')}
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Sesiones ── */}
+      <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-1 rounded-lg p-1" style={{ backgroundColor: 'var(--bg)' }}>
+            {['upcoming', 'past'].map((t_) => (
+              <button key={t_} onClick={() => setTab(t_)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-md transition"
+                style={tab === t_ ? { backgroundColor: 'var(--navy)', color: 'white' } : { color: 'var(--text)' }}>
+                {t(`patientDetail.${t_ === 'upcoming' ? 'upcoming' : 'past'}`)}
+                {t_ === 'upcoming' && proximas.length > 0 && (
+                  <span className="ml-1.5 text-xs rounded-full px-1.5"
+                    style={{ backgroundColor: tab === 'upcoming' ? 'rgba(255,255,255,0.3)' : 'var(--border)', color: tab === 'upcoming' ? 'white' : 'var(--text)' }}>
+                    {proximas.length}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setShowSesion(!showSesion)}>
+            {t('patientDetail.newSession')}
+          </Button>
+        </div>
+
+        {showSesion && (
+          <form onSubmit={crearSesion} className="flex gap-3 flex-wrap mb-4 p-3 rounded-lg" style={{ backgroundColor: 'var(--bg)' }}>
+            <input type="datetime-local" required value={sesionForm.fecha_hora}
+              onChange={(e) => setSesionForm({ ...sesionForm, fecha_hora: e.target.value })}
+              className="field-input w-auto" />
+            <select value={sesionForm.tipo} onChange={(e) => setSesionForm({ ...sesionForm, tipo: e.target.value })}
+              className="field-input w-auto">
+              <option value="videollamada">{t('patientDetail.videocall')}</option>
+              <option value="presencial">{t('patientDetail.inPerson')}</option>
+            </select>
+            <Button type="submit" size="sm" loading={savingSesion}>{t('patientDetail.create')}</Button>
+          </form>
+        )}
+
+        {sesionesTab.length === 0 ? (
+          <p className="text-sm py-2" style={{ color: 'var(--text)' }}>
+            {t(tab === 'upcoming' ? 'patientDetail.noUpcoming' : 'patientDetail.noPast')}
+          </p>
+        ) : sesionesTab.map((s) => {
+          const esProxima = s.estado === 'programada' && new Date(s.fecha_hora) >= ahora;
+          const statusKey = `patientDetail.status${s.estado.charAt(0).toUpperCase() + s.estado.slice(1)}`;
+          return (
+            <div key={s.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
+                    {format(new Date(s.fecha_hora), "d MMM yyyy · HH:mm", { locale })}
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text)' }}>
+                    {s.tipo === 'videollamada' ? t('patientDetail.videocall') : t('patientDetail.inPerson')} · {s.duracion_minutos} {t('patientDetail.min')}
+                  </p>
+                </div>
+                <Badge estado={s.estado} label={t(statusKey)} />
+              </div>
+              {(esProxima || (s.estado === 'programada' && new Date(s.fecha_hora) < ahora)) && (
+                <div className="flex flex-wrap gap-2 mt-2.5">
+                  <button onClick={() => cambiarEstado(s.id, 'completada')}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    style={actionStyle.completada}>
+                    ✓ {t('patientDetail.confirmAttendance')}
+                  </button>
+                  <button onClick={() => cambiarEstado(s.id, 'cancelada_con_cargo')}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    style={actionStyle.cancelada_con_cargo}>
+                    ✕ {t('patientDetail.cancelLate')}
+                  </button>
+                  <button onClick={() => { setReagendando(reagendando === s.id ? null : s.id); setNuevaFecha(''); }}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    style={actionStyle.reagendar}>
+                    ↻ {t('patientDetail.reschedule')}
+                  </button>
+                </div>
+              )}
+              {reagendando === s.id && (
+                <div className="flex gap-2 mt-2 items-center">
+                  <input type="datetime-local" value={nuevaFecha}
+                    onChange={(e) => setNuevaFecha(e.target.value)}
+                    className="field-input w-auto text-xs py-1.5" />
+                  <Button size="sm" onClick={() => confirmarReagendar(s.id)}>{t('patientDetail.confirm')}</Button>
+                  <Button variant="ghost" size="sm" onClick={() => setReagendando(null)}>✕</Button>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </Layout>
+  );
+}

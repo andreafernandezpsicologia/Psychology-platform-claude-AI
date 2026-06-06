@@ -1,8 +1,7 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "https://studio-renacer-api.onrender.com/api/:path*"
-    }
+  "routes": [
+    { "src": "/api/(.*)", "dest": "https://studio-renacer-api.onrender.com/api/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }

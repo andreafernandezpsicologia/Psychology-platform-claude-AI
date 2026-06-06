@@ -100,6 +100,20 @@
       background: var(--c-brand); color: white;
       box-shadow: var(--shadow-sm);
     }
+    .btn-login {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--c-brand);
+      color: white;
+      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      padding: 8px 18px; border-radius: 999px;
+      border: none; cursor: pointer;
+      text-decoration: none;
+      transition: opacity var(--transition), transform var(--transition);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .btn-login:hover { opacity: 0.88; color: white; transform: translateY(-1px); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
 
     /* ---------- Hero ---------- */
     .hero {
@@ -436,6 +450,7 @@
       .nav { padding: 0.85rem 0; }
       .btn { padding: 12px 22px; font-size: 0.92rem; }
       .trust-item .num { font-size: 1.5rem; }
+      .btn-login { padding: 7px 14px; font-size: 0.8rem; }
     }
 
     /* ---------- Reveal on scroll ---------- */
@@ -460,10 +475,15 @@
         <span class="brand-mark">R</span>
         <span>Studio Renacer</span>
       </a>
-      <div class="lang-switch" role="group" aria-label="Idioma">
-        <button data-lang="es" class="active" aria-pressed="true">ES</button>
-        <button data-lang="en" aria-pressed="false">EN</button>
-        <button data-lang="da" aria-pressed="false">DA</button>
+      <div class="nav-right">
+        <div class="lang-switch" role="group" aria-label="Idioma">
+          <button data-lang="es" class="active" aria-pressed="true">ES</button>
+          <button data-lang="en" aria-pressed="false">EN</button>
+          <button data-lang="da" aria-pressed="false">DA</button>
+        </div>
+        <a href="https://app.studiorenacer.com/login" class="btn-login" data-i18n="login">
+          Iniciar sesión
+        </a>
       </div>
     </div>
   </header>
@@ -757,7 +777,8 @@
         'footer.tagline': 'Psicología online con Andrea Fernández. Un espacio para renacer, a tu ritmo.',
         'footer.contact': 'Contacto', 'footer.legal': 'Legal',
         'footer.privacy': 'Política de privacidad', 'footer.cookies': 'Política de cookies', 'footer.terms': 'Aviso legal',
-        'footer.coming': 'Coming Soon · Verano 2026'
+        'footer.coming': 'Coming Soon · Verano 2026',
+        'login': 'Iniciar sesión'
       },
       en: {
         'hero.badge': 'Coming soon · Summer 2026',
@@ -792,7 +813,8 @@
         'footer.tagline': 'Online psychology with Andrea Fernández. A space to begin again, at your pace.',
         'footer.contact': 'Contact', 'footer.legal': 'Legal',
         'footer.privacy': 'Privacy policy', 'footer.cookies': 'Cookie policy', 'footer.terms': 'Legal notice',
-        'footer.coming': 'Coming Soon · Summer 2026'
+        'footer.coming': 'Coming Soon · Summer 2026',
+        'login': 'Log in'
       },
       da: {
         'hero.badge': 'Kommer snart · Sommer 2026',
@@ -827,7 +849,8 @@
         'footer.tagline': 'Online psykologi med Andrea Fernández. Et rum til at begynde igen, i dit eget tempo.',
         'footer.contact': 'Kontakt', 'footer.legal': 'Juridisk',
         'footer.privacy': 'Privatlivspolitik', 'footer.cookies': 'Cookiepolitik', 'footer.terms': 'Juridisk meddelelse',
-        'footer.coming': 'Kommer snart · Sommer 2026'
+        'footer.coming': 'Kommer snart · Sommer 2026',
+        'login': 'Log ind'
       }
     };
 

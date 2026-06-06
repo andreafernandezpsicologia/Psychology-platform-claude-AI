@@ -4,8 +4,19 @@ require('dotenv').config();
 
 const app = express();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://studiorenacer.com',
+  'https://www.studiorenacer.com',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // curl, Postman, server-to-server
+    if (allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true);
+    cb(new Error('CORS: origen no permitido'));
+  },
   credentials: true,
 }));
 app.use(express.json());

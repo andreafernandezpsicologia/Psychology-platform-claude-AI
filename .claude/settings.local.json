@@ -18,7 +18,9 @@
       "PowerShell(ConvertTo-Json *)",
       "Bash(node seeds/setup_nuevas_features.js)",
       "Bash(node app.js)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ]
   }
 }

@@ -44,7 +44,6 @@ export default function Activate() {
   const [loading, setLoading] = useState(false);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const [rgpdDoc, setRgpdDoc] = useState(null); // { id, titulo, contenido }
-  const [pendingToken, setPendingToken] = useState(null); // JWT tras activar, antes de RGPD
 
   const token = params.get('token');
 
@@ -77,8 +76,8 @@ export default function Activate() {
     if (form.password.length < 8) { setError(t('activate.errorLength')); return; }
     setLoading(true);
     try {
-      const res = await api.post('/auth/activar', { token, password: form.password });
-      setPendingToken(res.data.token); // guardamos el JWT para usarlo en paso 2
+      // El servidor activa la cuenta y setea la cookie httpOnly automáticamente
+      await api.post('/auth/activar', { token, password: form.password });
       setStep(2);
     } catch {
       setError(t('activate.errorToken'));
@@ -94,16 +93,10 @@ export default function Activate() {
     setError('');
     setLoading(true);
     try {
-      // Registrar aceptación si hay documento en BD
+      // Registrar aceptación — la cookie httpOnly se envía automáticamente
       if (rgpdDoc?.id) {
-        await api.post(
-          '/documentos/aceptar',
-          { documento_id: rgpdDoc.id },
-          { headers: { Authorization: `Bearer ${pendingToken}` } }
-        );
+        await api.post('/documentos/aceptar', { documento_id: rgpdDoc.id });
       }
-      // Ahora sí guardamos el token y entramos
-      localStorage.setItem('token', pendingToken);
       navigate('/paciente');
     } catch {
       setError(t('activate.errorRgpd'));

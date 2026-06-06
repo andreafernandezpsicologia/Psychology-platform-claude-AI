@@ -10,15 +10,15 @@ const router = express.Router();
 
 // ── Rate limiter estricto para endpoints de autenticación ─────────────────────
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
+  windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Demasiados intentos. Inténtalo en 15 minutos.' },
-  skipSuccessfulRequests: true, // solo cuenta intentos fallidos
+  skipSuccessfulRequests: true,
 });
 
-// ── Helper: validar fortaleza de contraseña ──────────────────────────────────
+// ── Helper: validar fortaleza de contraseña ───────────────────────────────────
 function validatePassword(password) {
   if (!password || password.length < 8) return 'La contraseña debe tener al menos 8 caracteres';
   if (!/[A-Z]/.test(password)) return 'La contraseña debe contener al menos una mayúscula';
@@ -26,9 +26,19 @@ function validatePassword(password) {
   return null;
 }
 
+// ── Helper: setear cookie de sesión httpOnly ──────────────────────────────────
+function setSessionCookie(res, token) {
+  const isProd = process.env.NODE_ENV === 'production';
+  res.cookie('session', token, {
+    httpOnly: true,          // JS no puede leerla
+    secure: isProd,          // solo HTTPS en producción
+    sameSite: isProd ? 'none' : 'lax', // 'none' necesario para proxy cross-origin
+    maxAge: 60 * 60 * 1000, // 1 hora
+    path: '/',
+  });
+}
+
 // ── Registro inicial del admin ────────────────────────────────────────────────
-// PROTEGIDO: requiere la clave de bootstrap en cabecera X-Bootstrap-Key
-// Deshabilitar esta variable de entorno en producción una vez creada la cuenta
 router.post('/admin-register', async (req, res) => {
   const bootstrapKey = req.headers['x-bootstrap-key'];
   if (!process.env.BOOTSTRAP_SECRET || bootstrapKey !== process.env.BOOTSTRAP_SECRET) {
@@ -44,17 +54,12 @@ router.post('/admin-register', async (req, res) => {
 
   try {
     const { data, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true,
+      email, password, email_confirm: true,
     });
     if (authError) return res.status(400).json({ error: authError.message });
 
     const { error: dbError } = await supabase.from('users').insert({
-      id: data.user.id,
-      email,
-      role: 'admin',
-      nombre_completo: nombre,
+      id: data.user.id, email, role: 'admin', nombre_completo: nombre,
     });
     if (dbError) return res.status(400).json({ error: dbError.message });
 
@@ -63,14 +68,15 @@ router.post('/admin-register', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    res.json({ token, user: { id: data.user.id, email, role: 'admin', nombre_completo: nombre } });
+    setSessionCookie(res, token);
+    res.json({ user: { id: data.user.id, email, role: 'admin', nombre_completo: nombre } });
   } catch (err) {
     console.error('[admin-register]', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
-// Login (admin y paciente)
+// ── Login (admin y paciente) ──────────────────────────────────────────────────
 router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -93,8 +99,9 @@ router.post('/login', authLimiter, async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
+
+    setSessionCookie(res, token);
     res.json({
-      token,
       user: { id: data.user.id, email, role: userData.role, nombre_completo: userData.nombre_completo },
     });
   } catch (err) {
@@ -103,7 +110,13 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
-// Admin invita a un paciente (crea cuenta y envía email de activación)
+// ── Logout ────────────────────────────────────────────────────────────────────
+router.post('/logout', (req, res) => {
+  res.clearCookie('session', { path: '/' });
+  res.json({ message: 'Sesión cerrada' });
+});
+
+// ── Admin invita a un paciente ────────────────────────────────────────────────
 router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => {
   const { email, nombre } = req.body;
   if (!email || !nombre) {
@@ -111,35 +124,25 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
   }
 
   try {
-    // Crear usuario en Supabase Auth (sin contraseña — la establece el paciente al activar)
     const { data, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      email_confirm: false,
+      email, email_confirm: false,
     });
     if (authError) return res.status(400).json({ error: authError.message });
 
-    // Insertar en tabla users
     const { error: userError } = await supabase.from('users').insert({
-      id: data.user.id,
-      email,
-      role: 'paciente',
-      nombre_completo: nombre,
+      id: data.user.id, email, role: 'paciente', nombre_completo: nombre,
     });
     if (userError) return res.status(400).json({ error: userError.message });
 
-    // Crear perfil paciente
     await supabase.from('pacientes').insert({ user_id: data.user.id });
 
-    // Token de activación (48 horas)
     const activationToken = jwt.sign(
       { id: data.user.id, email },
       process.env.JWT_SECRET,
       { expiresIn: '48h' }
     );
 
-    // Enviar email de bienvenida con enlace de activación
     await sendWelcomeEmail(email, nombre, activationToken);
-
     res.json({ message: 'Invitación enviada', email });
   } catch (err) {
     console.error('[invitar-paciente]', err.message);
@@ -147,7 +150,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
   }
 });
 
-// Paciente activa su cuenta (establece contraseña)
+// ── Activar cuenta (paciente establece contraseña) ───────────────────────────
 router.post('/activar', authLimiter, async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) {
@@ -160,10 +163,8 @@ router.post('/activar', authLimiter, async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Actualizar contraseña en Supabase Auth
     const { error } = await supabase.auth.admin.updateUserById(decoded.id, {
-      password,
-      email_confirm: true,
+      password, email_confirm: true,
     });
     if (error) return res.status(400).json({ error: 'No se pudo activar la cuenta' });
 
@@ -172,13 +173,15 @@ router.post('/activar', authLimiter, async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
-    res.json({ token: jwtToken, message: 'Cuenta activada correctamente' });
+
+    setSessionCookie(res, jwtToken);
+    res.json({ message: 'Cuenta activada correctamente' });
   } catch {
     res.status(400).json({ error: 'Token inválido o expirado' });
   }
 });
 
-// Obtener datos del usuario autenticado
+// ── Datos del usuario autenticado ─────────────────────────────────────────────
 router.get('/me', verifyToken, async (req, res) => {
   try {
     const { data, error } = await supabase

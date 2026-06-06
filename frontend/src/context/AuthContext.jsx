@@ -4,6 +4,7 @@ import api from '../utils/api';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
+  // Solo guardamos los datos del usuario (nombre, rol) — nunca el token
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('user');
     return saved ? JSON.parse(saved) : null;
@@ -11,27 +12,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      api.get('/auth/me')
-        .then((res) => setUser(res.data))
-        .catch(() => logout())
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    // Verificar sesión activa con el servidor (cookie httpOnly enviada automáticamente)
+    api.get('/auth/me')
+      .then((res) => {
+        setUser(res.data);
+        localStorage.setItem('user', JSON.stringify(res.data));
+      })
+      .catch(() => {
+        // Sin sesión válida — limpiar estado
+        setUser(null);
+        localStorage.removeItem('user');
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', res.data.token);
+    // El servidor setea la cookie httpOnly — aquí solo guardamos datos del usuario
     localStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data.user;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout'); // el servidor borra la cookie
+    } catch {
+      // ignorar errores de red en logout
+    }
     localStorage.removeItem('user');
     setUser(null);
   };

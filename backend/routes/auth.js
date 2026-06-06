@@ -5,6 +5,7 @@ const supabase = require('../services/supabaseClient');
 const supabaseAuth = require('../services/supabaseAuth');
 const { sendWelcomeEmail } = require('../services/emailService');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { audit } = require('../services/auditLog');
 
 const router = express.Router();
 
@@ -101,6 +102,7 @@ router.post('/login', authLimiter, async (req, res) => {
     );
 
     setSessionCookie(res, token);
+    await audit(req, 'login', 'auth', data.user.id, { role: userData.role });
     res.json({
       user: { id: data.user.id, email, role: userData.role, nombre_completo: userData.nombre_completo },
     });
@@ -112,6 +114,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
 // ── Logout ────────────────────────────────────────────────────────────────────
 router.post('/logout', (req, res) => {
+  audit(req, 'logout', 'auth');
   res.clearCookie('session', { path: '/' });
   res.json({ message: 'Sesión cerrada' });
 });

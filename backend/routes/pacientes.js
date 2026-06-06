@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { audit } = require('../services/auditLog');
 
 const router = express.Router();
 
@@ -42,6 +43,7 @@ router.put('/me/telefono', verifyToken, async (req, res) => {
       .single();
 
     if (error) return res.status(400).json({ error: error.message });
+    audit(req, 'view_own_profile', 'patients', req.user.id);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -64,6 +66,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });
+    audit(req, 'list_patients', 'patients');
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -88,6 +91,7 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
       .single();
 
     if (error) return res.status(404).json({ error: 'Paciente no encontrado' });
+    audit(req, 'view_patient', 'patients', req.params.id);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -150,6 +154,8 @@ router.delete('/:userId', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { error } = await supabase.auth.admin.deleteUser(req.params.userId);
     if (error) return res.status(400).json({ error: error.message });
+    // Registrar eliminación — RGPD Art. 17 (derecho al olvido)
+    await audit(req, 'delete_patient', 'patients', req.params.userId, { reason: 'admin_action' });
     res.json({ message: 'Paciente eliminado correctamente' });
   } catch (err) {
     res.status(500).json({ error: err.message });

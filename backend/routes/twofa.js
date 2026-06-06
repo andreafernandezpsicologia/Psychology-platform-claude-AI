@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticator } = require('otplib');
+const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const jwt = require('jsonwebtoken');
 const supabase = require('../services/supabaseClient');
@@ -7,9 +7,6 @@ const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 
 const router = express.Router();
-
-// Configuración TOTP: ventana de 1 paso (30s estándar)
-authenticator.options = { window: 1 };
 
 // ── Helper: cookie de sesión (igual que en auth.js) ────────────────────────────
 function setSessionCookie(res, token) {
@@ -38,7 +35,6 @@ router.post('/verify', async (req, res) => {
     return res.status(400).json({ error: 'Token temporal inválido o expirado' });
   }
 
-  // El tempToken debe ser de tipo 2fa_pending
   if (decoded.type !== '2fa_pending') {
     return res.status(400).json({ error: 'Token no válido para este paso' });
   }
@@ -54,13 +50,18 @@ router.post('/verify', async (req, res) => {
       return res.status(400).json({ error: 'Error de configuración 2FA' });
     }
 
-    const isValid = authenticator.verify({ token: code.replace(/\s/g, ''), secret: userData.totp_secret });
+    const isValid = speakeasy.totp.verify({
+      secret: userData.totp_secret,
+      encoding: 'base32',
+      token: code.replace(/\s/g, ''),
+      window: 1,
+    });
+
     if (!isValid) {
       await audit(req, '2fa_failed', 'auth', decoded.id, { reason: 'invalid_code' });
       return res.status(401).json({ error: 'Código incorrecto. Inténtalo de nuevo.' });
     }
 
-    // Código correcto → emitir cookie de sesión real
     const sessionToken = jwt.sign(
       { id: userData.id, email: userData.email, role: userData.role },
       process.env.JWT_SECRET,
@@ -88,15 +89,17 @@ router.post('/verify', async (req, res) => {
 // Genera un nuevo secreto TOTP y devuelve el QR (no lo activa aún)
 router.post('/setup', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const secret = authenticator.generateSecret();
-    const issuer = 'Studio Renacer';
-    const otpAuthUrl = authenticator.keyuri(req.user.email, issuer, secret);
-    const qrCodeDataUrl = await QRCode.toDataURL(otpAuthUrl);
+    const secret = speakeasy.generateSecret({
+      name: `Studio Renacer (${req.user.email})`,
+      issuer: 'Studio Renacer',
+      length: 20,
+    });
 
-    // Guardar el secreto sin activarlo todavía
+    const qrCodeDataUrl = await QRCode.toDataURL(secret.otpauth_url);
+
     const { error } = await supabase
       .from('users')
-      .update({ totp_secret: secret, totp_enabled: false })
+      .update({ totp_secret: secret.base32, totp_enabled: false })
       .eq('id', req.user.id);
 
     if (error) {
@@ -104,7 +107,7 @@ router.post('/setup', verifyToken, requireAdmin, async (req, res) => {
       return res.status(500).json({ error: 'Error guardando configuración 2FA' });
     }
 
-    res.json({ secret, qrCodeDataUrl });
+    res.json({ secret: secret.base32, qrCodeDataUrl });
   } catch (err) {
     console.error('[2fa/setup]', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });
@@ -128,12 +131,17 @@ router.post('/verify-setup', verifyToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Primero genera el QR desde /auth/2fa/setup' });
     }
 
-    const isValid = authenticator.verify({ token: code.replace(/\s/g, ''), secret: userData.totp_secret });
+    const isValid = speakeasy.totp.verify({
+      secret: userData.totp_secret,
+      encoding: 'base32',
+      token: code.replace(/\s/g, ''),
+      window: 1,
+    });
+
     if (!isValid) {
       return res.status(401).json({ error: 'Código incorrecto. Escanea de nuevo el QR e inténtalo.' });
     }
 
-    // Activar 2FA
     await supabase
       .from('users')
       .update({ totp_enabled: true })
@@ -148,7 +156,6 @@ router.post('/verify-setup', verifyToken, requireAdmin, async (req, res) => {
 });
 
 // ── GET /auth/2fa/status ──────────────────────────────────────────────────────
-// Devuelve si el 2FA está activado para el admin
 router.get('/status', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -182,7 +189,13 @@ router.delete('/', verifyToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: '2FA no está activado' });
     }
 
-    const isValid = authenticator.verify({ token: code.replace(/\s/g, ''), secret: userData.totp_secret });
+    const isValid = speakeasy.totp.verify({
+      secret: userData.totp_secret,
+      encoding: 'base32',
+      token: code.replace(/\s/g, ''),
+      window: 1,
+    });
+
     if (!isValid) {
       return res.status(401).json({ error: 'Código incorrecto' });
     }

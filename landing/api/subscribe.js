@@ -13,8 +13,12 @@
 //   RESEND_AUDIENCE_ID    → ID de la audiencia en Resend para guardar contactos
 
 export default async function handler(req, res) {
-  // CORS básico (la landing y el endpoint comparten dominio, así que normalmente no se necesita)
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS restringido al dominio de la landing
+  const allowedOrigins = ['https://www.studiorenacer.com', 'https://studiorenacer.com'];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 

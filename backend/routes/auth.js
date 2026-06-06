@@ -1,6 +1,6 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
+const rateLimit = require('express-rate-limit');
 const supabase = require('../services/supabaseClient');
 const supabaseAuth = require('../services/supabaseAuth');
 const { sendWelcomeEmail } = require('../services/emailService');
@@ -8,12 +8,39 @@ const { verifyToken, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Registro inicial del admin (solo se usa una vez para crear tu cuenta)
+// ── Rate limiter estricto para endpoints de autenticación ─────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados intentos. Inténtalo en 15 minutos.' },
+  skipSuccessfulRequests: true, // solo cuenta intentos fallidos
+});
+
+// ── Helper: validar fortaleza de contraseña ──────────────────────────────────
+function validatePassword(password) {
+  if (!password || password.length < 8) return 'La contraseña debe tener al menos 8 caracteres';
+  if (!/[A-Z]/.test(password)) return 'La contraseña debe contener al menos una mayúscula';
+  if (!/[0-9]/.test(password)) return 'La contraseña debe contener al menos un número';
+  return null;
+}
+
+// ── Registro inicial del admin ────────────────────────────────────────────────
+// PROTEGIDO: requiere la clave de bootstrap en cabecera X-Bootstrap-Key
+// Deshabilitar esta variable de entorno en producción una vez creada la cuenta
 router.post('/admin-register', async (req, res) => {
+  const bootstrapKey = req.headers['x-bootstrap-key'];
+  if (!process.env.BOOTSTRAP_SECRET || bootstrapKey !== process.env.BOOTSTRAP_SECRET) {
+    return res.status(403).json({ error: 'No autorizado' });
+  }
+
   const { email, password, nombre } = req.body;
   if (!email || !password || !nombre) {
     return res.status(400).json({ error: 'Email, contraseña y nombre son obligatorios' });
   }
+  const pwError = validatePassword(password);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   try {
     const { data, error: authError } = await supabase.auth.admin.createUser({
@@ -34,16 +61,17 @@ router.post('/admin-register', async (req, res) => {
     const token = jwt.sign(
       { id: data.user.id, email, role: 'admin' },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '1h' }
     );
     res.json({ token, user: { id: data.user.id, email, role: 'admin', nombre_completo: nombre } });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[admin-register]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 // Login (admin y paciente)
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email y contraseña son obligatorios' });
@@ -58,19 +86,20 @@ router.post('/login', async (req, res) => {
       .select('role, nombre_completo')
       .eq('id', data.user.id)
       .single();
-    if (userError) return res.status(400).json({ error: userError.message });
+    if (userError) return res.status(400).json({ error: 'Error obteniendo datos de usuario' });
 
     const token = jwt.sign(
       { id: data.user.id, email, role: userData.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '1h' }
     );
     res.json({
       token,
       user: { id: data.user.id, email, role: userData.role, nombre_completo: userData.nombre_completo },
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[login]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -101,11 +130,11 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
     // Crear perfil paciente
     await supabase.from('pacientes').insert({ user_id: data.user.id });
 
-    // Token de activación (7 días)
+    // Token de activación (48 horas)
     const activationToken = jwt.sign(
       { id: data.user.id, email },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '48h' }
     );
 
     // Enviar email de bienvenida con enlace de activación
@@ -113,16 +142,20 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
 
     res.json({ message: 'Invitación enviada', email });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[invitar-paciente]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
 // Paciente activa su cuenta (establece contraseña)
-router.post('/activar', async (req, res) => {
+router.post('/activar', authLimiter, async (req, res) => {
   const { token, password } = req.body;
   if (!token || !password) {
     return res.status(400).json({ error: 'Token y contraseña son obligatorios' });
   }
+
+  const pwError = validatePassword(password);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -132,12 +165,12 @@ router.post('/activar', async (req, res) => {
       password,
       email_confirm: true,
     });
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) return res.status(400).json({ error: 'No se pudo activar la cuenta' });
 
     const jwtToken = jwt.sign(
       { id: decoded.id, email: decoded.email, role: 'paciente' },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '1h' }
     );
     res.json({ token: jwtToken, message: 'Cuenta activada correctamente' });
   } catch {
@@ -153,10 +186,11 @@ router.get('/me', verifyToken, async (req, res) => {
       .select('id, email, role, nombre_completo, telefono, created_at')
       .eq('id', req.user.id)
       .single();
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) return res.status(400).json({ error: 'No se pudieron obtener los datos del usuario' });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[me]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

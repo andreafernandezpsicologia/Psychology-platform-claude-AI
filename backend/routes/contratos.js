@@ -8,6 +8,15 @@ const router = express.Router();
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
+// Mapa MIME → extensión segura (nunca confiar en el nombre del archivo original)
+const MIME_TO_EXT = {
+  'application/pdf': 'pdf',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+};
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -58,14 +67,14 @@ router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'
   if (!pack) return res.status(403).json({ error: 'Pack no encontrado o no autorizado' });
 
   try {
-    const ext = file.originalname.split('.').pop();
+    const ext = MIME_TO_EXT[file.mimetype] || 'bin';
     const storagePath = `${packId}/firmado_paciente.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from('contratos')
       .upload(storagePath, file.buffer, { contentType: file.mimetype, upsert: true });
 
-    if (uploadError) return res.status(400).json({ error: uploadError.message });
+    if (uploadError) return res.status(400).json({ error: 'Error subiendo el archivo' });
 
     await supabase.from('packs').update({
       contrato_estado: 'firmado_paciente',
@@ -76,7 +85,8 @@ router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'
 
     res.json({ message: 'Contrato subido correctamente' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[subir-paciente]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -87,14 +97,14 @@ router.post('/pack/:packId/subir-admin', verifyToken, requireAdmin, upload.singl
   if (!file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
 
   try {
-    const ext = file.originalname.split('.').pop();
+    const ext = MIME_TO_EXT[file.mimetype] || 'bin';
     const storagePath = `${packId}/firmado_admin.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from('contratos')
       .upload(storagePath, file.buffer, { contentType: file.mimetype, upsert: true });
 
-    if (uploadError) return res.status(400).json({ error: uploadError.message });
+    if (uploadError) return res.status(400).json({ error: 'Error subiendo el archivo' });
 
     await supabase.from('packs').update({
       contrato_estado: 'completado',
@@ -105,7 +115,8 @@ router.post('/pack/:packId/subir-admin', verifyToken, requireAdmin, upload.singl
 
     res.json({ message: 'Contrato definitivo subido correctamente' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[subir-admin]', err.message);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

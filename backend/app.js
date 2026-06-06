@@ -7,6 +7,9 @@ require('dotenv').config();
 
 const app = express();
 
+// ── Trust proxy: necesario para obtener la IP real del cliente detrás de Vercel/Render ──
+app.set('trust proxy', 1);
+
 // ── Cabeceras de seguridad (NIS2 / RGPD Art. 25) ─────────────────────────────
 app.use(helmet());
 app.use(helmet.hsts({ maxAge: 31536000, includeSubDomains: true, preload: true }));

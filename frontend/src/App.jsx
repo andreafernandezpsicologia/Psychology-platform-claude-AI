@@ -5,6 +5,7 @@ import Login from './pages/auth/Login';
 import Activate from './pages/auth/Activate';
 import AdminDashboard from './pages/admin/Dashboard';
 import PacienteDetalle from './pages/admin/Paciente';
+import Seguridad from './pages/admin/Seguridad';
 import PacienteDashboard from './pages/paciente/Dashboard';
 
 export default function App() {
@@ -20,6 +21,9 @@ export default function App() {
           } />
           <Route path="/admin/paciente/:id" element={
             <ProtectedRoute role="admin"><PacienteDetalle /></ProtectedRoute>
+          } />
+          <Route path="/admin/seguridad" element={
+            <ProtectedRoute role="admin"><Seguridad /></ProtectedRoute>
           } />
 
           <Route path="/paciente" element={

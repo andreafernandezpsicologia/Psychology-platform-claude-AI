@@ -90,10 +90,21 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('role, nombre_completo')
+      .select('role, nombre_completo, totp_enabled')
       .eq('id', data.user.id)
       .single();
     if (userError) return res.status(400).json({ error: 'Error obteniendo datos de usuario' });
+
+    // ── 2FA: si el admin tiene 2FA activo, no emitir cookie todavía ─────────────
+    if (userData.role === 'admin' && userData.totp_enabled) {
+      const tempToken = jwt.sign(
+        { id: data.user.id, email, type: '2fa_pending' },
+        process.env.JWT_SECRET,
+        { expiresIn: '5m' }
+      );
+      await audit(req, 'login_2fa_required', 'auth', data.user.id);
+      return res.json({ require2fa: true, tempToken });
+    }
 
     const token = jwt.sign(
       { id: data.user.id, email, role: userData.role },

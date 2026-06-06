@@ -6,22 +6,50 @@ import { useTranslation } from 'react-i18next';
 const LANGS = ['ES', 'EN', 'DA'];
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, verify2fa } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+
+  // Paso 1: email + contraseña / Paso 2: código 2FA
+  const [step, setStep] = useState(1);
   const [form, setForm] = useState({ email: '', password: '' });
+  const [code, setCode] = useState('');
+  const [tempToken, setTempToken] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  // ── Paso 1: login con email + contraseña ──────────────────────────────────────
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
       navigate(user.role === 'admin' ? '/admin' : '/paciente');
+    } catch (err) {
+      if (err.message === '2fa_required') {
+        // Admin con 2FA: pasar al paso 2
+        setTempToken(err.tempToken);
+        setStep(2);
+      } else {
+        setError(t('login.error'));
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Paso 2: verificar código TOTP ─────────────────────────────────────────────
+  const handle2fa = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+    try {
+      const user = await verify2fa(tempToken, code);
+      navigate(user.role === 'admin' ? '/admin' : '/paciente');
     } catch {
-      setError(t('login.error'));
+      setError('Código incorrecto o expirado. Inténtalo de nuevo.');
+      setCode('');
     } finally {
       setLoading(false);
     }
@@ -32,12 +60,12 @@ export default function Login() {
       {/* Language switcher */}
       <div className="flex gap-2 mb-8">
         {LANGS.map((lang) => {
-          const code = lang.toLowerCase();
-          const active = i18n.language === code;
+          const code2 = lang.toLowerCase();
+          const active = i18n.language === code2;
           return (
             <button
               key={lang}
-              onClick={() => i18n.changeLanguage(code)}
+              onClick={() => i18n.changeLanguage(code2)}
               className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
               style={{
                 backgroundColor: active ? 'var(--navy)' : 'white',
@@ -58,56 +86,115 @@ export default function Login() {
             R
           </div>
           <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
-            {t('login.title')}
+            {step === 1 ? t('login.title') : 'Verificación en dos pasos'}
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>{t('login.subtitle')}</p>
+          <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>
+            {step === 1 ? t('login.subtitle') : 'Introduce el código de tu aplicación de autenticación'}
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
-              {t('login.email')}
-            </label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
-              style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--navy)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              placeholder="tu@email.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
-              {t('login.password')}
-            </label>
-            <input
-              type="password"
-              required
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
-              style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
-              onFocus={e => e.target.style.borderColor = 'var(--navy)'}
-              onBlur={e => e.target.style.borderColor = 'var(--border)'}
-              placeholder="••••••••"
-            />
-          </div>
+        {/* ── Paso 1: email + contraseña ─────────────────────────────────────── */}
+        {step === 1 && (
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+                {t('login.email')}
+              </label>
+              <input
+                type="email"
+                required
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
+                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                placeholder="tu@email.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+                {t('login.password')}
+              </label>
+              <input
+                type="password"
+                required
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
+                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                placeholder="••••••••"
+              />
+            </div>
 
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-            style={{ backgroundColor: 'var(--navy)' }}
-          >
-            {loading ? t('login.loading') : t('login.submit')}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--navy)' }}
+            >
+              {loading ? t('login.loading') : t('login.submit')}
+            </button>
+          </form>
+        )}
+
+        {/* ── Paso 2: código TOTP ─────────────────────────────────────────────── */}
+        {step === 2 && (
+          <form onSubmit={handle2fa} className="space-y-4">
+            {/* Icono candado */}
+            <div className="flex justify-center mb-2">
+              <span className="text-4xl">🔐</span>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+                Código de verificación
+              </label>
+              <input
+                type="text"
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={6}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition text-center tracking-widest text-lg font-mono"
+                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                placeholder="000000"
+                autoFocus
+              />
+              <p className="text-xs mt-1" style={{ color: 'var(--text)' }}>
+                Código de 6 dígitos de Google Authenticator o Authy
+              </p>
+            </div>
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <button
+              type="submit"
+              disabled={loading || code.length !== 6}
+              className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
+              style={{ backgroundColor: 'var(--navy)' }}
+            >
+              {loading ? 'Verificando...' : 'Verificar'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setStep(1); setError(''); setCode(''); }}
+              className="w-full text-sm py-1"
+              style={{ color: 'var(--text)' }}
+            >
+              ← Volver al inicio de sesión
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

@@ -28,7 +28,24 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    // El servidor setea la cookie httpOnly — aquí solo guardamos datos del usuario
+
+    // Si el admin tiene 2FA activo, el servidor devuelve { require2fa: true, tempToken }
+    // Lanzamos un error especial que Login.jsx captura para mostrar el paso 2
+    if (res.data.require2fa) {
+      const err = new Error('2fa_required');
+      err.tempToken = res.data.tempToken;
+      throw err;
+    }
+
+    // Login normal: el servidor ya seteó la cookie httpOnly
+    localStorage.setItem('user', JSON.stringify(res.data.user));
+    setUser(res.data.user);
+    return res.data.user;
+  };
+
+  const verify2fa = async (tempToken, code) => {
+    const res = await api.post('/auth/2fa/verify', { tempToken, code });
+    // El servidor seteó la cookie — guardamos datos del usuario
     localStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data.user;
@@ -45,7 +62,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, verify2fa, logout }}>
       {children}
     </AuthContext.Provider>
   );

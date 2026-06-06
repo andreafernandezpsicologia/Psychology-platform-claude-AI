@@ -54,6 +54,16 @@ export default function Layout({ children }) {
           </div>
 
           <span className="text-sm" style={{ color: 'var(--text)' }}>{user?.nombre_completo}</span>
+          {user?.role === 'admin' && (
+            <button
+              onClick={() => navigate('/admin/seguridad')}
+              className="text-sm font-medium transition hover:opacity-70"
+              style={{ color: 'var(--navy)' }}
+              title="Seguridad y 2FA"
+            >
+              🔐
+            </button>
+          )}
           <button onClick={handleLogout} className="text-sm font-medium transition hover:opacity-70" style={{ color: 'var(--navy)' }}>
             {t('layout.logout')}
           </button>

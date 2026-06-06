@@ -1,0 +1,22 @@
+name: Deploy Backend to Render
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 \
+            -X POST "https://api.render.com/deploy/srv-d8hvbelckfvc73b8admg?key=6k6mZ4kxHDY")
+          echo "Deploy triggered: HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "ERROR: Deploy hook returned $STATUS"
+            exit 1
+          fi

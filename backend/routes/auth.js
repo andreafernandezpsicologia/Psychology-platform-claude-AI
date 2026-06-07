@@ -6,6 +6,7 @@ const supabaseAuth = require('../services/supabaseAuth');
 const { sendWelcomeEmail, sendPasswordResetEmail } = require('../services/emailService');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
+const { setSessionCookie, clearSessionCookie } = require('../services/sessionCookie');
 
 const router = express.Router();
 
@@ -25,18 +26,6 @@ function validatePassword(password) {
   if (!/[A-Z]/.test(password)) return 'La contraseña debe contener al menos una mayúscula';
   if (!/[0-9]/.test(password)) return 'La contraseña debe contener al menos un número';
   return null;
-}
-
-// ── Helper: setear cookie de sesión httpOnly ──────────────────────────────────
-function setSessionCookie(res, token) {
-  const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('session', token, {
-    httpOnly: true,          // JS no puede leerla
-    secure: isProd,          // solo HTTPS en producción
-    sameSite: isProd ? 'none' : 'lax', // 'none' necesario para proxy cross-origin
-    maxAge: 60 * 60 * 1000, // 1 hora
-    path: '/',
-  });
 }
 
 // ── Registro inicial del admin ────────────────────────────────────────────────
@@ -126,7 +115,7 @@ router.post('/login', authLimiter, async (req, res) => {
 // ── Logout ────────────────────────────────────────────────────────────────────
 router.post('/logout', (req, res) => {
   audit(req, 'logout', 'auth');
-  res.clearCookie('session', { path: '/' });
+  clearSessionCookie(res);
   res.json({ message: 'Sesión cerrada' });
 });
 

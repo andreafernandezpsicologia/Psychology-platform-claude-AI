@@ -6,7 +6,13 @@ const verifyToken = (req, res, next) => {
   if (!token) return res.status(401).json({ error: 'Autenticación requerida' });
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    // Solo los tokens de SESIÓN llevan `role`. Los tokens temporales
+    // (2fa_pending, password_reset, activación) NO deben dar acceso aquí.
+    if (!payload.role) {
+      return res.status(401).json({ error: 'Token no válido para esta sesión' });
+    }
+    req.user = payload;
     next();
   } catch {
     res.status(401).json({ error: 'Sesión expirada. Inicia sesión de nuevo.' });

@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 
 const LANGS = ['ES', 'EN', 'DA'];
 
 export default function Login() {
-  const { login, verify2fa } = useAuth();
+  const { user, loading: authLoading, login, verify2fa } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
 
@@ -58,6 +58,11 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  // Si ya hay una sesión confirmada, no mostramos el login: directo al panel
+  if (!authLoading && user) {
+    return <Navigate to={user.role === 'admin' ? '/admin' : '/paciente'} replace />;
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4" style={{ backgroundColor: 'var(--bg)' }}>

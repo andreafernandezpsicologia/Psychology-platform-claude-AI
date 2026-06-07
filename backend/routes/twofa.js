@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
+const { setSessionCookie } = require('../services/sessionCookie');
 
 const router = express.Router();
 
@@ -17,18 +18,6 @@ const twoFaLimiter = rateLimit({
   message: { error: 'Demasiados intentos. Inténtalo en 15 minutos.' },
   skipSuccessfulRequests: true,
 });
-
-// ── Helper: cookie de sesión (igual que en auth.js) ────────────────────────────
-function setSessionCookie(res, token) {
-  const isProd = process.env.NODE_ENV === 'production';
-  res.cookie('session', token, {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    maxAge: 60 * 60 * 1000, // 1 hora
-    path: '/',
-  });
-}
 
 // ── POST /auth/2fa/verify ──────────────────────────────────────────────────────
 // Segundo paso del login: verifica el código TOTP con el tempToken

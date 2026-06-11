@@ -131,6 +131,10 @@
     "contratoFirmadoAmbos": "Fuldt underskrevet kontrakt tilgængelig",
     "contratoDescargarFinal": "Download endelig kontrakt",
     "contratoPendiente": "Afventer underskrift",
-    "contratoEnviado": "Sendt, afventer gennemgang"
+    "contratoEnviado": "Sendt, afventer gennemgang",
+    "gdprTitle": "Mine personlige data",
+    "gdprDesc": "Download en kopi af alle dine data (GDPR Art. 20).",
+    "gdprDownload": "Download mine data",
+    "gdprDownloading": "Forbereder..."
   }
 }

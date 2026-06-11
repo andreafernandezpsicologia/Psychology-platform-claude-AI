@@ -16,6 +16,7 @@ export default function PacienteDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploadingContrato, setUploadingContrato] = useState(null);
+  const [exportando, setExportando] = useState(false);
   const { t, i18n } = useTranslation();
   const locale = localeMap[i18n.language] || es;
   const fileInputRef = useRef(null);
@@ -26,6 +27,23 @@ export default function PacienteDashboard() {
   };
 
   useEffect(() => { cargar(); }, []);
+
+  const exportarMisDatos = async () => {
+    setExportando(true);
+    try {
+      const res = await api.get('/pacientes/me/export', { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `mis-datos-studio-renacer-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error('Error al exportar datos: ' + (err.response?.data?.error || ''));
+    } finally {
+      setExportando(false);
+    }
+  };
 
   const descargarPlantilla = () => {
     const a = document.createElement('a');
@@ -213,6 +231,14 @@ export default function PacienteDashboard() {
               ))}
           </div>
         )}
+        {/* ── Mis datos (RGPD) ── */}
+        <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>{t('patientDashboard.gdprTitle')}</h3>
+          <p className="text-xs mb-3" style={{ color: 'var(--text)' }}>{t('patientDashboard.gdprDesc')}</p>
+          <Button size="sm" variant="ghost" loading={exportando} onClick={exportarMisDatos}>
+            ⬇ {exportando ? t('patientDashboard.gdprDownloading') : t('patientDashboard.gdprDownload')}
+          </Button>
+        </div>
       </div>
     </Layout>
   );

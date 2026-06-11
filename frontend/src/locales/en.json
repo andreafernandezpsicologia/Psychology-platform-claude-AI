@@ -131,6 +131,10 @@
     "contratoFirmadoAmbos": "Fully signed contract available",
     "contratoDescargarFinal": "Download final contract",
     "contratoPendiente": "Pending signature",
-    "contratoEnviado": "Sent, pending review"
+    "contratoEnviado": "Sent, pending review",
+    "gdprTitle": "My personal data",
+    "gdprDesc": "Download a copy of all your data (GDPR Art. 20).",
+    "gdprDownload": "Download my data",
+    "gdprDownloading": "Preparing..."
   }
 }

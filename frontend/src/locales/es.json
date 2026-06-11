@@ -131,6 +131,10 @@
     "contratoFirmadoAmbos": "Contrato completo disponible",
     "contratoDescargarFinal": "Descargar contrato definitivo",
     "contratoPendiente": "Pendiente de firma",
-    "contratoEnviado": "Enviado, pendiente de revisión"
+    "contratoEnviado": "Enviado, pendiente de revisión",
+    "gdprTitle": "Mis datos personales",
+    "gdprDesc": "Descarga una copia de todos tus datos (RGPD Art. 20).",
+    "gdprDownload": "Descargar mis datos",
+    "gdprDownloading": "Preparando..."
   }
 }

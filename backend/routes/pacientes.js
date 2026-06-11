@@ -122,6 +122,116 @@ router.put('/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Paciente: exportar sus propios datos (RGPD Art. 20 — portabilidad)
+// IMPORTANTE: debe estar antes de /:id para que Express no la capture como id="me"
+router.get('/me/export', verifyToken, async (req, res) => {
+  try {
+    const { data: user, error: uError } = await supabase
+      .from('users')
+      .select('id, email, nombre_completo, telefono, created_at')
+      .eq('id', req.user.id)
+      .single();
+    if (uError) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { data: paciente, error: pError } = await supabase
+      .from('pacientes')
+      .select('id, estado')
+      .eq('user_id', req.user.id)
+      .single();
+    if (pError) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    const [{ data: sesiones }, { data: packs }, { data: documentos }, { data: aceptaciones }] = await Promise.all([
+      supabase.from('sesiones')
+        .select('id, fecha_hora, tipo, estado, duracion_minutos, created_at')
+        .eq('paciente_id', paciente.id)
+        .order('fecha_hora', { ascending: true }),
+      supabase.from('packs')
+        .select('id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, created_at')
+        .eq('paciente_id', paciente.id),
+      supabase.from('documentos')
+        .select('id, nombre, tipo, created_at')
+        .eq('paciente_id', paciente.id),
+      supabase.from('aceptaciones_documentos')
+        .select('fecha_aceptacion, documentos_legales(titulo, tipo, version)')
+        .eq('paciente_id', paciente.id)
+        .order('fecha_aceptacion', { ascending: false }),
+    ]);
+
+    await audit(req, 'export_own_data', 'patients', req.user.id);
+
+    res.setHeader('Content-Disposition', `attachment; filename="mis-datos-studio-renacer-${new Date().toISOString().slice(0,10)}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      exportado_en: new Date().toISOString(),
+      responsable: 'Studio Renacer — Andrea Fernández (colegiada 27327)',
+      base_legal: 'RGPD Art. 20 — Derecho a la portabilidad de los datos',
+      datos_personales: user,
+      estado_cuenta: paciente.estado,
+      sesiones: sesiones || [],
+      packs: packs || [],
+      documentos: documentos || [],
+      consentimientos: aceptaciones || [],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: exportar todos los datos de un paciente (RGPD Art. 20)
+router.get('/:userId/export', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: user, error: uError } = await supabase
+      .from('users')
+      .select('id, email, nombre_completo, telefono, created_at')
+      .eq('id', req.params.userId)
+      .single();
+    if (uError) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+    const { data: paciente, error: pError } = await supabase
+      .from('pacientes')
+      .select('id, estado, notas_admin')
+      .eq('user_id', req.params.userId)
+      .single();
+    if (pError) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    const [{ data: sesiones }, { data: packs }, { data: documentos }, { data: aceptaciones }] = await Promise.all([
+      supabase.from('sesiones')
+        .select('id, fecha_hora, tipo, estado, duracion_minutos, created_at')
+        .eq('paciente_id', paciente.id)
+        .order('fecha_hora', { ascending: true }),
+      supabase.from('packs')
+        .select('id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, created_at')
+        .eq('paciente_id', paciente.id),
+      supabase.from('documentos')
+        .select('id, nombre, tipo, created_at')
+        .eq('paciente_id', paciente.id),
+      supabase.from('aceptaciones_documentos')
+        .select('fecha_aceptacion, documentos_legales(titulo, tipo, version)')
+        .eq('paciente_id', paciente.id)
+        .order('fecha_aceptacion', { ascending: false }),
+    ]);
+
+    await audit(req, 'export_patient_data', 'patients', req.params.userId);
+
+    res.setHeader('Content-Disposition', `attachment; filename="datos-paciente-${req.params.userId.slice(0,8)}-${new Date().toISOString().slice(0,10)}.json"`);
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      exportado_en: new Date().toISOString(),
+      responsable: 'Studio Renacer — Andrea Fernández (colegiada 27327)',
+      base_legal: 'RGPD Art. 20 — Derecho a la portabilidad de los datos',
+      datos_personales: user,
+      estado_cuenta: paciente.estado,
+      notas_admin: paciente.notas_admin,
+      sesiones: sesiones || [],
+      packs: packs || [],
+      documentos: documentos || [],
+      consentimientos: aceptaciones || [],
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Admin: ver aceptación RGPD de un paciente (para descarga)
 router.get('/:userId/rgpd', verifyToken, requireAdmin, async (req, res) => {
   try {

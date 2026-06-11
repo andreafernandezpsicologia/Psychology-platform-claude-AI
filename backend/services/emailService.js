@@ -80,4 +80,26 @@ const sendPasswordResetEmail = async (email, nombre, resetToken) => {
   });
 };
 
-module.exports = { sendWelcomeEmail, sendSessionReminder, sendPasswordResetEmail };
+const sendPackLowAlert = async (email, nombre, sesionesRestantes) => {
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: `Te quedan ${sesionesRestantes} sesión${sesionesRestantes === 1 ? '' : 'es'} en tu pack`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        <p>Te avisamos de que tu pack actual está casi agotado:</p>
+        <p style="font-size: 1.2rem; font-weight: bold; color: #1a2d4a;">
+          ${sesionesRestantes === 1
+            ? 'Solo te queda 1 sesión disponible.'
+            : `Solo te quedan ${sesionesRestantes} sesiones disponibles.`}
+        </p>
+        <p>Si quieres continuar con tu proceso, habla con Andrea para renovar tu pack.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+  });
+};
+
+module.exports = { sendWelcomeEmail, sendSessionReminder, sendPasswordResetEmail, sendPackLowAlert };

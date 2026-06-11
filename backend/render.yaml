@@ -24,5 +24,7 @@ services:
         value: Studio Renacer <admin@studiorenacer.com>
       - key: FRONTEND_URL
         sync: false
+      - key: CRON_SECRET
+        sync: false
       - key: PORT
         value: 3000

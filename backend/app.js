@@ -58,6 +58,7 @@ app.use('/api/sesiones', require('./routes/sesiones'));
 app.use('/api/packs', require('./routes/packs'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/contratos', require('./routes/contratos'));
+app.use('/api/cron', require('./routes/cron'));
 
 // ── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

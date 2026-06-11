@@ -1,0 +1,25 @@
+name: Enviar recordatorios de sesión
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # cada hora en punto
+  workflow_dispatch:       # permite lanzarlo manualmente para probar
+
+jobs:
+  recordatorios:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al endpoint de recordatorios
+        run: |
+          RESPONSE=$(curl -s -w "\n%{http_code}" --max-time 30 \
+            -X POST "https://studio-renacer-api.onrender.com/api/cron/recordatorios" \
+            -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "HTTP: $HTTP_CODE"
+          echo "Respuesta: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "ERROR: el endpoint devolvió $HTTP_CODE"
+            exit 1
+          fi

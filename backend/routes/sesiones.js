@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { sendPackLowAlert } = require('../services/emailService');
 
 const router = express.Router();
 
@@ -91,6 +92,28 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
     if (debeDescontar) {
       const { error: rpcError } = await supabase.rpc('incrementar_sesion_pack', { pack_uuid: data.pack_id });
       if (rpcError) console.error('incrementar_sesion_pack failed:', rpcError.message);
+
+      // Alerta si al paciente le quedan ≤2 sesiones en el pack
+      try {
+        const { data: pack } = await supabase
+          .from('packs')
+          .select('num_sesiones_total, num_sesiones_usadas, pacientes ( users ( email, nombre_completo ) )')
+          .eq('id', data.pack_id)
+          .single();
+
+        if (pack) {
+          const restantes = pack.num_sesiones_total - pack.num_sesiones_usadas;
+          if (restantes > 0 && restantes <= 2) {
+            const user = pack.pacientes?.users;
+            if (user?.email) {
+              await sendPackLowAlert(user.email, user.nombre_completo, restantes);
+            }
+          }
+        }
+      } catch (alertErr) {
+        // No interrumpir la respuesta si el email falla
+        console.error('[sesiones] Error enviando alerta pack bajo:', alertErr.message);
+      }
     }
 
     res.json(data);

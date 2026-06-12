@@ -89,7 +89,9 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
 
                 {eventosDe(day).map(({ e, d, ini, offset }) => {
                   const s = badgeStyle(e.estado);
-                  const nombre = e.pacientes?.users?.nombre_completo || '—';
+                  const nombre = e.estado === 'ocupado'
+                    ? (e.titulo || '—')
+                    : (e.pacientes?.users?.nombre_completo || '—');
                   return (
                     <button
                       key={e.id}

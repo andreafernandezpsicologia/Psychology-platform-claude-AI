@@ -67,6 +67,65 @@ const sendSessionReminder = async (email, nombre, sesion) => {
   });
 };
 
+// Aviso a Andrea: un paciente ha solicitado una cita
+const sendSessionRequestToAdmin = async (adminEmail, pacienteNombre, sesion) => {
+  const fecha = formatFechaPared(sesion.fecha_hora);
+
+  await resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `Nueva solicitud de cita — ${pacienteNombre}`,
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Nueva solicitud de cita</h2>
+        <p><strong>${pacienteNombre}</strong> ha pedido una cita:</p>
+        <p><strong>Fecha:</strong> ${fecha}</p>
+        <p><strong>Modalidad:</strong> ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        <a href="${FRONTEND_URL}/admin/calendario"
+           style="display:inline-block;background:#1a2d4a;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          Confirmar o rechazar en el calendario
+        </a>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+  });
+};
+
+// Aviso al paciente: su solicitud fue confirmada o rechazada
+const sendSessionRequestResult = async (email, nombre, sesion, confirmada) => {
+  const fecha = formatFechaPared(sesion.fecha_hora);
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: confirmada ? 'Tu cita está confirmada' : 'Sobre tu solicitud de cita',
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        ${confirmada
+          ? `<p>Tu cita ha sido <strong>confirmada</strong>:</p>
+             <p><strong>Fecha:</strong> ${fecha}</p>
+             <p><strong>Modalidad:</strong> ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+             <p>Encontrarás el archivo adjunto para añadirla a tu calendario.</p>`
+          : `<p>La hora que solicitaste (<strong>${fecha}</strong>) no ha podido confirmarse.</p>
+             <p>Puedes proponer otra hora desde tu espacio personal, o Andrea se pondrá en contacto contigo.</p>`}
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+    ...(confirmada ? {
+      attachments: [
+        {
+          filename: 'cita-studio-renacer.ics',
+          content: Buffer.from(buildSessionICS(sesion)).toString('base64'),
+        },
+      ],
+    } : {}),
+  });
+};
+
 const sendPasswordResetEmail = async (email, nombre, resetToken) => {
   const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
   const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
@@ -115,4 +174,11 @@ const sendPackLowAlert = async (email, nombre, sesionesRestantes) => {
   });
 };
 
-module.exports = { sendWelcomeEmail, sendSessionReminder, sendPasswordResetEmail, sendPackLowAlert };
+module.exports = {
+  sendWelcomeEmail,
+  sendSessionReminder,
+  sendPasswordResetEmail,
+  sendPackLowAlert,
+  sendSessionRequestToAdmin,
+  sendSessionRequestResult,
+};

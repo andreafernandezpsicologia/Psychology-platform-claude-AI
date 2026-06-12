@@ -14,10 +14,11 @@ import MonthGrid from '../../components/calendar/MonthGrid';
 import WeekGrid from '../../components/calendar/WeekGrid';
 import SessionModal from '../../components/calendar/SessionModal';
 import EventModal from '../../components/calendar/EventModal';
+import SyncModal from '../../components/calendar/SyncModal';
 import api from '../../utils/api';
 
 const localeMap = { es, en: enUS, da };
-const ESTADOS_LEYENDA = ['programada', 'completada', 'cancelada', 'cancelada_con_cargo'];
+const ESTADOS_LEYENDA = ['programada', 'solicitada', 'completada', 'cancelada', 'ocupado'];
 
 export default function Calendario() {
   const { t, i18n } = useTranslation();
@@ -31,6 +32,7 @@ export default function Calendario() {
   const [createAt, setCreateAt] = useState(null);       // Date → SessionModal en modo crear
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [reagendando, setReagendando] = useState(null); // sesión → SessionModal en modo reagendar
+  const [showSync, setShowSync] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 640px)').matches);
 
   // En móvil la vista semanal de 7 columnas no cabe: se fuerza mes compacto
@@ -50,8 +52,21 @@ export default function Calendario() {
     // fechas naive (hora de pared, como en BD) — nunca toISOString()
     const desde = format(rango.start, "yyyy-MM-dd'T'00:00:00");
     const hasta = format(rango.end, "yyyy-MM-dd'T'23:59:59");
-    api.get('/sesiones', { params: { desde, hasta } })
-      .then((res) => setEvents(res.data))
+    Promise.all([
+      api.get('/sesiones', { params: { desde, hasta } }),
+      // bloques "Ocupado" de los calendarios personales — si falla, no bloquea la vista
+      api.get('/calendarios/ocupado', { params: { desde, hasta } }).catch(() => ({ data: [] })),
+    ])
+      .then(([sesiones, ocupado]) => {
+        const bloques = (ocupado.data || []).map((b, i) => ({
+          id: `ext-${i}-${b.inicio}`,
+          fecha_hora: b.inicio,
+          duracion_minutos: Math.max(15, Math.round((new Date(b.fin) - new Date(b.inicio)) / 60000)),
+          estado: 'ocupado',
+          titulo: b.titulo,
+        }));
+        setEvents([...sesiones.data, ...bloques]);
+      })
       .catch(() => toast.error(t('calendar.loadError')))
       .finally(() => setLoading(false));
   };
@@ -73,6 +88,11 @@ export default function Calendario() {
     setSelectedEvent(null);
     setReagendando(null);
     cargar();
+  };
+
+  // Los bloques de calendarios externos no se gestionan desde aquí
+  const seleccionarEvento = (e) => {
+    if (e.estado !== 'ocupado') setSelectedEvent(e);
   };
 
   return (
@@ -109,6 +129,14 @@ export default function Calendario() {
           <Button size="sm" onClick={() => setCreateAt(setHours(startOfDay(fecha), 10))}>
             {t('calendar.newSession')}
           </Button>
+          <button
+            onClick={() => setShowSync(true)}
+            className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white"
+            style={{ color: 'var(--navy)', border: '1px solid var(--border)' }}
+            title={t('calendar.syncTitle')}
+          >
+            🔄
+          </button>
         </div>
       </div>
 
@@ -122,7 +150,7 @@ export default function Calendario() {
             events={events}
             locale={locale}
             onSelectSlot={(d) => setCreateAt(d)}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={seleccionarEvento}
           />
         ) : (
           <MonthGrid
@@ -131,7 +159,7 @@ export default function Calendario() {
             locale={locale}
             compact={isMobile}
             onSelectDay={(day) => setCreateAt(setHours(startOfDay(day), 10))}
-            onSelectEvent={setSelectedEvent}
+            onSelectEvent={seleccionarEvento}
           />
         )}
       </div>
@@ -164,6 +192,11 @@ export default function Calendario() {
         onClose={() => setSelectedEvent(null)}
         onChanged={cerrarYRecargar}
         onReschedule={(e) => { setSelectedEvent(null); setReagendando(e); }}
+      />
+      <SyncModal
+        open={showSync}
+        onClose={() => setShowSync(false)}
+        onChanged={cargar}
       />
     </Layout>
   );

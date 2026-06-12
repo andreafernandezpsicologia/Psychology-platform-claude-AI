@@ -81,6 +81,24 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
             </div>
           )}
 
+          {event.estado === 'solicitada' && (
+            <div>
+              <p className="text-xs mb-2 px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: '#ede7f6', color: '#5e35b1' }}>
+                {t('calendar.requestedHint')}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <button disabled={saving} onClick={() => cambiarEstado('programada')}
+                  className={accion} style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                  ✓ {t('calendar.confirmAppointment')}
+                </button>
+                <button disabled={saving} onClick={() => setConfirmando('rechazar')}
+                  className={accion} style={{ backgroundColor: '#fce4ec', color: '#c62828' }}>
+                  ✕ {t('calendar.reject')}
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end mt-4">
             <Button variant="ghost" size="sm" onClick={onClose}>✕</Button>
           </div>
@@ -89,10 +107,14 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
 
       <ConfirmDialog
         open={!!confirmando}
-        title={t('calendar.cancelConfirmTitle')}
-        description={confirmando === 'cancelada_con_cargo' ? t('calendar.cancelLateConfirmDesc') : t('calendar.cancelConfirmDesc')}
-        confirmLabel={t('calendar.confirmCancel')}
-        onConfirm={() => cambiarEstado(confirmando)}
+        title={confirmando === 'rechazar' ? t('calendar.rejectConfirmTitle') : t('calendar.cancelConfirmTitle')}
+        description={
+          confirmando === 'rechazar' ? t('calendar.rejectConfirmDesc')
+          : confirmando === 'cancelada_con_cargo' ? t('calendar.cancelLateConfirmDesc')
+          : t('calendar.cancelConfirmDesc')
+        }
+        confirmLabel={confirmando === 'rechazar' ? t('calendar.reject') : t('calendar.confirmCancel')}
+        onConfirm={() => cambiarEstado(confirmando === 'rechazar' ? 'cancelada' : confirmando)}
         onCancel={() => setConfirmando(null)}
       />
     </>

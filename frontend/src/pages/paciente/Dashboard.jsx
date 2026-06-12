@@ -7,7 +7,7 @@ import Button from '../../components/common/Button';
 import { SkeletonCard } from '../../components/common/Skeleton';
 import MonthGrid from '../../components/calendar/MonthGrid';
 import api from '../../utils/api';
-import { format, addMonths } from 'date-fns';
+import { format, addMonths, addDays } from 'date-fns';
 import { es, enUS, da } from 'date-fns/locale';
 
 const localeMap = { es, en: enUS, da };
@@ -19,6 +19,11 @@ export default function PacienteDashboard() {
   const [uploadingContrato, setUploadingContrato] = useState(null);
   const [exportando, setExportando] = useState(false);
   const [mesCalendario, setMesCalendario] = useState(() => new Date());
+  const [fechaSolicitud, setFechaSolicitud] = useState('');
+  const [tipoSolicitud, setTipoSolicitud] = useState('videollamada');
+  const [slots, setSlots] = useState(null); // null = sin consultar
+  const [slotElegido, setSlotElegido] = useState(null);
+  const [solicitando, setSolicitando] = useState(false);
   const { t, i18n } = useTranslation();
   const locale = localeMap[i18n.language] || es;
   const fileInputRef = useRef(null);
@@ -44,6 +49,37 @@ export default function PacienteDashboard() {
       toast.error('Error al exportar datos: ' + (err.response?.data?.error || ''));
     } finally {
       setExportando(false);
+    }
+  };
+
+  const consultarSlots = (fecha) => {
+    setFechaSolicitud(fecha);
+    setSlots(null);
+    setSlotElegido(null);
+    if (!fecha) return;
+    api.get('/sesiones/disponibilidad', { params: { fecha } })
+      .then((res) => setSlots(res.data.slots))
+      .catch(() => toast.error(t('calendar.loadError')));
+  };
+
+  const enviarSolicitud = async () => {
+    if (!fechaSolicitud || !slotElegido) return;
+    setSolicitando(true);
+    try {
+      await api.post('/sesiones/solicitar', {
+        fecha_hora: `${fechaSolicitud}T${slotElegido}`,
+        tipo: tipoSolicitud,
+      });
+      toast.success(t('calendar.requestSent'));
+      setFechaSolicitud('');
+      setSlots(null);
+      setSlotElegido(null);
+      cargar();
+    } catch (err) {
+      const code = err.response?.data?.error;
+      toast.error(code === 'ocupado' ? t('calendar.slotTaken') : 'Error: ' + (code || ''));
+    } finally {
+      setSolicitando(false);
     }
   };
 
@@ -110,7 +146,7 @@ export default function PacienteDashboard() {
   const packActivo = info?.packs?.find((p) => p.estado === 'activo');
   const sesiones = info?.sesiones || [];
   const proximas = sesiones
-    .filter((s) => s.estado === 'programada' && new Date(s.fecha_hora) >= new Date())
+    .filter((s) => ['programada', 'solicitada'].includes(s.estado) && new Date(s.fecha_hora) >= new Date())
     .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
   const pct = packActivo ? (packActivo.num_sesiones_usadas / packActivo.num_sesiones_total) * 100 : 0;
   const contratoEstado = packActivo?.contrato_estado || 'sin_contrato';
@@ -224,17 +260,69 @@ export default function PacienteDashboard() {
                     {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')} · {s.duracion_minutos} {t('patientDashboard.min')}
                   </p>
                 </div>
-                <Badge estado="programada" label={t('patientDashboard.scheduled')} />
+                {s.estado === 'solicitada'
+                  ? <Badge estado="solicitada" label={t('calendar.pendingBadge')} />
+                  : <Badge estado="programada" label={t('patientDashboard.scheduled')} />}
               </div>
-              <button
-                onClick={() => descargarIcs(s.id)}
-                className="mt-2 text-xs font-medium transition hover:opacity-70"
-                style={{ color: 'var(--navy)' }}
-              >
-                📅 {t('calendar.addToCalendar')}
-              </button>
+              {s.estado === 'programada' && (
+                <button
+                  onClick={() => descargarIcs(s.id)}
+                  className="mt-2 text-xs font-medium transition hover:opacity-70"
+                  style={{ color: 'var(--navy)' }}
+                >
+                  📅 {t('calendar.addToCalendar')}
+                </button>
+              )}
             </div>
           ))}
+        </div>
+
+        {/* ── Pedir cita ── */}
+        <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>{t('calendar.requestTitle')}</h3>
+          <p className="text-xs mb-3" style={{ color: 'var(--text)' }}>{t('calendar.requestHint')}</p>
+          <div className="flex gap-3 flex-wrap items-center mb-3">
+            <input
+              type="date"
+              min={format(addDays(new Date(), 1), 'yyyy-MM-dd')}
+              value={fechaSolicitud}
+              onChange={(e) => consultarSlots(e.target.value)}
+              className="field-input w-auto"
+            />
+            <select
+              value={tipoSolicitud}
+              onChange={(e) => setTipoSolicitud(e.target.value)}
+              className="field-input w-auto"
+            >
+              <option value="videollamada">{t('patientDashboard.videocall')}</option>
+              <option value="presencial">{t('patientDashboard.inPerson')}</option>
+            </select>
+          </div>
+
+          {slots && slots.length === 0 && (
+            <p className="text-sm" style={{ color: 'var(--text)' }}>{t('calendar.noSlots')}</p>
+          )}
+          {slots && slots.length > 0 && (
+            <div className="flex gap-2 flex-wrap mb-3">
+              {slots.map((h) => (
+                <button
+                  key={h}
+                  onClick={() => setSlotElegido(h)}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
+                  style={slotElegido === h
+                    ? { backgroundColor: 'var(--navy)', color: 'white' }
+                    : { backgroundColor: 'var(--bg)', color: 'var(--navy)', border: '1px solid var(--border)' }}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
+          )}
+          {slotElegido && (
+            <Button size="sm" loading={solicitando} onClick={enviarSolicitud}>
+              {t('calendar.requestSend', { time: slotElegido })}
+            </Button>
+          )}
         </div>
 
         {/* ── Mi calendario ── */}

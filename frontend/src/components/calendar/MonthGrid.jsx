@@ -37,9 +37,11 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
   const headers = days.slice(0, 7).map((d) => format(d, 'EEEEEE', { locale }));
   const agenda = compact ? eventosDe(selectedDay) : [];
 
-  const nombreDe = (e) =>
-    e.pacientes?.users?.nombre_completo
-    || t(e.tipo === 'videollamada' ? 'calendar.videocall' : 'calendar.inPerson');
+  const nombreDe = (e) => {
+    if (e.estado === 'ocupado') return e.titulo || t('calendar.busy');
+    return e.pacientes?.users?.nombre_completo
+      || t(e.tipo === 'videollamada' ? 'calendar.videocall' : 'calendar.inPerson');
+  };
 
   return (
     <div>

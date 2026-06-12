@@ -35,7 +35,7 @@ function escapeText(value) {
     .replace(/\n/g, '\\n');
 }
 
-function buildSessionICS({ id, fecha_hora, duracion_minutos, tipo }) {
+function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, status = 'CONFIRMED' } = {}) {
   const m = String(fecha_hora).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
   if (!m) throw new Error(`fecha_hora inválida: ${fecha_hora}`);
 
@@ -48,23 +48,43 @@ function buildSessionICS({ id, fecha_hora, duracion_minutos, tipo }) {
   const location = tipo === 'videollamada' ? 'Videollamada' : 'Studio Renacer (presencial)';
 
   return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Studio Renacer//Citas//ES',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
-    VTIMEZONE_MADRID,
     'BEGIN:VEVENT',
     `UID:${id}@studiorenacer.com`,
     `DTSTAMP:${dtstamp}`,
     `DTSTART;TZID=Europe/Madrid:${fmtLocal(inicioMs)}`,
     `DTEND;TZID=Europe/Madrid:${fmtLocal(finMs)}`,
-    `SUMMARY:${escapeText('Sesión de psicología — Studio Renacer')}`,
+    `SUMMARY:${escapeText(summary || 'Sesión de psicología — Studio Renacer')}`,
     `LOCATION:${escapeText(location)}`,
-    'STATUS:CONFIRMED',
+    `STATUS:${status}`,
     'END:VEVENT',
+  ].join('\r\n');
+}
+
+function buildCalendar(vevents, nombre = 'Studio Renacer') {
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Studio Renacer//Citas//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    `X-WR-CALNAME:${escapeText(nombre)}`,
+    'X-PUBLISHED-TTL:PT1H',
+    VTIMEZONE_MADRID,
+    ...vevents,
     'END:VCALENDAR',
   ].join('\r\n') + '\r\n';
 }
 
-module.exports = { buildSessionICS };
+// .ics de una sola cita (adjuntos de email, botón "Añadir a mi calendario")
+function buildSessionICS(sesion) {
+  return buildCalendar([buildVEvent(sesion)]);
+}
+
+// Feed de suscripción con varias citas. Cada sesión puede llevar
+// `_summary` y `_status` ya resueltos por el llamador.
+function buildFeedICS(sesiones, nombre) {
+  const vevents = sesiones.map((s) => buildVEvent(s, { summary: s._summary, status: s._status }));
+  return buildCalendar(vevents, nombre);
+}
+
+module.exports = { buildSessionICS, buildFeedICS };

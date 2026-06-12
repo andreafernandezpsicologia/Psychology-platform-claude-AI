@@ -14,7 +14,10 @@ const localeMap = { es, en: enUS, da };
 export default function SessionModal({ open, initialDate, session, pacientes = [], onClose, onSaved }) {
   const { t, i18n } = useTranslation();
   const locale = localeMap[i18n.language] || es;
-  const [form, setForm] = useState({ paciente_id: '', fecha_hora: '', tipo: 'videollamada', duracion_minutos: 50 });
+  const [form, setForm] = useState({
+    paciente_id: '', fecha_hora: '', tipo: 'videollamada', duracion_minutos: 50,
+    repetir: 'no', repeticiones: 4,
+  });
   const [saving, setSaving] = useState(false);
   const [conflicto, setConflicto] = useState(null);
 
@@ -29,6 +32,8 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
         : (session?.fecha_hora || '').slice(0, 16),
       tipo: session?.tipo || 'videollamada',
       duracion_minutos: session?.duracion_minutos || 50,
+      repetir: 'no',
+      repeticiones: 4,
     });
     setConflicto(null);
   }, [open, session, initialDate]);
@@ -46,12 +51,17 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
       } else {
         const sel = activos.find((p) => p.pacientes.id === form.paciente_id);
         const packActivo = sel?.pacientes?.packs?.find((pk) => pk.estado === 'activo');
+        const repite = form.repetir !== 'no';
         await api.post('/sesiones', {
           paciente_id: form.paciente_id,
           pack_id: packActivo?.id || null,
           fecha_hora: form.fecha_hora,
           tipo: form.tipo,
           duracion_minutos: Number(form.duracion_minutos),
+          ...(repite ? {
+            repeticiones: Number(form.repeticiones),
+            intervalo_dias: form.repetir === 'quincenal' ? 14 : 7,
+          } : {}),
           force,
         });
         toast.success(t('calendar.sessionCreated'));
@@ -59,7 +69,7 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
       onSaved();
     } catch (err) {
       if (err.response?.status === 409 && err.response.data?.solapa_con) {
-        setConflicto(err.response.data.solapa_con);
+        setConflicto(err.response.data);
       } else {
         toast.error('Error: ' + (err.response?.data?.error || ''));
       }
@@ -143,6 +153,40 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
               </div>
             )}
 
+            {!reagendar && (
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text)' }}>
+                    {t('calendar.repeat')}
+                  </label>
+                  <select
+                    value={form.repetir}
+                    onChange={(e) => setForm({ ...form, repetir: e.target.value })}
+                    className="field-input"
+                  >
+                    <option value="no">{t('calendar.repeatNone')}</option>
+                    <option value="semanal">{t('calendar.repeatWeekly')}</option>
+                    <option value="quincenal">{t('calendar.repeatBiweekly')}</option>
+                  </select>
+                </div>
+                {form.repetir !== 'no' && (
+                  <div className="flex-1">
+                    <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text)' }}>
+                      {t('calendar.sessionsCount')}
+                    </label>
+                    <input
+                      type="number"
+                      min="2"
+                      max="20"
+                      value={form.repeticiones}
+                      onChange={(e) => setForm({ ...form, repeticiones: e.target.value })}
+                      className="field-input"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex gap-3 justify-end pt-2">
               <Button type="button" variant="ghost" size="sm" onClick={onClose}>✕</Button>
               <Button type="submit" size="sm" loading={saving}>
@@ -156,10 +200,21 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
       <ConfirmDialog
         open={!!conflicto}
         title={t('calendar.overlapTitle')}
-        description={conflicto ? t('calendar.overlapDesc', {
-          name: conflicto.paciente_nombre,
-          time: format(new Date(conflicto.fecha_hora), 'd MMM · HH:mm', { locale }),
-        }) : ''}
+        description={(() => {
+          if (!conflicto) return '';
+          if (conflicto.conflictos?.length > 1) {
+            const fechas = conflicto.conflictos
+              .slice(0, 3)
+              .map((c) => format(new Date(c.fecha_hora), 'd MMM HH:mm', { locale }))
+              .join(', ');
+            return t('calendar.overlapMultiDesc', { n: conflicto.conflictos.length, fechas });
+          }
+          const s = conflicto.solapa_con;
+          return t('calendar.overlapDesc', {
+            name: s.paciente_nombre,
+            time: format(new Date(s.fecha_hora), 'd MMM · HH:mm', { locale }),
+          });
+        })()}
         confirmLabel={t('calendar.createAnyway')}
         danger={false}
         onConfirm={() => { setConflicto(null); guardar(true); }}

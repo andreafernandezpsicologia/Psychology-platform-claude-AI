@@ -35,7 +35,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
     const { data: sesiones, error } = await supabase
       .from('sesiones')
       .select(`
-        id, fecha_hora, tipo,
+        id, fecha_hora, tipo, duracion_minutos,
         pacientes (
           users ( email, nombre_completo )
         )
@@ -58,7 +58,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       if (!user?.email) continue;
 
       try {
-        await sendSessionReminder(user.email, user.nombre_completo, sesion.fecha_hora, sesion.tipo);
+        await sendSessionReminder(user.email, user.nombre_completo, sesion);
 
         await supabase
           .from('sesiones')

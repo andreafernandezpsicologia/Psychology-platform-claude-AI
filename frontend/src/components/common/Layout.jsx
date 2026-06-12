@@ -56,6 +56,16 @@ export default function Layout({ children }) {
           <span className="text-sm" style={{ color: 'var(--text)' }}>{user?.nombre_completo}</span>
           {user?.role === 'admin' && (
             <button
+              onClick={() => navigate('/admin/calendario')}
+              className="text-sm font-medium transition hover:opacity-70"
+              style={{ color: 'var(--navy)' }}
+              title={t('calendar.title')}
+            >
+              📅
+            </button>
+          )}
+          {user?.role === 'admin' && (
+            <button
               onClick={() => navigate('/admin/seguridad')}
               className="text-sm font-medium transition hover:opacity-70"
               style={{ color: 'var(--navy)' }}

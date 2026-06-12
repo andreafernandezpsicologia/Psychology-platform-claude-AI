@@ -5,8 +5,9 @@ import Layout from '../../components/common/Layout';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import { SkeletonCard } from '../../components/common/Skeleton';
+import MonthGrid from '../../components/calendar/MonthGrid';
 import api from '../../utils/api';
-import { format } from 'date-fns';
+import { format, addMonths } from 'date-fns';
 import { es, enUS, da } from 'date-fns/locale';
 
 const localeMap = { es, en: enUS, da };
@@ -17,6 +18,7 @@ export default function PacienteDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploadingContrato, setUploadingContrato] = useState(null);
   const [exportando, setExportando] = useState(false);
+  const [mesCalendario, setMesCalendario] = useState(() => new Date());
   const { t, i18n } = useTranslation();
   const locale = localeMap[i18n.language] || es;
   const fileInputRef = useRef(null);
@@ -42,6 +44,20 @@ export default function PacienteDashboard() {
       toast.error('Error al exportar datos: ' + (err.response?.data?.error || ''));
     } finally {
       setExportando(false);
+    }
+  };
+
+  const descargarIcs = async (sesionId) => {
+    try {
+      const res = await api.get(`/sesiones/${sesionId}/ics`, { responseType: 'blob' });
+      const url = URL.createObjectURL(res.data);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'cita-studio-renacer.ics';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      toast.error(t('calendar.icsError'));
     }
   };
 
@@ -198,18 +214,54 @@ export default function PacienteDashboard() {
           {proximas.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDashboard.noUpcoming')}</p>
           ) : proximas.map((s) => (
-            <div key={s.id} className="flex items-center justify-between py-3" style={{ borderBottom: '1px solid var(--border)' }}>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
-                  {format(new Date(s.fecha_hora), "EEEE d 'de' MMMM · HH:mm", { locale })}
-                </p>
-                <p className="text-xs mt-0.5 capitalize" style={{ color: 'var(--text)' }}>
-                  {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')} · {s.duracion_minutos} {t('patientDashboard.min')}
-                </p>
+            <div key={s.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
+                    {format(new Date(s.fecha_hora), "EEEE d 'de' MMMM · HH:mm", { locale })}
+                  </p>
+                  <p className="text-xs mt-0.5 capitalize" style={{ color: 'var(--text)' }}>
+                    {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')} · {s.duracion_minutos} {t('patientDashboard.min')}
+                  </p>
+                </div>
+                <Badge estado="programada" label={t('patientDashboard.scheduled')} />
               </div>
-              <Badge estado="programada" label={t('patientDashboard.scheduled')} />
+              <button
+                onClick={() => descargarIcs(s.id)}
+                className="mt-2 text-xs font-medium transition hover:opacity-70"
+                style={{ color: 'var(--navy)' }}
+              >
+                📅 {t('calendar.addToCalendar')}
+              </button>
             </div>
           ))}
+        </div>
+
+        {/* ── Mi calendario ── */}
+        <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>{t('calendar.myCalendar')}</h3>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setMesCalendario(addMonths(mesCalendario, -1))}
+                className="px-2 py-0.5 text-sm rounded transition hover:bg-[var(--bg)]"
+                style={{ color: 'var(--navy)' }}
+              >
+                ‹
+              </button>
+              <span className="text-xs font-semibold capitalize w-28 text-center" style={{ color: 'var(--navy)' }}>
+                {format(mesCalendario, 'MMMM yyyy', { locale })}
+              </span>
+              <button
+                onClick={() => setMesCalendario(addMonths(mesCalendario, 1))}
+                className="px-2 py-0.5 text-sm rounded transition hover:bg-[var(--bg)]"
+                style={{ color: 'var(--navy)' }}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+          <MonthGrid date={mesCalendario} events={sesiones} locale={locale} readOnly compact />
         </div>
 
         {/* ── Historial ── */}

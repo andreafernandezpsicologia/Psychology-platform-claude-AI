@@ -1,4 +1,5 @@
 const { Resend } = require('resend');
+const { buildSessionICS } = require('./icsService');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = process.env.FROM_EMAIL || 'Studio Renacer <admin@studiorenacer.com>';
@@ -29,12 +30,18 @@ const sendWelcomeEmail = async (email, nombre, activationToken) => {
   });
 };
 
-const sendSessionReminder = async (email, nombre, fechaHora, tipo) => {
-  const fecha = new Date(fechaHora).toLocaleString('es-ES', {
-    dateStyle: 'full',
-    timeStyle: 'short',
-    timeZone: 'Europe/Madrid',
-  });
+// fechaHora es hora de pared (Europe/Madrid) sin zona horaria: se construye la
+// fecha por componentes y se formatea sin opción timeZone, para que el resultado
+// no dependa de la zona horaria del servidor (Render corre en UTC).
+const formatFechaPared = (fechaHora) => {
+  const m = String(fechaHora).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if (!m) return String(fechaHora);
+  const fecha = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+  return fecha.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' });
+};
+
+const sendSessionReminder = async (email, nombre, sesion) => {
+  const fecha = formatFechaPared(sesion.fecha_hora);
 
   await resend.emails.send({
     from: FROM,
@@ -45,12 +52,18 @@ const sendSessionReminder = async (email, nombre, fechaHora, tipo) => {
         <h2>Hola, ${nombre}</h2>
         <p>Te recuerdo que mañana tienes una sesión de psicología:</p>
         <p><strong>Fecha:</strong> ${fecha}</p>
-        <p><strong>Modalidad:</strong> ${tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        <p><strong>Modalidad:</strong> ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
         <p>Si necesitas cancelar o cambiar la cita, contacta con antelación.</p>
         <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
         <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
       </div>
     `,
+    attachments: [
+      {
+        filename: 'cita-studio-renacer.ics',
+        content: Buffer.from(buildSessionICS(sesion)).toString('base64'),
+      },
+    ],
   });
 };
 

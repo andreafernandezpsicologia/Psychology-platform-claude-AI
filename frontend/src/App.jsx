@@ -7,6 +7,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import AdminDashboard from './pages/admin/Dashboard';
 import PacienteDetalle from './pages/admin/Paciente';
+import Calendario from './pages/admin/Calendario';
 import Seguridad from './pages/admin/Seguridad';
 import PacienteDashboard from './pages/paciente/Dashboard';
 
@@ -25,6 +26,9 @@ export default function App() {
           } />
           <Route path="/admin/paciente/:id" element={
             <ProtectedRoute role="admin"><PacienteDetalle /></ProtectedRoute>
+          } />
+          <Route path="/admin/calendario" element={
+            <ProtectedRoute role="admin"><Calendario /></ProtectedRoute>
           } />
           <Route path="/admin/seguridad" element={
             <ProtectedRoute role="admin"><Seguridad /></ProtectedRoute>

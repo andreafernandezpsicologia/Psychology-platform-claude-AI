@@ -1,6 +1,7 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { sendSessionReminder, sendPackLowAlert } = require('../services/emailService');
+const { aParedMadrid } = require('../services/fechaPared');
 
 const router = express.Router();
 
@@ -28,9 +29,12 @@ function requireCronSecret(req, res, next) {
 // recordatorio_enviado evita el reenvío si el cron corre más de una vez.
 router.post('/recordatorios', requireCronSecret, async (req, res) => {
   try {
+    // fecha_hora está en hora de pared de Madrid (TIMESTAMP naive), así que la
+    // ventana se calcula también en hora de Madrid — nunca en UTC con toISOString(),
+    // que la descuadraría 1-2h según el horario de verano.
     const ahora = new Date();
-    const desde = new Date(ahora.getTime() + 20 * 60 * 60 * 1000).toISOString();
-    const hasta = new Date(ahora.getTime() + 26 * 60 * 60 * 1000).toISOString();
+    const desde = aParedMadrid(new Date(ahora.getTime() + 20 * 60 * 60 * 1000));
+    const hasta = aParedMadrid(new Date(ahora.getTime() + 26 * 60 * 60 * 1000));
 
     const { data: sesiones, error } = await supabase
       .from('sesiones')

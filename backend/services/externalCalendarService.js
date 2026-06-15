@@ -70,12 +70,17 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
           const exdates = new Set(
             Object.values(ev.exdate || {}).map((d) => new Date(d).getTime())
           );
+          const recurrences = ev.recurrences || {};
           for (const f of ev.rrule.between(new Date(rangoDesde.getTime() - durMs), rangoHasta, true)) {
             if (exdates.has(f.getTime())) continue;
+            // Si esta ocurrencia fue movida/editada, NO usar el hueco original:
+            // se añade su versión modificada en el bucle de overrides de abajo.
+            if (recurrences[f.toISOString().slice(0, 10)]) continue;
             inicios.push(f);
           }
-          // Ocurrencias modificadas individualmente (RECURRENCE-ID)
-          for (const ov of Object.values(ev.recurrences || {})) {
+          // Ocurrencias modificadas individualmente (RECURRENCE-ID).
+          // node-ical guarda el mismo override bajo varias claves → se deduplica al final.
+          for (const ov of Object.values(recurrences)) {
             if (ov.start && ov.end) {
               bloques.push({
                 inicio: aParedMadrid(ov.start),
@@ -111,8 +116,18 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
     }
   }
 
+  // Dedupe: series solapadas y overrides multi-clave producen bloques idénticos.
+  // Se colapsan por inicio|fin|titulo.
+  const vistos = new Set();
+  const unicos = bloques.filter((b) => {
+    const k = `${b.inicio}|${b.fin}|${b.titulo}`;
+    if (vistos.has(k)) return false;
+    vistos.add(k);
+    return true;
+  });
+
   // Filtro preciso en espacio de pared
-  return bloques.filter((b) => {
+  return unicos.filter((b) => {
     try {
       return naiveToMs(b.inicio) < hastaMs && naiveToMs(b.fin) > desdeMs;
     } catch {

@@ -1,7 +1,7 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
-const { sendPackLowAlert, sendSessionConfirmation, sendSessionRequestAck, sendSessionRequestToAdmin, sendSessionRequestResult } = require('../services/emailService');
+const { sendPackLowAlert, sendSessionConfirmation, sendSessionRescheduled, sendSessionRequestAck, sendSessionRequestToAdmin, sendSessionRequestResult } = require('../services/emailService');
 const { audit } = require('../services/auditLog');
 const { buildSessionICS } = require('../services/icsService');
 const { bloquesOcupados } = require('../services/externalCalendarService');
@@ -378,7 +378,7 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data: current, error: fetchError } = await supabase
       .from('sesiones')
-      .select('estado, fecha_hora, duracion_minutos')
+      .select('estado, fecha_hora, duracion_minutos, pacientes ( users ( email, nombre_completo ) )')
       .eq('id', req.params.id)
       .single();
 
@@ -406,6 +406,14 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
       fecha_anterior: current.fecha_hora,
       fecha_nueva: fecha_hora,
     });
+
+    // Avisar al paciente del cambio de fecha, con el .ics actualizado (fire-and-forget)
+    const user = current.pacientes?.users;
+    if (user?.email) {
+      sendSessionRescheduled(user.email, user.nombre_completo, data, current.fecha_hora)
+        .catch((e) => console.error('[reagendar] email aviso:', e.message));
+    }
+
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });

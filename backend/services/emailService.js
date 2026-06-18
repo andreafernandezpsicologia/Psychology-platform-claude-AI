@@ -103,6 +103,32 @@ const sendSessionConfirmation = async (email, nombre, sesiones) => {
   });
 };
 
+// Aviso al paciente cuando Andrea reagenda su cita a otra fecha
+const sendSessionRescheduled = async (email, nombre, sesion, fechaAnterior) => {
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Tu cita ha cambiado de fecha',
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        <p>Tu cita se ha movido a una nueva fecha:</p>
+        <p style="color:#888;text-decoration:line-through;">${formatFechaPared(fechaAnterior)}</p>
+        <p><strong>${formatFechaPared(sesion.fecha_hora)}</strong> · ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        <p>Adjuntamos un archivo actualizado para tu calendario. Recibirás un recordatorio el día antes.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: 'cita-studio-renacer.ics',
+        content: Buffer.from(buildSessionICS(sesion)).toString('base64'),
+      },
+    ],
+  });
+};
+
 // Acuse de recibo al paciente cuando solicita una cita (aún sin confirmar)
 const sendSessionRequestAck = async (email, nombre, sesion) => {
   await resend.emails.send({
@@ -235,6 +261,7 @@ module.exports = {
   sendPasswordResetEmail,
   sendPackLowAlert,
   sendSessionConfirmation,
+  sendSessionRescheduled,
   sendSessionRequestAck,
   sendSessionRequestToAdmin,
   sendSessionRequestResult,

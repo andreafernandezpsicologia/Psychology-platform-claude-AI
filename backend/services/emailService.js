@@ -1,5 +1,5 @@
 const { Resend } = require('resend');
-const { buildSessionICS } = require('./icsService');
+const { buildSessionICS, buildFeedICS } = require('./icsService');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = process.env.FROM_EMAIL || 'Studio Renacer <admin@studiorenacer.com>';
@@ -64,6 +64,61 @@ const sendSessionReminder = async (email, nombre, sesion) => {
         content: Buffer.from(buildSessionICS(sesion)).toString('base64'),
       },
     ],
+  });
+};
+
+// Confirmación inmediata al paciente cuando Andrea crea una cita (1 o serie).
+// Adjunta el .ics: una sola cita o todas las de la serie en un único archivo.
+const sendSessionConfirmation = async (email, nombre, sesiones) => {
+  const lista = [...sesiones].sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
+  const varias = lista.length > 1;
+  const filas = lista
+    .map((s) => `<li><strong>${formatFechaPared(s.fecha_hora)}</strong> · ${s.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</li>`)
+    .join('');
+  const ics = varias
+    ? buildFeedICS(lista, 'Studio Renacer — Tus citas')
+    : buildSessionICS(lista[0]);
+
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: varias ? 'Tus citas están confirmadas' : 'Tu cita está confirmada',
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        <p>${varias ? 'Tus citas han quedado agendadas:' : 'Tu cita ha quedado agendada:'}</p>
+        <ul>${filas}</ul>
+        <p>Adjuntamos un archivo para que ${varias ? 'las añadas' : 'la añadas'} a tu calendario.</p>
+        <p>Recibirás un recordatorio el día antes. Si necesitas cambiarla, contacta con antelación.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
+    attachments: [
+      {
+        filename: varias ? 'citas-studio-renacer.ics' : 'cita-studio-renacer.ics',
+        content: Buffer.from(ics).toString('base64'),
+      },
+    ],
+  });
+};
+
+// Acuse de recibo al paciente cuando solicita una cita (aún sin confirmar)
+const sendSessionRequestAck = async (email, nombre, sesion) => {
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: 'Hemos recibido tu solicitud de cita',
+    html: `
+      <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; color: #333;">
+        <h2>Hola, ${nombre}</h2>
+        <p>Hemos recibido tu solicitud de cita para:</p>
+        <p><strong>${formatFechaPared(sesion.fecha_hora)}</strong> · ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        <p>Andrea la revisará y te confirmará en breve. Recibirás un email con la respuesta.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0;">
+        <p style="color:#aaa;font-size:12px;">Studio Renacer · studiorenacer.com</p>
+      </div>
+    `,
   });
 };
 
@@ -179,6 +234,8 @@ module.exports = {
   sendSessionReminder,
   sendPasswordResetEmail,
   sendPackLowAlert,
+  sendSessionConfirmation,
+  sendSessionRequestAck,
   sendSessionRequestToAdmin,
   sendSessionRequestResult,
 };

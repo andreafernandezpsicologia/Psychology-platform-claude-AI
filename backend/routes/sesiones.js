@@ -1,7 +1,7 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
-const { sendPackLowAlert, sendSessionRequestToAdmin, sendSessionRequestResult } = require('../services/emailService');
+const { sendPackLowAlert, sendSessionConfirmation, sendSessionRequestAck, sendSessionRequestToAdmin, sendSessionRequestResult } = require('../services/emailService');
 const { audit } = require('../services/auditLog');
 const { buildSessionICS } = require('../services/icsService');
 const { bloquesOcupados } = require('../services/externalCalendarService');
@@ -110,6 +110,21 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
 
     audit(req, 'create_session', 'sessions', data[0]?.id, { paciente_id, fecha_hora, repeticiones });
+
+    // Confirmación inmediata al paciente, con el .ics (fire-and-forget)
+    supabase
+      .from('pacientes')
+      .select('users ( email, nombre_completo )')
+      .eq('id', paciente_id)
+      .single()
+      .then(({ data: p }) => {
+        const u = p?.users;
+        if (u?.email) {
+          sendSessionConfirmation(u.email, u.nombre_completo, data)
+            .catch((e) => console.error('[create] email confirmación:', e.message));
+        }
+      }, () => {});
+
     res.status(201).json(repeticiones === 1 ? data[0] : data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -223,6 +238,12 @@ router.post('/solicitar', verifyToken, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
 
     audit(req, 'request_session', 'sessions', data.id, { fecha_hora, tipo });
+
+    // Acuse de recibo al paciente (fire-and-forget)
+    if (req.user.email) {
+      sendSessionRequestAck(req.user.email, req.user.name || '', data)
+        .catch((e) => console.error('[solicitar] email acuse:', e.message));
+    }
 
     // Avisar a Andrea (fire-and-forget)
     try {

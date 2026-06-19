@@ -211,7 +211,7 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     const { data: paciente, error: pError } = await supabase
       .from('pacientes')
-      .select('id, estado, packs ( id, estado )')
+      .select('id, estado, users ( nombre_completo ), packs ( id, estado )')
       .eq('user_id', req.user.id)
       .single();
     if (pError) return res.status(404).json({ error: 'Perfil de paciente no encontrado' });
@@ -239,9 +239,12 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     audit(req, 'request_session', 'sessions', data.id, { fecha_hora, tipo });
 
+    // El nombre no viaja en el JWT (solo id/email/role): se toma del perfil.
+    const nombrePaciente = paciente.users?.nombre_completo || '';
+
     // Acuse de recibo al paciente (fire-and-forget)
     if (req.user.email) {
-      sendSessionRequestAck(req.user.email, req.user.name || '', data)
+      sendSessionRequestAck(req.user.email, nombrePaciente, data)
         .catch((e) => console.error('[solicitar] email acuse:', e.message));
     }
 
@@ -250,7 +253,7 @@ router.post('/solicitar', verifyToken, async (req, res) => {
       const { data: admin } = await supabase
         .from('users').select('email').eq('role', 'admin').limit(1).single();
       if (admin?.email) {
-        sendSessionRequestToAdmin(admin.email, req.user.name || req.user.email, data)
+        sendSessionRequestToAdmin(admin.email, nombrePaciente || req.user.email, data)
           .catch((e) => console.error('[solicitar] email admin:', e.message));
       }
     } catch (e) {

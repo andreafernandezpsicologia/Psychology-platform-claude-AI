@@ -1,6 +1,6 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
-const { sendSessionReminder, sendPackLowAlert } = require('../services/emailService');
+const { sendSessionReminder } = require('../services/emailService');
 const { aParedMadrid } = require('../services/fechaPared');
 
 const router = express.Router();

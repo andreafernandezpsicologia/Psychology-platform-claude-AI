@@ -76,14 +76,33 @@ router.get('/feed/:token', async (req, res) => {
     const esAdmin = feed.users?.role === 'admin';
     // Ventana: 60 días atrás → 365 adelante
     const desde = msToNaive(Date.now() - 60 * 86400000);
+    const hasta = msToNaive(Date.now() + 365 * 86400000);
 
     let query = supabase
       .from('sesiones')
       .select('id, fecha_hora, duracion_minutos, tipo, estado, pacientes ( user_id, users ( nombre_completo ) )')
       .in('estado', ['programada', 'completada', 'solicitada'])
       .gte('fecha_hora', desde)
+      .lte('fecha_hora', hasta)
       .order('fecha_hora', { ascending: true })
-      .limit(500);
+      .limit(1000);
+
+    // Para un feed de paciente se acota la consulta a SUS sesiones: si se
+    // filtrara en JS tras el limit sobre el conjunto global de todos los
+    // pacientes, sus citas más lejanas se perderían al superar el límite.
+    if (!esAdmin) {
+      const { data: pac } = await supabase
+        .from('pacientes')
+        .select('id')
+        .eq('user_id', feed.user_id)
+        .maybeSingle();
+      if (!pac) {
+        res.set('Content-Type', 'text/calendar; charset=utf-8');
+        res.set('Cache-Control', 'private, max-age=300');
+        return res.send(buildFeedICS([], 'Studio Renacer — Mis citas'));
+      }
+      query = query.eq('paciente_id', pac.id);
+    }
 
     const { data: sesiones, error } = await query;
     if (error) return res.status(500).send('Error');

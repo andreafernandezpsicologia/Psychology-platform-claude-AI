@@ -24,9 +24,12 @@ function requireCronSecret(req, res, next) {
 // Busca sesiones programadas en las próximas ~24h y envía recordatorio si aún
 // no se ha enviado. Diseñado para ejecutarse cada hora desde un servicio externo.
 //
-// Ventana: desde NOW+20h hasta NOW+26h — si el cron corre cada hora, siempre
-// habrá exactamente una ventana que captura cada sesión. El flag
-// recordatorio_enviado evita el reenvío si el cron corre más de una vez.
+// Ventana: desde NOW+20h hasta NOW+26h. Es ancha (6h) a propósito para tolerar
+// ejecuciones del cron retrasadas o saltadas, así que cada sesión cae en varias
+// ventanas horarias (y el cambio de hora puede desplazarla ±1h). La idempotencia
+// NO la da la ventana sino un update condicional (CAS) sobre recordatorio_enviado:
+// solo la ejecución que lo pasa de false→true envía, por lo que el solape de
+// ventanas nunca genera recordatorios duplicados.
 router.post('/recordatorios', requireCronSecret, async (req, res) => {
   try {
     // fecha_hora está en hora de pared de Madrid (TIMESTAMP naive), así que la
@@ -61,18 +64,39 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       const user = sesion.pacientes?.users;
       if (!user?.email) continue;
 
+      // Reclamar el envío con un update condicional (CAS): solo la ejecución que
+      // pone recordatorio_enviado de false→true sigue adelante. Hacerlo ANTES de
+      // enviar evita el duplicado clásico (enviar y que luego falle el marcado
+      // dejaría el flag en false y se reenviaría en la siguiente ventana).
+      const { data: claimed, error: claimErr } = await supabase
+        .from('sesiones')
+        .update({ recordatorio_enviado: true })
+        .eq('id', sesion.id)
+        .eq('recordatorio_enviado', false)
+        .select('id');
+
+      if (claimErr) {
+        console.error(`[cron/recordatorios] Error reclamando ${sesion.id}:`, claimErr.message);
+        errores++;
+        continue;
+      }
+      if (!claimed || claimed.length === 0) continue; // ya reclamada por otra ejecución
+
       try {
         await sendSessionReminder(user.email, user.nombre_completo, sesion);
-
-        await supabase
-          .from('sesiones')
-          .update({ recordatorio_enviado: true })
-          .eq('id', sesion.id);
-
         enviados++;
       } catch (emailErr) {
         console.error(`[cron/recordatorios] Error enviando a ${user.email}:`, emailErr.message);
         errores++;
+        // El email falló: liberar el claim para reintentar en la próxima ventana.
+        try {
+          await supabase
+            .from('sesiones')
+            .update({ recordatorio_enviado: false })
+            .eq('id', sesion.id);
+        } catch (revertErr) {
+          console.error(`[cron/recordatorios] No se pudo revertir el claim de ${sesion.id}:`, revertErr.message);
+        }
       }
     }
 

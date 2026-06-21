@@ -107,7 +107,12 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     }));
 
     const { data, error } = await supabase.from('sesiones').insert(filas).select();
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) {
+      // 23505 = el índice único uniq_sesiones_fecha_activa: ya hay una sesión
+      // activa en esa hora exacta (lo bloquea la BD aunque pasara checkSolape).
+      if (error.code === '23505') return res.status(409).json({ error: 'solape' });
+      return res.status(400).json({ error: error.message });
+    }
 
     audit(req, 'create_session', 'sessions', data[0]?.id, { paciente_id, fecha_hora, repeticiones });
 
@@ -235,7 +240,12 @@ router.post('/solicitar', verifyToken, async (req, res) => {
       })
       .select()
       .single();
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) {
+      // 23505 = índice único uniq_sesiones_fecha_activa: alguien cogió ese
+      // hueco entre el checkSolape y el insert (race). La BD lo impide.
+      if (error.code === '23505') return res.status(409).json({ error: 'ocupado' });
+      return res.status(400).json({ error: error.message });
+    }
 
     audit(req, 'request_session', 'sessions', data.id, { fecha_hora, tipo });
 
@@ -403,7 +413,12 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
       .select()
       .single();
 
-    if (error) return res.status(400).json({ error: error.message });
+    if (error) {
+      // 23505 = índice único uniq_sesiones_fecha_activa: ya hay una sesión
+      // activa en la nueva hora exacta.
+      if (error.code === '23505') return res.status(409).json({ error: 'solape' });
+      return res.status(400).json({ error: error.message });
+    }
 
     audit(req, 'reschedule_session', 'sessions', req.params.id, {
       fecha_anterior: current.fecha_hora,

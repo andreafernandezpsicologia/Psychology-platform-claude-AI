@@ -19,9 +19,22 @@ const cache = new Map(); // url → { ts, data }
 async function fetchCalendario(url) {
   const hit = cache.get(url);
   if (hit && Date.now() - hit.ts < TTL_MS) return hit.data;
-  const data = await ical.async.fromURL(url, { timeout: 10000 });
-  cache.set(url, { ts: Date.now(), data });
-  return data;
+  try {
+    const data = await ical.async.fromURL(url, { timeout: 10000 });
+    cache.set(url, { ts: Date.now(), data });
+    return data;
+  } catch (err) {
+    // Si el feed no responde, NO tratar a Andrea como libre: se reutiliza la
+    // última copia buena en memoria (aunque haya expirado el TTL). Así un fallo
+    // transitorio de Google/Apple no abre la puerta a reservas sobre sus citas
+    // personales. Solo se queda sin datos si el proceso nunca leyó el feed con
+    // éxito (p. ej. justo tras un reinicio coincidiendo con la caída del feed).
+    if (hit) {
+      console.warn(`[calendarios-externos] feed no disponible, usando copia previa: ${url} — ${err.message}`);
+      return hit.data;
+    }
+    throw err;
+  }
 }
 
 function textoDe(valor, fallback) {

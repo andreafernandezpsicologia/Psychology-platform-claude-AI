@@ -26,13 +26,36 @@ const VTIMEZONE_MADRID = [
   'END:VTIMEZONE',
 ].join('\r\n');
 
-// Caracteres especiales de texto iCalendar (RFC 5545 §3.3.11)
+// Caracteres especiales de texto iCalendar (RFC 5545 §3.3.11). Los saltos de
+// línea (CR, LF o CRLF) se normalizan a la secuencia escapada \n.
 function escapeText(value) {
   return String(value)
     .replace(/\\/g, '\\\\')
     .replace(/;/g, '\\;')
     .replace(/,/g, '\\,')
-    .replace(/\n/g, '\\n');
+    .replace(/\r\n|\r|\n/g, '\\n');
+}
+
+// Plegado de líneas de contenido a 75 octetos (RFC 5545 §3.1). Cuenta OCTETS en
+// UTF-8 (no caracteres) y nunca parte un carácter multibyte (acentos, ñ, …).
+// Cada línea de continuación empieza con un espacio, que cuenta en el límite.
+function foldLine(line) {
+  if (Buffer.byteLength(line, 'utf8') <= 75) return line;
+  const bytes = Buffer.from(line, 'utf8');
+  const segmentos = [];
+  let start = 0;
+  let limite = 75; // la primera línea va sin espacio inicial
+  while (start < bytes.length) {
+    let end = Math.min(start + limite, bytes.length);
+    // No cortar a mitad de un carácter: retroceder sobre bytes de continuación (10xxxxxx)
+    if (end < bytes.length) {
+      while (end > start && (bytes[end] & 0xc0) === 0x80) end--;
+    }
+    segmentos.push(bytes.slice(start, end).toString('utf8'));
+    start = end;
+    limite = 74; // las continuaciones llevan un espacio delante
+  }
+  return segmentos.join('\r\n ');
 }
 
 function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, status = 'CONFIRMED' } = {}) {
@@ -57,7 +80,7 @@ function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, stat
     `LOCATION:${escapeText(location)}`,
     `STATUS:${status}`,
     'END:VEVENT',
-  ].join('\r\n');
+  ].map(foldLine).join('\r\n');
 }
 
 function buildCalendar(vevents, nombre = 'Studio Renacer') {
@@ -67,7 +90,7 @@ function buildCalendar(vevents, nombre = 'Studio Renacer') {
     'PRODID:-//Studio Renacer//Citas//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    `X-WR-CALNAME:${escapeText(nombre)}`,
+    foldLine(`X-WR-CALNAME:${escapeText(nombre)}`),
     'X-PUBLISHED-TTL:PT1H',
     VTIMEZONE_MADRID,
     ...vevents,

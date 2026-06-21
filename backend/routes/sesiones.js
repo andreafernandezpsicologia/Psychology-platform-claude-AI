@@ -114,7 +114,15 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    audit(req, 'create_session', 'sessions', data[0]?.id, { paciente_id, fecha_hora, repeticiones });
+    // Una entrada de auditoría por cada sesión creada (RGPD Art. 30): una serie
+    // debe dejar rastro de TODAS sus sesiones, no solo de la primera.
+    (data || []).forEach((s) => {
+      audit(req, 'create_session', 'sessions', s.id, {
+        paciente_id,
+        fecha_hora: s.fecha_hora,
+        ...(repeticiones > 1 ? { serie: true, repeticiones } : {}),
+      });
+    });
 
     // Confirmación inmediata al paciente, con el .ics (fire-and-forget)
     supabase

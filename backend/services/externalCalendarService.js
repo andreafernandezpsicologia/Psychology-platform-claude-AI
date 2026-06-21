@@ -84,11 +84,22 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
             Object.values(ev.exdate || {}).map((d) => new Date(d).getTime())
           );
           const recurrences = ev.recurrences || {};
+          // Instantes de las ocurrencias movidas/editadas (RECURRENCE-ID), por
+          // valor absoluto (ms). Comparar por instante evita el desfase de zona
+          // de la clave-fecha anterior: node-ical indexa los overrides por fecha
+          // LOCAL de Madrid, mientras que f.toISOString() da la fecha UTC; en
+          // ocurrencias de madrugada no coincidían y el hueco original quedaba
+          // como bloque fantasma. (Mismo criterio que los EXDATE de arriba.)
+          const overrides = new Set(
+            Object.values(recurrences)
+              .filter((ov) => ov.recurrenceid)
+              .map((ov) => new Date(ov.recurrenceid).getTime())
+          );
           for (const f of ev.rrule.between(new Date(rangoDesde.getTime() - durMs), rangoHasta, true)) {
             if (exdates.has(f.getTime())) continue;
-            // Si esta ocurrencia fue movida/editada, NO usar el hueco original:
-            // se añade su versión modificada en el bucle de overrides de abajo.
-            if (recurrences[f.toISOString().slice(0, 10)]) continue;
+            // Si esta ocurrencia fue movida, NO usar el hueco original: se añade
+            // su versión modificada en el bucle de overrides de abajo.
+            if (overrides.has(f.getTime())) continue;
             inicios.push(f);
           }
           // Ocurrencias modificadas individualmente (RECURRENCE-ID).

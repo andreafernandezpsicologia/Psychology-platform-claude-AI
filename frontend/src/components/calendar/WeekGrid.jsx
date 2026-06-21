@@ -1,6 +1,7 @@
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, startOfDay, setHours, isToday, isSameDay, getDay } from 'date-fns';
 import { badgeStyle } from '../common/Badge';
 import { HORA_INICIO, HORA_FIN, DIAS_LABORALES } from '../../utils/calendarConfig';
+import { parseWall } from '../../utils/fechaPared';
 
 const HOUR_PX = 48;
 const H_DESDE = Math.max(0, HORA_INICIO - 1);
@@ -18,12 +19,12 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
   // Eventos de un día, con indentado para los que se solapan con el anterior
   const eventosDe = (day) => {
     const evs = events
-      .filter((e) => isSameDay(new Date(e.fecha_hora), day))
-      .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+      .filter((e) => isSameDay(parseWall(e.fecha_hora), day))
+      .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
     let prevFin = -1;
     let offset = 0;
     return evs.map((e) => {
-      const d = new Date(e.fecha_hora);
+      const d = parseWall(e.fecha_hora);
       const ini = d.getHours() + d.getMinutes() / 60;
       const fin = ini + (e.duracion_minutos || 50) / 60;
       offset = ini < prevFin ? offset + 12 : 0;

@@ -16,6 +16,7 @@ import SessionModal from '../../components/calendar/SessionModal';
 import EventModal from '../../components/calendar/EventModal';
 import SyncModal from '../../components/calendar/SyncModal';
 import api from '../../utils/api';
+import { parseWall } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 const ESTADOS_LEYENDA = ['programada', 'solicitada', 'completada', 'cancelada', 'ocupado'];
@@ -61,7 +62,7 @@ export default function Calendario() {
         const bloques = (ocupado.data || []).map((b, i) => ({
           id: `ext-${i}-${b.inicio}`,
           fecha_hora: b.inicio,
-          duracion_minutos: Math.max(15, Math.round((new Date(b.fin) - new Date(b.inicio)) / 60000)),
+          duracion_minutos: Math.max(15, Math.round((parseWall(b.fin) - parseWall(b.inicio)) / 60000)),
           estado: 'ocupado',
           titulo: b.titulo,
         }));

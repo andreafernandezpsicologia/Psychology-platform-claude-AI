@@ -10,6 +10,7 @@ import Badge from '../../components/common/Badge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { SkeletonCard } from '../../components/common/Skeleton';
 import api from '../../utils/api';
+import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
@@ -231,11 +232,11 @@ export default function PacienteDetalle() {
   const info = paciente.pacientes;
   const packs = info?.packs || [];
   const todasSesiones = info?.sesiones || [];
-  const ahora = new Date();
-  const proximas = todasSesiones.filter((s) => s.estado === 'programada' && new Date(s.fecha_hora) >= ahora)
-    .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
-  const pasadas = todasSesiones.filter((s) => s.estado !== 'programada' || new Date(s.fecha_hora) < ahora)
-    .sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora));
+  const ahora = ahoraParedDate();
+  const proximas = todasSesiones.filter((s) => s.estado === 'programada' && parseWall(s.fecha_hora) >= ahora)
+    .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
+  const pasadas = todasSesiones.filter((s) => s.estado !== 'programada' || parseWall(s.fecha_hora) < ahora)
+    .sort((a, b) => parseWall(b.fecha_hora) - parseWall(a.fecha_hora));
   const sesionesTab = tab === 'upcoming' ? proximas : pasadas;
 
   return (
@@ -452,14 +453,14 @@ export default function PacienteDetalle() {
             {t(tab === 'upcoming' ? 'patientDetail.noUpcoming' : 'patientDetail.noPast')}
           </p>
         ) : sesionesTab.map((s) => {
-          const esProxima = s.estado === 'programada' && new Date(s.fecha_hora) >= ahora;
+          const esProxima = s.estado === 'programada' && parseWall(s.fecha_hora) >= ahora;
           const statusKey = `patientDetail.status${s.estado.charAt(0).toUpperCase() + s.estado.slice(1)}`;
           return (
             <div key={s.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
-                    {format(new Date(s.fecha_hora), "d MMM yyyy · HH:mm", { locale })}
+                    {format(parseWall(s.fecha_hora), "d MMM yyyy · HH:mm", { locale })}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text)' }}>
                     {s.tipo === 'videollamada' ? t('patientDetail.videocall') : t('patientDetail.inPerson')} · {s.duracion_minutos} {t('patientDetail.min')}
@@ -467,7 +468,7 @@ export default function PacienteDetalle() {
                 </div>
                 <Badge estado={s.estado} label={t(statusKey)} />
               </div>
-              {(esProxima || (s.estado === 'programada' && new Date(s.fecha_hora) < ahora)) && (
+              {(esProxima || (s.estado === 'programada' && parseWall(s.fecha_hora) < ahora)) && (
                 <div className="flex flex-wrap gap-2 mt-2.5">
                   <button onClick={() => cambiarEstado(s.id, 'completada')}
                     className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"

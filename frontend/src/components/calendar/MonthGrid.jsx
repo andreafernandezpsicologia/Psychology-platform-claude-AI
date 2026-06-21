@@ -5,15 +5,16 @@ import {
   eachDayOfInterval, isSameMonth, isSameDay, isToday,
 } from 'date-fns';
 import { badgeStyle } from '../common/Badge';
+import { parseWall } from '../../utils/fechaPared';
 
 function groupByDay(events) {
   const map = {};
   for (const e of events) {
-    const key = format(new Date(e.fecha_hora), 'yyyy-MM-dd');
+    const key = format(parseWall(e.fecha_hora), 'yyyy-MM-dd');
     (map[key] = map[key] || []).push(e);
   }
   Object.values(map).forEach((list) =>
-    list.sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora))
+    list.sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora))
   );
   return map;
 }
@@ -99,7 +100,7 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
                         className="block w-full text-left text-[11px] leading-tight font-medium px-1 py-0.5 rounded truncate hover:opacity-80 transition"
                         style={{ backgroundColor: s.bg, color: s.color }}
                       >
-                        {format(new Date(e.fecha_hora), 'HH:mm')} {nombreDe(e)}
+                        {format(parseWall(e.fecha_hora), 'HH:mm')} {nombreDe(e)}
                       </button>
                     );
                   })}
@@ -128,7 +129,7 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
               <>
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
                 <span className="font-semibold" style={{ color: 'var(--navy)' }}>
-                  {format(new Date(e.fecha_hora), 'HH:mm')}
+                  {format(parseWall(e.fecha_hora), 'HH:mm')}
                 </span>
                 <span className="truncate" style={{ color: 'var(--text)' }}>
                   {nombreDe(e)} · {e.duracion_minutos} min

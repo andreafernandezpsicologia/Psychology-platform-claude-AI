@@ -7,6 +7,7 @@ import Button from '../common/Button';
 import Badge from '../common/Badge';
 import ConfirmDialog from '../common/ConfirmDialog';
 import api from '../../utils/api';
+import { parseWall } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
@@ -54,7 +55,7 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
             <Badge estado={event.estado} label={t(statusKey)} />
           </div>
           <p className="text-sm font-semibold capitalize" style={{ color: 'var(--navy)' }}>
-            {format(new Date(event.fecha_hora), 'EEEE d MMMM · HH:mm', { locale })}
+            {format(parseWall(event.fecha_hora), 'EEEE d MMMM · HH:mm', { locale })}
           </p>
           <p className="text-xs mt-0.5 mb-4" style={{ color: 'var(--text)' }}>
             {t(event.tipo === 'videollamada' ? 'calendar.videocall' : 'calendar.inPerson')} · {event.duracion_minutos} min

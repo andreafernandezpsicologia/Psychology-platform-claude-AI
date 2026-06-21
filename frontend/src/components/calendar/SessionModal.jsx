@@ -6,6 +6,7 @@ import { es, enUS, da } from 'date-fns/locale';
 import Button from '../common/Button';
 import ConfirmDialog from '../common/ConfirmDialog';
 import api from '../../utils/api';
+import { parseWall } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
@@ -205,14 +206,14 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
           if (conflicto.conflictos?.length > 1) {
             const fechas = conflicto.conflictos
               .slice(0, 3)
-              .map((c) => format(new Date(c.fecha_hora), 'd MMM HH:mm', { locale }))
+              .map((c) => format(parseWall(c.fecha_hora), 'd MMM HH:mm', { locale }))
               .join(', ');
             return t('calendar.overlapMultiDesc', { n: conflicto.conflictos.length, fechas });
           }
           const s = conflicto.solapa_con;
           return t('calendar.overlapDesc', {
             name: s.paciente_nombre,
-            time: format(new Date(s.fecha_hora), 'd MMM · HH:mm', { locale }),
+            time: format(parseWall(s.fecha_hora), 'd MMM · HH:mm', { locale }),
           });
         })()}
         confirmLabel={t('calendar.createAnyway')}

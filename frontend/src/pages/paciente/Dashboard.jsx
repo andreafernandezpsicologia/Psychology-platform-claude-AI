@@ -9,6 +9,7 @@ import MonthGrid from '../../components/calendar/MonthGrid';
 import api from '../../utils/api';
 import { format, addMonths, addDays } from 'date-fns';
 import { es, enUS, da } from 'date-fns/locale';
+import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
@@ -146,8 +147,8 @@ export default function PacienteDashboard() {
   const packActivo = info?.packs?.find((p) => p.estado === 'activo');
   const sesiones = info?.sesiones || [];
   const proximas = sesiones
-    .filter((s) => ['programada', 'solicitada'].includes(s.estado) && new Date(s.fecha_hora) >= new Date())
-    .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+    .filter((s) => ['programada', 'solicitada'].includes(s.estado) && parseWall(s.fecha_hora) >= ahoraParedDate())
+    .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
   const pct = packActivo ? (packActivo.num_sesiones_usadas / packActivo.num_sesiones_total) * 100 : 0;
   const contratoEstado = packActivo?.contrato_estado || 'sin_contrato';
 
@@ -254,7 +255,7 @@ export default function PacienteDashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
-                    {format(new Date(s.fecha_hora), "EEEE d 'de' MMMM · HH:mm", { locale })}
+                    {format(parseWall(s.fecha_hora), "EEEE d 'de' MMMM · HH:mm", { locale })}
                   </p>
                   <p className="text-xs mt-0.5 capitalize" style={{ color: 'var(--text)' }}>
                     {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')} · {s.duracion_minutos} {t('patientDashboard.min')}
@@ -284,7 +285,7 @@ export default function PacienteDashboard() {
           <div className="flex gap-3 flex-wrap items-center mb-3">
             <input
               type="date"
-              min={format(addDays(new Date(), 1), 'yyyy-MM-dd')}
+              min={format(addDays(ahoraParedDate(), 1), 'yyyy-MM-dd')}
               value={fechaSolicitud}
               onChange={(e) => consultarSlots(e.target.value)}
               className="field-input w-auto"
@@ -357,11 +358,11 @@ export default function PacienteDashboard() {
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
             <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--navy)' }}>{t('patientDashboard.history')}</h3>
             {sesiones.filter((s) => s.estado === 'completada' || s.estado === 'cancelada_con_cargo')
-              .sort((a, b) => new Date(b.fecha_hora) - new Date(a.fecha_hora))
+              .sort((a, b) => parseWall(b.fecha_hora) - parseWall(a.fecha_hora))
               .map((s) => (
                 <div key={s.id} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border)' }}>
                   <p className="text-sm" style={{ color: 'var(--text)' }}>
-                    {format(new Date(s.fecha_hora), "d MMM yyyy", { locale })} · {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')}
+                    {format(parseWall(s.fecha_hora), "d MMM yyyy", { locale })} · {s.tipo === 'videollamada' ? t('patientDashboard.videocall') : t('patientDashboard.inPerson')}
                   </p>
                   {s.estado === 'completada'
                     ? <Badge estado="completada" label={t('patientDashboard.completed')} />

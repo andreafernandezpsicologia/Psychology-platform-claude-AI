@@ -45,7 +45,7 @@ router.get('/plantilla', verifyToken, async (req, res) => {
     if (error || !data) return res.status(404).json({ error: 'Plantilla no encontrada' });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[contratos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -133,7 +133,7 @@ router.get('/pack/:packId/firmado-paciente', verifyToken, requireAdmin, async (r
 
     res.json({ url });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[contratos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -158,7 +158,7 @@ router.get('/pack/:packId/firmado-admin', verifyToken, async (req, res) => {
 
     res.json({ url });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[contratos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

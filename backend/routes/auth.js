@@ -140,7 +140,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
     await supabase.from('pacientes').insert({ user_id: data.user.id });
 
     const activationToken = jwt.sign(
-      { id: data.user.id, email },
+      { id: data.user.id, email, type: 'activacion' },
       process.env.JWT_SECRET,
       { expiresIn: '48h' }
     );
@@ -165,6 +165,13 @@ router.post('/activar', authLimiter, async (req, res) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Solo un token de activación puede establecer la contraseña aquí. Rechazar
+    // tokens de sesión (con `role`) o de otro flujo (`password_reset`, `2fa_pending`)
+    // cierra la confusión de tokens. Se aceptan los antiguos sin `type` por
+    // compatibilidad con invitaciones aún en circulación.
+    if (decoded.role || (decoded.type && decoded.type !== 'activacion')) {
+      return res.status(400).json({ error: 'Token inválido o expirado' });
+    }
 
     const { error } = await supabase.auth.admin.updateUserById(decoded.id, {
       password, email_confirm: true,

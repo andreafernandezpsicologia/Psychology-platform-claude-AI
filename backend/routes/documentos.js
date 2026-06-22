@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -42,7 +42,7 @@ router.get('/mis-aceptaciones', verifyToken, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -58,7 +58,7 @@ router.get('/:id', async (req, res) => {
     if (error) return res.status(404).json({ error: 'Documento no encontrado' });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -92,7 +92,7 @@ router.post('/aceptar', verifyToken, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -113,7 +113,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.status(201).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

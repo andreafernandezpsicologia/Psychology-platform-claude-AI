@@ -25,7 +25,7 @@ router.get('/me/perfil', verifyToken, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -46,7 +46,7 @@ router.put('/me/telefono', verifyToken, async (req, res) => {
     audit(req, 'view_own_profile', 'patients', req.user.id);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -69,7 +69,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
     audit(req, 'list_patients', 'patients');
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -94,7 +94,7 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
     audit(req, 'view_patient', 'patients', req.params.id);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -118,7 +118,7 @@ router.put('/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -186,7 +186,7 @@ router.get('/me/export', verifyToken, async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.json(datos);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -202,7 +202,7 @@ router.get('/:userId/export', verifyToken, requireAdmin, async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.json(datos);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -229,7 +229,7 @@ router.get('/:userId/rgpd', verifyToken, requireAdmin, async (req, res) => {
     if (!aceptacion) return res.status(404).json({ error: 'No se encontró aceptación RGPD para este paciente' });
     res.json(aceptacion);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -242,7 +242,7 @@ router.delete('/:userId', verifyToken, requireAdmin, async (req, res) => {
     await audit(req, 'delete_patient', 'patients', req.params.userId, { reason: 'admin_action' });
     res.json({ message: 'Paciente eliminado correctamente' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

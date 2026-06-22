@@ -37,7 +37,7 @@ router.get('/feed-url', verifyToken, async (req, res) => {
     audit(req, 'create_calendar_feed', 'calendar_feeds', req.user.id);
     res.json({ url: feedUrlDe(token) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -53,7 +53,7 @@ router.post('/feed-url/regenerar', verifyToken, async (req, res) => {
     audit(req, 'regenerate_calendar_feed', 'calendar_feeds', req.user.id);
     res.json({ url: feedUrlDe(token) });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -146,7 +146,7 @@ router.get('/externos', verifyToken, requireAdmin, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data); // la URL (credencial) no se devuelve nunca al cliente
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -174,7 +174,7 @@ router.post('/externos', verifyToken, requireAdmin, async (req, res) => {
     audit(req, 'add_external_calendar', 'external_calendars', data.id, { nombre: data.nombre });
     res.status(201).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -189,7 +189,7 @@ router.delete('/externos/:id', verifyToken, requireAdmin, async (req, res) => {
     audit(req, 'delete_external_calendar', 'external_calendars', req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -205,7 +205,7 @@ router.get('/ocupado', verifyToken, requireAdmin, async (req, res) => {
   try {
     res.json(await bloquesOcupados(desde, hasta));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[calendarios]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

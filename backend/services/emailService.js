@@ -1,5 +1,6 @@
 const { Resend } = require('resend');
 const { buildSessionICS, buildFeedICS } = require('./icsService');
+const { FECHA_NAIVE_RE } = require('./fechaPared');
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = process.env.FROM_EMAIL || 'Studio Renacer <admin@studiorenacer.com>';
@@ -34,7 +35,7 @@ const sendWelcomeEmail = async (email, nombre, activationToken) => {
 // fecha por componentes y se formatea sin opción timeZone, para que el resultado
 // no dependa de la zona horaria del servidor (Render corre en UTC).
 const formatFechaPared = (fechaHora) => {
-  const m = String(fechaHora).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  const m = String(fechaHora).match(FECHA_NAIVE_RE);
   if (!m) return String(fechaHora);
   const fecha = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
   return fecha.toLocaleString('es-ES', { dateStyle: 'full', timeStyle: 'short' });

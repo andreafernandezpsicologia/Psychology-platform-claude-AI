@@ -6,6 +6,8 @@
 // El bloque VTIMEZONE incluye las reglas CET/CEST (estables desde 1996) para que
 // Google/Apple/Outlook interpreten la hora correctamente desde cualquier zona.
 
+const { naiveToMs } = require('./fechaPared');
+
 const VTIMEZONE_MADRID = [
   'BEGIN:VTIMEZONE',
   'TZID:Europe/Madrid',
@@ -59,11 +61,9 @@ function foldLine(line) {
 }
 
 function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, status = 'CONFIRMED' } = {}) {
-  const m = String(fecha_hora).match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2}))?/);
-  if (!m) throw new Error(`fecha_hora inválida: ${fecha_hora}`);
-
-  // Aritmética en UTC "ficticio" sobre los componentes: independiente de la TZ del servidor
-  const inicioMs = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0));
+  // naiveToMs valida el formato y hace la aritmética en UTC "ficticio"
+  // (independiente de la TZ del servidor); fmtLocal lo reformatea a 'YYYYMMDDTHHMMSS'.
+  const inicioMs = naiveToMs(fecha_hora);
   const finMs = inicioMs + (duracion_minutos || 50) * 60000;
   const fmtLocal = (ms) => new Date(ms).toISOString().slice(0, 19).replace(/[-:]/g, '');
   const dtstamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';

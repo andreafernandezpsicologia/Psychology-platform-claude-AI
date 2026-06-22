@@ -104,7 +104,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
     res.json({ ok: true, enviados, errores, ventana: { desde, hasta } });
   } catch (err) {
     console.error('[cron/recordatorios] Error inesperado:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

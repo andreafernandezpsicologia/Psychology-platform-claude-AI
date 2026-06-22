@@ -140,7 +140,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
 
     res.status(201).json(repeticiones === 1 ? data[0] : data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -193,7 +193,7 @@ router.get('/disponibilidad', verifyToken, async (req, res) => {
 
     res.json({ slots });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -280,7 +280,7 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     res.status(201).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -306,7 +306,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
     audit(req, 'view_calendar', 'sessions', null, { desde: desde || null, hasta: hasta || null });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -384,7 +384,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -442,7 +442,7 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
 
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -467,7 +467,7 @@ router.get('/mis-sesiones', verifyToken, async (req, res) => {
     if (error) return res.status(400).json({ error: error.message });
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 
@@ -491,7 +491,7 @@ router.get('/:id/ics', verifyToken, async (req, res) => {
     res.set('Content-Disposition', 'attachment; filename="cita-studio-renacer.ics"');
     res.send(buildSessionICS(sesion));
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

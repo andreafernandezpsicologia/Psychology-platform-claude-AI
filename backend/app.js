@@ -56,6 +56,7 @@ app.use('/api/auth/2fa', require('./routes/twofa'));
 app.use('/api/pacientes', require('./routes/pacientes'));
 app.use('/api/sesiones', require('./routes/sesiones'));
 app.use('/api/calendarios', require('./routes/calendarios'));
+app.use('/api/config', require('./routes/config'));
 app.use('/api/packs', require('./routes/packs'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/contratos', require('./routes/contratos'));

@@ -4,13 +4,19 @@ import { HORA_INICIO, HORA_FIN, DIAS_LABORALES } from '../../utils/calendarConfi
 import { parseWall } from '../../utils/fechaPared';
 
 const HOUR_PX = 48;
-const H_DESDE = Math.max(0, HORA_INICIO - 1);
-const H_HASTA = Math.min(24, HORA_FIN + 1);
-const HORAS = Array.from({ length: H_HASTA - H_DESDE }, (_, i) => H_DESDE + i);
 
 // Vista semanal con franjas horarias. Las horas fuera del horario de consulta
 // y los días no laborales se atenúan. Clic en franja vacía → crear sesión.
-export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectEvent }) {
+// El horario llega por prop (lo sirve el backend en /api/config/horario); si no,
+// se usan los valores de calendarConfig como fallback.
+export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectEvent, horario }) {
+  const hIni = horario?.HORA_INICIO ?? HORA_INICIO;
+  const hFin = horario?.HORA_FIN ?? HORA_FIN;
+  const dias = horario?.DIAS_LABORALES ?? DIAS_LABORALES;
+  const hDesde = Math.max(0, hIni - 1);
+  const hHasta = Math.min(24, hFin + 1);
+  const horas = Array.from({ length: hHasta - hDesde }, (_, i) => hDesde + i);
+
   const days = eachDayOfInterval({
     start: startOfWeek(date, { locale }),
     end: endOfWeek(date, { locale }),
@@ -60,7 +66,7 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
           style={{ gridTemplateColumns: '44px repeat(7, 1fr)', border: '1px solid var(--border)' }}
         >
           <div>
-            {HORAS.map((h) => (
+            {horas.map((h) => (
               <div key={h} className="text-[10px] text-right pr-1.5 pt-0.5" style={{ height: HOUR_PX, color: 'var(--text)' }}>
                 {String(h).padStart(2, '0')}:00
               </div>
@@ -68,11 +74,11 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
           </div>
 
           {days.map((day) => {
-            const laboral = DIAS_LABORALES.includes(getDay(day));
+            const laboral = dias.includes(getDay(day));
             return (
               <div key={day.toISOString()} className="relative" style={{ borderLeft: '1px solid var(--border)' }}>
-                {HORAS.map((h) => {
-                  const fueraHorario = !laboral || h < HORA_INICIO || h >= HORA_FIN;
+                {horas.map((h) => {
+                  const fueraHorario = !laboral || h < hIni || h >= hFin;
                   return (
                     <div
                       key={h}
@@ -100,7 +106,7 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
                       title={`${format(d, 'HH:mm')} ${nombre}`}
                       className="absolute rounded px-1 py-0.5 text-left text-[11px] leading-tight font-medium overflow-hidden hover:opacity-85 transition"
                       style={{
-                        top: Math.max(0, (ini - H_DESDE) * HOUR_PX),
+                        top: Math.max(0, (ini - hDesde) * HOUR_PX),
                         height: Math.max(20, ((e.duracion_minutos || 50) / 60) * HOUR_PX - 2),
                         left: 2 + offset,
                         right: 2,

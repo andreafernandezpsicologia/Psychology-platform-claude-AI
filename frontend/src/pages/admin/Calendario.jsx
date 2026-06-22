@@ -17,6 +17,7 @@ import EventModal from '../../components/calendar/EventModal';
 import SyncModal from '../../components/calendar/SyncModal';
 import api from '../../utils/api';
 import { parseWall } from '../../utils/fechaPared';
+import { HORA_INICIO, HORA_FIN, DIAS_LABORALES } from '../../utils/calendarConfig';
 
 const localeMap = { es, en: enUS, da };
 const ESTADOS_LEYENDA = ['programada', 'solicitada', 'completada', 'cancelada', 'ocupado'];
@@ -30,6 +31,7 @@ export default function Calendario() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pacientes, setPacientes] = useState([]);
+  const [horario, setHorario] = useState({ HORA_INICIO, HORA_FIN, DIAS_LABORALES });
   const [createAt, setCreateAt] = useState(null);       // Date → SessionModal en modo crear
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [reagendando, setReagendando] = useState(null); // sesión → SessionModal en modo reagendar
@@ -76,6 +78,11 @@ export default function Calendario() {
 
   useEffect(() => {
     api.get('/pacientes').then((res) => setPacientes(res.data)).catch(() => {});
+  }, []);
+
+  // Horario de consulta desde el backend (fuente de verdad); fallback: constantes locales
+  useEffect(() => {
+    api.get('/config/horario').then((res) => setHorario(res.data)).catch(() => {});
   }, []);
 
   const navegar = (dir) => setFecha(vistaActual === 'week' ? addWeeks(fecha, dir) : addMonths(fecha, dir));
@@ -150,6 +157,7 @@ export default function Calendario() {
             date={fecha}
             events={events}
             locale={locale}
+            horario={horario}
             onSelectSlot={(d) => setCreateAt(d)}
             onSelectEvent={seleccionarEvento}
           />

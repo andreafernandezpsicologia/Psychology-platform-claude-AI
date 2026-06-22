@@ -1,6 +1,8 @@
 // Horario de consulta de Andrea (hora de pared, Europe/Madrid).
-// Se usa para validar solicitudes de cita y calcular disponibilidad.
-// ⚠️ Mantener en sync con frontend/src/utils/calendarConfig.js
+// FUENTE DE VERDAD: valida solicitudes de cita, calcula disponibilidad y se
+// expone al frontend en GET /api/config/horario (ver routes/config.js), que lo
+// usa para pintar el calendario. El frontend solo guarda una copia de fallback
+// en calendarConfig.js por si la API no responde. Editar aquí basta.
 const HORA_INICIO = 9;
 const HORA_FIN = 20;
 const DIAS_LABORALES = [1, 2, 3, 4, 5]; // lunes a viernes (0=domingo)

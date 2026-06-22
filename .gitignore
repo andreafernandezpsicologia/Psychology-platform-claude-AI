@@ -4,3 +4,8 @@ dist/
 .vercel/
 *.log
 .DS_Store
+
+# Documentación interna de cumplimiento (RGPD): registro Art. 30 y copias
+# firmadas de los DPA. Contiene PII/firmas y NO debe subirse al repo público.
+cumplimiento/
+DPA/

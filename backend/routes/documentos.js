@@ -46,6 +46,49 @@ router.get('/mis-aceptaciones', verifyToken, async (req, res) => {
   }
 });
 
+// Paciente: ¿debe aceptar el consentimiento vigente antes de entrar?
+// Puerta de consentimiento: el frontend bloquea el acceso del paciente hasta que
+// conste una aceptación del documento de consentimiento vigente, de modo que todo
+// paciente real deje registro de su consentimiento (RGPD Art. 7.1).
+// IMPORTANTE: debe ir antes de /:id para que Express no la capture como id.
+router.get('/consentimiento-requerido', verifyToken, async (req, res) => {
+  try {
+    const { data: docs, error: dErr } = await supabase
+      .from('documentos_legales')
+      .select('id, titulo, contenido, version, tipo')
+      .in('tipo', ['consentimiento_informado', 'rgpd']);
+    if (dErr) return res.status(400).json({ error: dErr.message });
+
+    const doc = (docs || []).find((d) => d.tipo === 'consentimiento_informado')
+      || (docs || []).find((d) => d.tipo === 'rgpd');
+    // Sin documento no se puede registrar aceptación: no bloquear.
+    if (!doc) return res.json({ requerido: false, documento: null });
+
+    // Solo aplica a pacientes; cualquier otro rol pasa sin requisito.
+    const { data: paciente } = await supabase
+      .from('pacientes').select('id').eq('user_id', req.user.id).maybeSingle();
+    if (!paciente) return res.json({ requerido: false, documento: null });
+
+    const { data: aceptacion } = await supabase
+      .from('aceptaciones_documentos')
+      .select('aceptado')
+      .eq('paciente_id', paciente.id)
+      .eq('documento_id', doc.id)
+      .eq('aceptado', true)
+      .maybeSingle();
+
+    const requerido = !aceptacion;
+    res.json({
+      requerido,
+      documento: requerido
+        ? { id: doc.id, titulo: doc.titulo, contenido: doc.contenido, version: doc.version }
+        : null,
+    });
+  } catch (err) {
+    console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Público: contenido completo de un documento
 router.get('/:id', async (req, res) => {
   try {

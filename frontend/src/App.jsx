@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import ConsentGate from './components/auth/ConsentGate';
 import Login from './pages/auth/Login';
 import Activate from './pages/auth/Activate';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -35,7 +36,7 @@ export default function App() {
           } />
 
           <Route path="/paciente" element={
-            <ProtectedRoute role="paciente"><PacienteDashboard /></ProtectedRoute>
+            <ProtectedRoute role="paciente"><ConsentGate><PacienteDashboard /></ConsentGate></ProtectedRoute>
           } />
 
           <Route path="*" element={<Navigate to="/login" replace />} />

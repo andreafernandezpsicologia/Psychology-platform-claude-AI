@@ -62,8 +62,10 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
     return [];
   }
 
-  const bloques = [];
-  for (const cal of calendarios) {
+  // Descarga/parseo de cada calendario EN PARALELO: la latencia es la del más
+  // lento, no la suma. Cada uno captura su error (fail-open) sin afectar a los demás.
+  const porCalendario = await Promise.all(calendarios.map(async (cal) => {
+    const bloquesCal = [];
     try {
       const eventos = await fetchCalendario(cal.url);
 
@@ -106,7 +108,7 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
           // node-ical guarda el mismo override bajo varias claves → se deduplica al final.
           for (const ov of Object.values(recurrences)) {
             if (ov.start && ov.end) {
-              bloques.push({
+              bloquesCal.push({
                 inicio: aParedMadrid(ov.start),
                 fin: aParedMadrid(ov.end),
                 titulo: textoDe(ov.summary, titulo),
@@ -118,7 +120,7 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
         }
 
         for (const ini of inicios) {
-          bloques.push({
+          bloquesCal.push({
             inicio: aParedMadrid(ini),
             fin: aParedMadrid(new Date(ini.getTime() + durMs)),
             titulo,
@@ -138,7 +140,10 @@ async function bloquesOcupados(desdeNaive, hastaNaive) {
         .eq('id', cal.id)
         .then(() => {}, () => {});
     }
-  }
+    return bloquesCal;
+  }));
+
+  const bloques = porCalendario.flat();
 
   // Dedupe: series solapadas y overrides multi-clave producen bloques idénticos.
   // Se colapsan por inicio|fin|titulo.

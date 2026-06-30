@@ -80,19 +80,34 @@ export default async function handler(req, res) {
       throw err;
     }
 
-    // ---------- 2) Confirmación al usuario ----------
-    const userMsg = userEmailTemplates(lang, name);
+    // ---------- 2) Entrega de la guía al usuario (PDF según idioma) ----------
+    const guideBase = process.env.GUIDE_BASE_URL || 'https://www.studiorenacer.com/assets/';
+    const GUIDES = {
+      es: ['guia-ansiedad-laboral-studio-renacer.pdf', 'Guia-5-senales-ansiedad-laboral-Studio-Renacer.pdf'],
+      en: ['guide-work-anxiety-studio-renacer.pdf',     'Guide-5-signs-work-anxiety-Studio-Renacer.pdf'],
+      da: ['guide-arbejdsangst-studio-renacer.pdf',     'Guide-5-tegn-arbejdsangst-Studio-Renacer.pdf']
+    };
+    const [guideFile, guideName] = GUIDES[lang] || GUIDES.es;
+    const guideUrl  = guideBase + guideFile;
+    const userMsg   = userEmailTemplates(lang, name, guideUrl);
+    const baseUserPayload = { from, to: [email], subject: userMsg.subject, html: userMsg.html };
     try {
+      // Adjuntamos la guía (Resend la descarga desde la URL pública) y, además, la enlazamos en el cuerpo.
       await resendSend(apiKey, {
-        from,
-        to: [email],
-        subject: userMsg.subject,
-        html: userMsg.html
+        ...baseUserPayload,
+        attachments: [{ filename: guideName, path: guideUrl }]
       });
-      console.log('[subscribe] ✓ Email de confirmación enviado al usuario');
+      console.log('[subscribe] ✓ Guía enviada al usuario (con adjunto)');
     } catch (err) {
-      console.error('[subscribe] ✗ Error enviando confirmación al usuario:', err.message);
-      throw err;
+      // Si el adjunto falla (p. ej. la URL aún no es accesible), reenviamos solo con el enlace.
+      console.warn('[subscribe] adjunto falló, reintento solo con enlace:', err.message);
+      try {
+        await resendSend(apiKey, baseUserPayload);
+        console.log('[subscribe] ✓ Guía enviada al usuario (solo enlace)');
+      } catch (err2) {
+        console.error('[subscribe] ✗ Error enviando la guía al usuario:', err2.message);
+        throw err2;
+      }
     }
 
     // ---------- 3) Añadir a audiencia (opcional) ----------
@@ -148,30 +163,40 @@ function escapeHtml(s) {
     .replace(/'/g, '&#039;');
 }
 
-function userEmailTemplates(lang, name) {
+function userEmailTemplates(lang, name, guideUrl) {
   const safeName = escapeHtml(name) || (lang === 'da' ? 'der' : lang === 'en' ? 'there' : 'allí');
   const greeting = (lang === 'da' ? 'Hej' : lang === 'en' ? 'Hi' : 'Hola');
+  const href     = escapeHtml(guideUrl || '');
 
   const bodies = {
     es: {
-      subject: 'Gracias por unirte a Studio Renacer 🌿',
-      intro:   '¡Gracias por dejarme tu correo! Quería darte la bienvenida y confirmarte que estás en la lista.',
-      body:    'Te avisaré personalmente en cuanto Studio Renacer abra sus puertas (previsto para verano de 2026). Mientras tanto, cuídate mucho.',
-      sign:    'Con cariño,<br>Andrea Fernández<br><i>Studio Renacer</i>',
+      subject: 'Tu guía: 5 señales de que tu ansiedad es laboral 🌿',
+      intro:   '¡Aquí tienes tu guía! Gracias por dejarme tu correo.',
+      body:    'Te he preparado «5 señales de que tu ansiedad es laboral — y qué hacer». Es psicoeducación para entenderte mejor (no un diagnóstico): léela con calma y quédate con el primer paso que más te encaje.',
+      cta:     'Descargar la guía (PDF)',
+      ps:      'Serás también de las primeras en saberlo cuando Studio Renacer abra sus puertas (verano de 2026). Si te apetece, responde a este correo y me cuentas cómo estás.',
+      linkhint:'Si el botón no funciona, copia este enlace en tu navegador:',
+      sign:    'Con cariño,<br>Andrea Fernández<br><i>Psicóloga colegiada · Studio Renacer</i>',
       footer:  'Si no fuiste tú quien se inscribió, simplemente ignora este correo.'
     },
     en: {
-      subject: 'Welcome to Studio Renacer 🌿',
-      intro:   "Thank you for leaving me your email! I just wanted to welcome you and confirm you're on the list.",
-      body:    "I'll personally let you know as soon as Studio Renacer opens its doors (planned for summer 2026). Take good care in the meantime.",
-      sign:    'Warmly,<br>Andrea Fernández<br><i>Studio Renacer</i>',
+      subject: 'Your guide: 5 signs your anxiety is work-related 🌿',
+      intro:   "Here's your guide! Thank you for leaving me your email.",
+      body:    "I've put together “5 signs your anxiety is work-related — and what to do.” It's psychoeducation to help you understand yourself better (not a diagnosis): read it calmly and keep the first step that fits you best.",
+      cta:     'Download the guide (PDF)',
+      ps:      "You'll also be among the first to know when Studio Renacer opens (summer 2026). If you feel like it, just reply to this email and tell me how you are.",
+      linkhint:"If the button doesn't work, copy this link into your browser:",
+      sign:    'Warmly,<br>Andrea Fernández<br><i>Licensed psychologist · Studio Renacer</i>',
       footer:  "If you didn't sign up, simply ignore this email."
     },
     da: {
-      subject: 'Velkommen til Studio Renacer 🌿',
-      intro:   'Tak fordi du efterlod din e-mail! Jeg vil gerne byde dig velkommen og bekræfte, at du er på listen.',
-      body:    'Jeg giver dig personligt besked, så snart Studio Renacer åbner (planlagt til sommeren 2026). Pas godt på dig selv i mellemtiden.',
-      sign:    'Med venlig hilsen,<br>Andrea Fernández<br><i>Studio Renacer</i>',
+      subject: 'Din guide: 5 tegn på, at din angst er arbejdsrelateret 🌿',
+      intro:   'Her er din guide! Tak fordi du efterlod din e-mail.',
+      body:    'Jeg har lavet »5 tegn på, at din angst er arbejdsrelateret — og hvad du kan gøre«. Det er psykoedukation, der hjælper dig med at forstå dig selv bedre (ikke en diagnose): læs den i ro og behold det første skridt, der passer dig bedst.',
+      cta:     'Download guiden (PDF)',
+      ps:      'Du er også blandt de første til at vide det, når Studio Renacer åbner (sommeren 2026). Har du lyst, så svar bare på denne e-mail og fortæl, hvordan du har det.',
+      linkhint:'Hvis knappen ikke virker, så kopiér dette link ind i din browser:',
+      sign:    'Med venlig hilsen,<br>Andrea Fernández<br><i>Autoriseret psykolog · Studio Renacer</i>',
       footer:  'Hvis du ikke har tilmeldt dig, kan du blot ignorere denne e-mail.'
     }
   };
@@ -186,6 +211,12 @@ function userEmailTemplates(lang, name) {
       <p>${greeting} ${safeName},</p>
       <p>${t.intro}</p>
       <p>${t.body}</p>
+      <div style="text-align:center;margin:28px 0">
+        <a href="${href}" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decoration:none;padding:13px 28px;border-radius:999px;font-weight:600;font-size:15px">${t.cta}</a>
+      </div>
+      <p style="font-size:12px;color:#7e8a9c;margin-bottom:24px">${t.linkhint}<br>
+        <a href="${href}" style="color:#2c5282;word-break:break-all">${href}</a></p>
+      <p>${t.ps}</p>
       <p style="margin-top:24px">${t.sign}</p>
       <hr style="border:none;border-top:1px solid #e6ebf2;margin:24px 0">
       <p style="font-size:12px;color:#7e8a9c">${t.footer}</p>

@@ -16,6 +16,33 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = join(__dirname, 'out');
 mkdirSync(OUT, { recursive: true });
 
+// Fuentes de marca (Cormorant Garamond / Spectral / Jost) POR DEFECTO.
+// Para volver a Georgia/Segoe (sistema, sin dependencias): BRAND_FONTS=0 node build-guides.mjs
+const BRAND_FONTS = process.env.BRAND_FONTS !== '0';
+
+// Bloque que reasigna fuentes y compensa tamaños (Cormorant rinde más pequeña/fina que Georgia).
+const BRAND_CSS = !BRAND_FONTS ? '' : `
+  @font-face{font-family:'Cormorant Garamond';src:url('../fonts/CormorantGaramond.ttf') format('truetype');font-weight:300 700;font-style:normal;}
+  @font-face{font-family:'Cormorant Garamond';src:url('../fonts/CormorantGaramond-Italic.ttf') format('truetype');font-weight:300 700;font-style:italic;}
+  @font-face{font-family:'Spectral';src:url('../fonts/Spectral-Regular.ttf') format('truetype');font-weight:400;font-style:normal;}
+  @font-face{font-family:'Spectral';src:url('../fonts/Spectral-Medium.ttf') format('truetype');font-weight:500;font-style:normal;}
+  @font-face{font-family:'Spectral';src:url('../fonts/Spectral-Italic.ttf') format('truetype');font-weight:400;font-style:italic;}
+  @font-face{font-family:'Jost';src:url('../fonts/Jost.ttf') format('truetype');font-weight:300 700;font-style:normal;}
+  :root{
+    --display:'Cormorant Garamond',Georgia,serif;
+    --body-serif:'Spectral',Georgia,serif;
+    --sans:'Jost','Segoe UI',sans-serif;
+  }
+  body{ font-size:11pt; }
+  h2{ font-size:25pt; font-weight:600; }
+  .cover h1{ font-size:44pt; font-weight:600; }
+  .cover .cov-sub{ font-size:18pt; }
+  .cover .author .name{ font-size:18pt; }
+  .sign-head h3{ font-size:17.5pt; font-weight:600; }
+  .cta-box h3{ font-size:20pt; font-weight:600; }
+  .signature{ font-size:14.5pt; }
+`;
+
 // ---------- Datos de contacto (compartidos en los 3 idiomas) ----------
 const CONTACT = {
   email: 'info@studiorenacer.com',
@@ -230,40 +257,44 @@ const CSS = `
     --line:rgba(91,65,40,.14);
     --cream:#F8F1E3;      /* crema — texto sobre marrón */
     --cream-muted:#C9A671;/* crema apagada sobre marrón */
+    /* Fuentes: por defecto Georgia/Segoe; con BRAND_FONTS=1 se reasignan a Cormorant/Spectral/Jost */
+    --display:Georgia,'Times New Roman',serif;
+    --body-serif:Georgia,'Times New Roman',serif;
+    --sans:'Segoe UI',Helvetica,Arial,sans-serif;
   }
   html,body{ background:#fff; }
-  body{ font-family:Georgia,'Times New Roman',serif; color:var(--body); font-size:10.5pt; line-height:1.5; }
+  body{ font-family:var(--body-serif); color:var(--body); font-size:10.5pt; line-height:1.5; }
   .page{
     position:relative; width:210mm; height:297mm; padding:20mm 22mm 22mm;
     background:var(--paper); overflow:hidden; page-break-after:always;
   }
   .page:last-child{ page-break-after:auto; }
-  .sans{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; }
-  .eyebrow{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:8.5pt; font-weight:700;
+  .sans{ font-family:var(--sans); }
+  .eyebrow{ font-family:var(--sans); font-size:8.5pt; font-weight:700;
     letter-spacing:.22em; color:var(--ocre); text-transform:uppercase; margin-bottom:9pt; }
-  h2{ font-family:Georgia,serif; font-weight:700; font-size:20pt; line-height:1.15; color:var(--ink); margin-bottom:11pt; }
+  h2{ font-family:var(--display); font-weight:700; font-size:20pt; line-height:1.15; color:var(--ink); margin-bottom:11pt; }
   .lead{ font-style:italic; color:#6B4F2E; font-size:11.5pt; margin-bottom:13pt; }
   p{ margin-bottom:9pt; }
   .footer{ position:absolute; left:22mm; right:22mm; bottom:12mm;
-    font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:7.5pt; color:#9A8B73;
+    font-family:var(--sans); font-size:7.5pt; color:#9A8B73;
     display:flex; justify-content:space-between; }
 
   /* ---------- Portada ---------- */
   .cover{ background:var(--brown); color:var(--cream); display:flex; flex-direction:column; padding:24mm 24mm 22mm; }
-  .cover .brandtop{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11pt; font-weight:700;
+  .cover .brandtop{ font-family:var(--sans); font-size:11pt; font-weight:700;
     letter-spacing:.42em; color:var(--oro); }
   .cover .spacer{ flex:0 0 auto; }
   .cover .mid{ margin-top:auto; }
-  .cover .cov-eyebrow{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9.5pt; font-weight:700;
+  .cover .cov-eyebrow{ font-family:var(--sans); font-size:9.5pt; font-weight:700;
     letter-spacing:.24em; color:var(--oro); opacity:.9; }
   .cover .rule{ width:46px; height:3px; background:var(--oro); margin:16pt 0 18pt; }
-  .cover h1{ font-family:Georgia,serif; font-weight:700; font-size:37pt; line-height:1.08; color:var(--cream); letter-spacing:-0.01em; }
+  .cover h1{ font-family:var(--display); font-weight:700; font-size:37pt; line-height:1.08; color:var(--cream); letter-spacing:-0.01em; }
   .cover h1 em{ color:var(--oro); font-style:italic; }
-  .cover .cov-sub{ font-family:Georgia,serif; font-style:italic; font-size:15pt; color:var(--cream-muted); margin-top:14pt; }
+  .cover .cov-sub{ font-family:var(--display); font-style:italic; font-size:15pt; color:var(--cream-muted); margin-top:14pt; }
   .cover .author{ margin-top:auto; }
-  .cover .author .name{ font-family:Georgia,serif; font-size:16pt; color:var(--cream); }
-  .cover .author .role{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9pt; color:var(--cream-muted); margin-top:5pt; }
-  .cover .author .web{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9pt; letter-spacing:.2em;
+  .cover .author .name{ font-family:var(--display); font-size:16pt; color:var(--cream); }
+  .cover .author .role{ font-family:var(--sans); font-size:9pt; color:var(--cream-muted); margin-top:5pt; }
+  .cover .author .web{ font-family:var(--sans); font-size:9pt; letter-spacing:.2em;
     color:var(--oro); margin-top:9pt; }
 
   /* ---------- Señales ---------- */
@@ -271,9 +302,9 @@ const CSS = `
   .sign:first-of-type{ margin-top:6pt; }
   .sign-head{ display:flex; align-items:center; gap:11pt; margin-bottom:8pt; }
   .num{ flex:0 0 auto; width:22pt; height:22pt; border-radius:50%; background:var(--oro); color:var(--brown);
-    font-family:Georgia,serif; font-weight:700; font-size:11pt; display:flex; align-items:center; justify-content:center; }
-  .sign-head h3{ font-family:Georgia,serif; font-weight:700; font-size:14.5pt; color:var(--ink); line-height:1.15; }
-  .lbl{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:8pt; font-weight:700; letter-spacing:.16em;
+    font-family:var(--sans); font-weight:600; font-size:10.5pt; display:flex; align-items:center; justify-content:center; }
+  .sign-head h3{ font-family:var(--display); font-weight:700; font-size:14.5pt; color:var(--ink); line-height:1.15; }
+  .lbl{ font-family:var(--sans); font-size:8pt; font-weight:700; letter-spacing:.16em;
     text-transform:uppercase; color:var(--ocre); margin:9pt 0 4pt; }
   .todo{ background:var(--card); border:1px solid var(--line); border-left:4px solid var(--oro);
     border-radius:9px; padding:11pt 14pt 4pt; margin-top:11pt; }
@@ -286,18 +317,18 @@ const CSS = `
   .card .lbl.red{ color:var(--red); }
   .card .lbl.green{ color:var(--green); }
   .cta-box{ background:var(--brown); color:var(--cream); border-radius:12px; padding:17pt 20pt; margin-top:4pt; }
-  .cta-box h3{ font-family:Georgia,serif; font-weight:700; font-size:16pt; color:var(--cream); margin-bottom:8pt; }
+  .cta-box h3{ font-family:var(--display); font-weight:700; font-size:16pt; color:var(--cream); margin-bottom:8pt; }
   .cta-box .cta-line{ color:var(--cream); margin-bottom:8pt; }
-  .cta-box .cta-channels{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9.5pt; line-height:1.9;
+  .cta-box .cta-channels{ font-family:var(--sans); font-size:9.5pt; line-height:1.9;
     color:var(--cream); margin-bottom:0; }
   .cta-box a{ color:var(--oro); font-weight:700; text-decoration:none; }
   .cta-box .sep{ color:#7d6a4e; margin:0 3pt; }
-  .signature{ font-family:Georgia,serif; font-style:italic; font-size:12pt; color:#6B4F2E; margin:16pt 0 0; }
-  .disclaimer{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:7.5pt; line-height:1.55;
+  .signature{ font-family:var(--display); font-style:italic; font-size:12pt; color:#6B4F2E; margin:16pt 0 0; }
+  .disclaimer{ font-family:var(--sans); font-size:7.5pt; line-height:1.55;
     color:#8A7C64; margin-top:14pt; }
 `;
 
-function signHtml(s, n, labels) {
+function signHtml(s, n, labels, withDivider = true) {
   return `
     <section class="sign">
       <div class="sign-head"><span class="num">${n}</span><h3>${s.t}</h3></div>
@@ -306,8 +337,7 @@ function signHtml(s, n, labels) {
       <div class="lbl">${labels.why}</div>
       <p>${s.why}</p>
       <div class="todo"><div class="lbl">${labels.todo}</div><p>${s.todo}</p></div>
-    </section>
-    <hr class="divider">`;
+    </section>${withDivider ? '\n    <hr class="divider">' : ''}`;
 }
 
 function render(d) {
@@ -317,7 +347,7 @@ function render(d) {
   const footer = (n) => `<div class="footer"><span>${d.footerLeft}</span><span>${CONTACT.web} ·${n}</span></div>`;
 
   return `<!doctype html><html lang="${d.lang}"><head><meta charset="utf-8">
-<title>${d.file}</title><style>${CSS}</style></head><body>
+<title>${d.file}</title><style>${CSS}${BRAND_CSS}</style></head><body>
 
 <div class="page cover">
   <div class="brandtop">${d.brandTop}</div>
@@ -339,19 +369,19 @@ function render(d) {
   <h2>${b.title}</h2>
   <p class="lead">${b.lead}</p>
   ${b.paras.map(p => `<p>${p}</p>`).join('')}
-  ${signHtml(d.signs[0], 1, L)}
-  ${signHtml(d.signs[1], 2, L)}
+  ${signHtml(d.signs[0], 1, L, true)}
+  ${signHtml(d.signs[1], 2, L, false)}
   ${footer(2)}
 </div>
 
 <div class="page">
-  ${signHtml(d.signs[2], 3, L)}
-  ${signHtml(d.signs[3], 4, L)}
+  ${signHtml(d.signs[2], 3, L, true)}
+  ${signHtml(d.signs[3], 4, L, false)}
   ${footer(3)}
 </div>
 
 <div class="page">
-  ${signHtml(d.signs[4], 5, L)}
+  ${signHtml(d.signs[4], 5, L, false)}
   ${footer(4)}
 </div>
 

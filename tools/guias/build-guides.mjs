@@ -47,7 +47,7 @@ const DATA = {
     titleHtml: '5 señales de que tu ansiedad <em>es laboral</em>',
     coverSubtitle: '(y qué hacer con cada una)',
     author: 'Andrea Fernández',
-    authorLine: 'Psicóloga colegiada · Studio Renacer · @andreapsicologaonline',
+    authorLine: 'Studio Renacer',
     footerLeft: 'Studio Renacer ·Andrea Fernández ·psicóloga col. 27327',
     labels: { sign: 'LA SEÑAL', why: 'POR QUÉ PASA', todo: 'QUÉ HACER HOY' },
     before: {
@@ -91,7 +91,7 @@ const DATA = {
       yesText: 'Ir a la raíz, a tu ritmo, con un acompañamiento de verdad. Sin prisa y sin renunciar a tu carrera.',
       ctaHeading: '¿Quieres dar el primer paso?',
       ctaLine: 'Escríbeme y empezamos, sin compromiso.',
-      signature: '— Andrea Fernández · Psicóloga colegiada · Studio Renacer',
+      signature: '— Andrea Fernández · Studio Renacer',
       disclaimer: 'Esta guía es información educativa; no es una consulta ni un diagnóstico. Si lo estás pasando mal, hablar con un profesional ayuda. Si estás en una crisis, en España puedes llamar al 024 (conducta suicida) o al 112. · © 2026 Studio Renacer · Andrea Fernández, psicóloga colegiada n.º 27327.'
     }
   },
@@ -104,7 +104,7 @@ const DATA = {
     titleHtml: '5 signs your anxiety <em>is work-related</em>',
     coverSubtitle: '(and what to do about each one)',
     author: 'Andrea Fernández',
-    authorLine: 'Licensed psychologist · Studio Renacer · @andreapsicologaonline',
+    authorLine: 'Studio Renacer',
     footerLeft: 'Studio Renacer ·Andrea Fernández ·licensed psychologist (reg. 27327)',
     labels: { sign: 'THE SIGN', why: 'WHY IT HAPPENS', todo: 'WHAT TO DO TODAY' },
     before: {
@@ -148,7 +148,7 @@ const DATA = {
       yesText: 'Going to the root, at your pace, with real support. No rush and without giving up your career.',
       ctaHeading: 'Want to take the first step?',
       ctaLine: 'Message me and we’ll begin — no commitment.',
-      signature: '— Andrea Fernández · Licensed psychologist · Studio Renacer',
+      signature: '— Andrea Fernández · Studio Renacer',
       disclaimer: 'This guide is educational information; it is not a consultation or a diagnosis. If you’re going through a hard time, talking to a professional helps. If you’re in a crisis, call your local emergency number (112 in the EU) or a helpline (024 in Spain; Livslinien 70 201 201 in Denmark). · © 2026 Studio Renacer · Andrea Fernández, licensed psychologist reg. no. 27327.'
     }
   },
@@ -161,7 +161,7 @@ const DATA = {
     titleHtml: '5 tegn på, at din angst <em>er arbejdsrelateret</em>',
     coverSubtitle: '(og hvad du kan gøre ved hver enkelt)',
     author: 'Andrea Fernández',
-    authorLine: 'Autoriseret psykolog · Studio Renacer · @andreapsicologaonline',
+    authorLine: 'Studio Renacer',
     footerLeft: 'Studio Renacer ·Andrea Fernández ·autoriseret psykolog (reg. 27327)',
     labels: { sign: 'TEGNET', why: 'HVORFOR DET SKER', todo: 'HVAD DU KAN GØRE I DAG' },
     before: {
@@ -205,7 +205,7 @@ const DATA = {
       yesText: 'At gå til roden, i dit eget tempo, med ægte støtte. Uden hastværk og uden at opgive din karriere.',
       ctaHeading: 'Vil du tage det første skridt?',
       ctaLine: 'Skriv til mig, så går vi i gang — helt uforpligtende.',
-      signature: '— Andrea Fernández · Autoriseret psykolog · Studio Renacer',
+      signature: '— Andrea Fernández · Studio Renacer',
       disclaimer: 'Denne guide er uddannelsesmæssig information; den er ikke en konsultation eller en diagnose. Hvis du har det svært, hjælper det at tale med en fagperson. Hvis du er i krise, kan du i Danmark ringe til Livslinien på 70 201 201 eller til 112. · © 2026 Studio Renacer · Andrea Fernández, autoriseret psykolog reg.nr. 27327.'
     }
   }
@@ -216,10 +216,20 @@ const CSS = `
   @page { size:210mm 297mm; margin:0; }
   * { margin:0; padding:0; box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   :root{
-    --paper:#f7f0df; --ink:#43301c; --brown:#4a3826; --body:#4b4235;
-    --muted:#8f8371; --gold:#c1852a; --green:#5f7a4f; --red:#a1512d;
-    --card:#fffdf8; --line:#e7dcc4;
-    --cream:#efe6d3; --cream-muted:#c7b89c; --gold-bright:#dda548;
+    /* Paleta oficial de marca Studio Renacer (Kit_de_Marca_StudioRenacer.html) */
+    --paper:#F8F1E3;      /* crema — fondo principal */
+    --ink:#5B4128;        /* marrón — titulares y tinta */
+    --brown:#5B4128;      /* marrón — fondos con profundidad (portada, caja CTA) */
+    --body:#5B4128;       /* marrón — cuerpo de texto */
+    --muted:#7A6A53;      /* gris cálido — pies y notas */
+    --oro:#E3A52A;        /* oro firma — filetes, círculos, enlaces, acentos */
+    --ocre:#B07A2B;       /* ocre — etiquetas/eyebrows (dorado legible sobre crema) */
+    --green:#3B6D2A;      /* verde — "lo que sí" */
+    --red:#A33B2D;        /* terracota — "lo que no" */
+    --card:#FFFFFF;       /* blanco — tarjetas */
+    --line:rgba(91,65,40,.14);
+    --cream:#F8F1E3;      /* crema — texto sobre marrón */
+    --cream-muted:#C9A671;/* crema apagada sobre marrón */
   }
   html,body{ background:#fff; }
   body{ font-family:Georgia,'Times New Roman',serif; color:var(--body); font-size:10.5pt; line-height:1.5; }
@@ -230,61 +240,61 @@ const CSS = `
   .page:last-child{ page-break-after:auto; }
   .sans{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; }
   .eyebrow{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:8.5pt; font-weight:700;
-    letter-spacing:.22em; color:var(--gold); text-transform:uppercase; margin-bottom:9pt; }
+    letter-spacing:.22em; color:var(--ocre); text-transform:uppercase; margin-bottom:9pt; }
   h2{ font-family:Georgia,serif; font-weight:700; font-size:20pt; line-height:1.15; color:var(--ink); margin-bottom:11pt; }
-  .lead{ font-style:italic; color:#6f6250; font-size:11.5pt; margin-bottom:13pt; }
+  .lead{ font-style:italic; color:#6B4F2E; font-size:11.5pt; margin-bottom:13pt; }
   p{ margin-bottom:9pt; }
   .footer{ position:absolute; left:22mm; right:22mm; bottom:12mm;
-    font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:7.5pt; color:#a89a83;
+    font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:7.5pt; color:#9A8B73;
     display:flex; justify-content:space-between; }
 
   /* ---------- Portada ---------- */
   .cover{ background:var(--brown); color:var(--cream); display:flex; flex-direction:column; padding:24mm 24mm 22mm; }
   .cover .brandtop{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:11pt; font-weight:700;
-    letter-spacing:.42em; color:var(--gold-bright); }
+    letter-spacing:.42em; color:var(--oro); }
   .cover .spacer{ flex:0 0 auto; }
   .cover .mid{ margin-top:auto; }
   .cover .cov-eyebrow{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9.5pt; font-weight:700;
-    letter-spacing:.24em; color:var(--gold-bright); opacity:.9; }
-  .cover .rule{ width:46px; height:3px; background:var(--gold-bright); margin:16pt 0 18pt; }
-  .cover h1{ font-family:Georgia,serif; font-weight:700; font-size:37pt; line-height:1.08; color:#f4eee0; letter-spacing:-0.01em; }
-  .cover h1 em{ color:var(--gold-bright); font-style:italic; }
+    letter-spacing:.24em; color:var(--oro); opacity:.9; }
+  .cover .rule{ width:46px; height:3px; background:var(--oro); margin:16pt 0 18pt; }
+  .cover h1{ font-family:Georgia,serif; font-weight:700; font-size:37pt; line-height:1.08; color:var(--cream); letter-spacing:-0.01em; }
+  .cover h1 em{ color:var(--oro); font-style:italic; }
   .cover .cov-sub{ font-family:Georgia,serif; font-style:italic; font-size:15pt; color:var(--cream-muted); margin-top:14pt; }
   .cover .author{ margin-top:auto; }
-  .cover .author .name{ font-family:Georgia,serif; font-size:16pt; color:#efe6d3; }
-  .cover .author .role{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9pt; color:#a99a80; margin-top:5pt; }
+  .cover .author .name{ font-family:Georgia,serif; font-size:16pt; color:var(--cream); }
+  .cover .author .role{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9pt; color:var(--cream-muted); margin-top:5pt; }
   .cover .author .web{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9pt; letter-spacing:.2em;
-    color:var(--gold-bright); margin-top:9pt; }
+    color:var(--oro); margin-top:9pt; }
 
   /* ---------- Señales ---------- */
   .sign{ margin-top:15pt; }
   .sign:first-of-type{ margin-top:6pt; }
   .sign-head{ display:flex; align-items:center; gap:11pt; margin-bottom:8pt; }
-  .num{ flex:0 0 auto; width:22pt; height:22pt; border-radius:50%; background:var(--gold); color:#fff;
+  .num{ flex:0 0 auto; width:22pt; height:22pt; border-radius:50%; background:var(--oro); color:var(--brown);
     font-family:Georgia,serif; font-weight:700; font-size:11pt; display:flex; align-items:center; justify-content:center; }
   .sign-head h3{ font-family:Georgia,serif; font-weight:700; font-size:14.5pt; color:var(--ink); line-height:1.15; }
   .lbl{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:8pt; font-weight:700; letter-spacing:.16em;
-    text-transform:uppercase; color:var(--gold); margin:9pt 0 4pt; }
-  .todo{ background:var(--card); border:1px solid var(--line); border-left:4px solid var(--gold);
+    text-transform:uppercase; color:var(--ocre); margin:9pt 0 4pt; }
+  .todo{ background:var(--card); border:1px solid var(--line); border-left:4px solid var(--oro);
     border-radius:9px; padding:11pt 14pt 4pt; margin-top:11pt; }
   .todo .lbl{ margin-top:0; }
   .divider{ border:none; border-top:1px solid var(--line); margin:15pt 0 0; }
 
   /* ---------- Página final ---------- */
   .two-cards{ display:flex; gap:14pt; margin:6pt 0 16pt; }
-  .two-cards .card{ flex:1; background:#fffdf8; border:1px solid var(--line); border-radius:10px; padding:13pt 15pt 6pt; }
+  .two-cards .card{ flex:1; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:13pt 15pt 6pt; }
   .card .lbl.red{ color:var(--red); }
   .card .lbl.green{ color:var(--green); }
   .cta-box{ background:var(--brown); color:var(--cream); border-radius:12px; padding:17pt 20pt; margin-top:4pt; }
-  .cta-box h3{ font-family:Georgia,serif; font-weight:700; font-size:16pt; color:#f4eee0; margin-bottom:8pt; }
+  .cta-box h3{ font-family:Georgia,serif; font-weight:700; font-size:16pt; color:var(--cream); margin-bottom:8pt; }
   .cta-box .cta-line{ color:var(--cream); margin-bottom:8pt; }
   .cta-box .cta-channels{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:9.5pt; line-height:1.9;
     color:var(--cream); margin-bottom:0; }
-  .cta-box a{ color:var(--gold-bright); font-weight:700; text-decoration:none; }
+  .cta-box a{ color:var(--oro); font-weight:700; text-decoration:none; }
   .cta-box .sep{ color:#7d6a4e; margin:0 3pt; }
-  .signature{ font-family:Georgia,serif; font-style:italic; font-size:12pt; color:#6f6250; margin:16pt 0 0; }
+  .signature{ font-family:Georgia,serif; font-style:italic; font-size:12pt; color:#6B4F2E; margin:16pt 0 0; }
   .disclaimer{ font-family:'Segoe UI',Helvetica,Arial,sans-serif; font-size:7.5pt; line-height:1.55;
-    color:#9b8d76; margin-top:14pt; }
+    color:#8A7C64; margin-top:14pt; }
 `;
 
 function signHtml(s, n, labels) {

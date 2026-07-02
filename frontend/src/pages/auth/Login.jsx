@@ -77,9 +77,9 @@ export default function Login() {
               onClick={() => i18n.changeLanguage(code2)}
               className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
               style={{
-                backgroundColor: active ? 'var(--navy)' : 'white',
-                color: active ? 'white' : 'var(--navy)',
-                border: '1px solid var(--navy)',
+                backgroundColor: active ? 'var(--brand)' : 'white',
+                color: active ? 'white' : 'var(--brand)',
+                border: '1px solid var(--brand)',
               }}
             >
               {lang}
@@ -91,10 +91,8 @@ export default function Login() {
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm" style={{ border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,45,74,0.08)' }}>
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4" style={{ backgroundColor: 'var(--navy)' }}>
-            R
-          </div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <img src="/logo-studio-renacer.svg" alt="Studio Renacer" className="h-14 w-auto mx-auto mb-4" />
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             {step === 1 ? t('login.title') : 'Verificación en dos pasos'}
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>
@@ -106,7 +104,7 @@ export default function Login() {
         {step === 1 && (
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                 {t('login.email')}
               </label>
               <input
@@ -115,14 +113,14 @@ export default function Login() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
-                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--brand)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
                 placeholder="tu@email.com"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                 {t('login.password')}
               </label>
               <input
@@ -131,8 +129,8 @@ export default function Login() {
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
-                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--brand)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
                 placeholder="••••••••"
               />
@@ -144,7 +142,7 @@ export default function Login() {
               type="submit"
               disabled={loading}
               className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--navy)' }}
+              style={{ backgroundColor: 'var(--brand)' }}
             >
               {loading ? t('login.loading') : t('login.submit')}
             </button>
@@ -166,7 +164,7 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                 Código de verificación
               </label>
               <input
@@ -178,8 +176,8 @@ export default function Login() {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                 className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition text-center tracking-widest text-lg font-mono"
-                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
-                onFocus={e => e.target.style.borderColor = 'var(--navy)'}
+                style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
+                onFocus={e => e.target.style.borderColor = 'var(--brand)'}
                 onBlur={e => e.target.style.borderColor = 'var(--border)'}
                 placeholder="000000"
                 autoFocus
@@ -195,7 +193,7 @@ export default function Login() {
               type="submit"
               disabled={loading || code.length !== 6}
               className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--navy)' }}
+              style={{ backgroundColor: 'var(--brand)' }}
             >
               {loading ? 'Verificando...' : 'Verificar'}
             </button>

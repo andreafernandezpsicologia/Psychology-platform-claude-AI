@@ -49,12 +49,12 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
       >
         <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl" style={{ border: '1px solid var(--border)' }}>
           <div className="flex items-start justify-between gap-3 mb-1">
-            <h3 className="font-bold text-base" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+            <h3 className="font-bold text-base" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
               {nombre}
             </h3>
             <Badge estado={event.estado} label={t(statusKey)} />
           </div>
-          <p className="text-sm font-semibold capitalize" style={{ color: 'var(--navy)' }}>
+          <p className="text-sm font-semibold capitalize" style={{ color: 'var(--brand)' }}>
             {format(parseWall(event.fecha_hora), 'EEEE d MMMM · HH:mm', { locale })}
           </p>
           <p className="text-xs mt-0.5 mb-4" style={{ color: 'var(--text)' }}>
@@ -64,19 +64,19 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
           {event.estado === 'programada' && (
             <div className="flex flex-wrap gap-2">
               <button disabled={saving} onClick={() => cambiarEstado('completada')}
-                className={accion} style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                className={accion} style={{ backgroundColor: '#E9F0E1', color: '#3B6D2A' }}>
                 ✓ {t('patientDetail.confirmAttendance')}
               </button>
               <button disabled={saving} onClick={() => setConfirmando('cancelada_con_cargo')}
-                className={accion} style={{ backgroundColor: '#fce4ec', color: '#c62828' }}>
+                className={accion} style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
                 ✕ {t('patientDetail.cancelLate')}
               </button>
               <button disabled={saving} onClick={() => setConfirmando('cancelada')}
-                className={accion} style={{ backgroundColor: '#f5f5f5', color: '#757575' }}>
+                className={accion} style={{ backgroundColor: '#F1EBDE', color: '#7A6A53' }}>
                 ✕ {t('calendar.cancelSession')}
               </button>
               <button disabled={saving} onClick={() => onReschedule(event)}
-                className={accion} style={{ backgroundColor: '#fff8e1', color: '#f57f17' }}>
+                className={accion} style={{ backgroundColor: '#F8EFD2', color: '#B07A2B' }}>
                 ↻ {t('calendar.reschedule')}
               </button>
             </div>
@@ -84,16 +84,16 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
 
           {event.estado === 'solicitada' && (
             <div>
-              <p className="text-xs mb-2 px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: '#ede7f6', color: '#5e35b1' }}>
+              <p className="text-xs mb-2 px-2.5 py-1.5 rounded-lg" style={{ backgroundColor: '#ECE6F0', color: '#6A4E8F' }}>
                 {t('calendar.requestedHint')}
               </p>
               <div className="flex flex-wrap gap-2">
                 <button disabled={saving} onClick={() => cambiarEstado('programada')}
-                  className={accion} style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                  className={accion} style={{ backgroundColor: '#E9F0E1', color: '#3B6D2A' }}>
                   ✓ {t('calendar.confirmAppointment')}
                 </button>
                 <button disabled={saving} onClick={() => setConfirmando('rechazar')}
-                  className={accion} style={{ backgroundColor: '#fce4ec', color: '#c62828' }}>
+                  className={accion} style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
                   ✕ {t('calendar.reject')}
                 </button>
               </div>

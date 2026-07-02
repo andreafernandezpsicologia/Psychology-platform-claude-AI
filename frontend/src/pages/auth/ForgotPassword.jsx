@@ -26,10 +26,8 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: 'var(--bg)' }}>
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm" style={{ border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,45,74,0.08)' }}>
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4" style={{ backgroundColor: 'var(--navy)' }}>
-            R
-          </div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <img src="/logo-studio-renacer.svg" alt="Studio Renacer" className="h-14 w-auto mx-auto mb-4" />
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             Recuperar acceso
           </h1>
           <p className="text-sm mt-1" style={{ color: 'var(--text)' }}>
@@ -39,7 +37,7 @@ export default function ForgotPassword() {
 
         {sent ? (
           <div className="text-center space-y-4">
-            <p className="text-sm" style={{ color: 'var(--navy)' }}>
+            <p className="text-sm" style={{ color: 'var(--brand)' }}>
               Si el email está registrado, recibirás un enlace en los próximos minutos. Revisa también tu carpeta de spam.
             </p>
             <Link to="/login" className="block text-sm underline mt-4" style={{ color: 'var(--text)' }}>
@@ -49,14 +47,14 @@ export default function ForgotPassword() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>Email</label>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>Email</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-lg px-3 py-2.5 text-sm outline-none transition"
-                style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
                 placeholder="tu@email.com"
                 autoFocus
               />
@@ -68,7 +66,7 @@ export default function ForgotPassword() {
               type="submit"
               disabled={loading}
               className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-              style={{ backgroundColor: 'var(--navy)' }}
+              style={{ backgroundColor: 'var(--brand)' }}
             >
               {loading ? 'Enviando...' : 'Enviar enlace'}
             </button>

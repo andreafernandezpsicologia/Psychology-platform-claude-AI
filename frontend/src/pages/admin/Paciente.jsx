@@ -15,15 +15,15 @@ import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 const localeMap = { es, en: enUS, da };
 
 const actionStyle = {
-  completada:          { bg: '#e8f5e9', color: '#2e7d32' },
-  cancelada_con_cargo: { bg: '#fce4ec', color: '#c62828' },
-  reagendar:           { bg: '#fff8e1', color: '#f57f17' },
+  completada:          { bg: '#E9F0E1', color: '#3B6D2A' },
+  cancelada_con_cargo: { bg: '#F6E3DD', color: '#A33B2D' },
+  reagendar:           { bg: '#F8EFD2', color: '#B07A2B' },
 };
 
 const pagoStyles = {
-  pagado:       { bg: '#e8f5e9', color: '#2e7d32' },
-  pago_parcial: { bg: '#fff8e1', color: '#f57f17' },
-  no_pagado:    { bg: '#fce4ec', color: '#c62828' },
+  pagado:       { bg: '#E9F0E1', color: '#3B6D2A' },
+  pago_parcial: { bg: '#F8EFD2', color: '#B07A2B' },
+  no_pagado:    { bg: '#F6E3DD', color: '#A33B2D' },
 };
 
 function escapeHtml(str) {
@@ -40,8 +40,8 @@ function abrirVentanaImpresion(titulo, contenido, metadatos = '') {
     <meta charset="utf-8">
     <title>${escapeHtml(titulo)}</title>
     <style>
-      body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #1a2d4a; line-height: 1.6; }
-      h1 { font-size: 1.3rem; border-bottom: 2px solid #1a2d4a; padding-bottom: 8px; margin-bottom: 4px; }
+      body { font-family: Georgia, serif; max-width: 700px; margin: 40px auto; padding: 0 20px; color: #5B4128; line-height: 1.6; }
+      h1 { font-size: 1.3rem; border-bottom: 2px solid #5B4128; padding-bottom: 8px; margin-bottom: 4px; }
       .meta { font-size: 0.85rem; color: #666; margin-bottom: 24px; }
       pre { white-space: pre-wrap; font-family: Georgia, serif; font-size: 0.9rem; }
       @media print { button { display: none; } }
@@ -51,7 +51,7 @@ function abrirVentanaImpresion(titulo, contenido, metadatos = '') {
     <p class="meta">${escapeHtml(metadatos)}</p>
     <pre>${escapeHtml(contenido)}</pre>
     <br><br>
-    <button onclick="window.print()" style="padding:8px 16px;background:#1a2d4a;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">
+    <button onclick="window.print()" style="padding:8px 16px;background:#5B4128;color:white;border:none;border-radius:6px;cursor:pointer;font-size:14px">
       🖨 Imprimir / Guardar como PDF
     </button>
   </body></html>`);
@@ -301,7 +301,7 @@ export default function PacienteDetalle() {
           </div>
         </div>
         {(info?.estado === 'inactivo' || info?.estado === 'archivado') && (
-          <div className="mt-3 text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#f5f5f5', color: '#757575' }}>
+          <div className="mt-3 text-xs rounded-lg px-3 py-2" style={{ backgroundColor: '#F1EBDE', color: '#7A6A53' }}>
             ⚠ {t('patientDetail.inactiveWarning')}
           </div>
         )}
@@ -310,7 +310,7 @@ export default function PacienteDetalle() {
       {/* ── Packs ── */}
       <div className="bg-white rounded-xl p-5 mb-4" style={{ border: '1px solid var(--border)' }}>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-semibold text-sm" style={{ color: 'var(--navy)' }}>{t('patientDetail.packs')}</h3>
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--brand)' }}>{t('patientDetail.packs')}</h3>
           <Button variant="ghost" size="sm" onClick={() => setShowPack(!showPack)}>
             {t('patientDetail.newPack')}
           </Button>
@@ -341,7 +341,7 @@ export default function PacienteDetalle() {
             <div key={pk.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
               {/* Fila principal: info + estado pack + eliminar */}
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium" style={{ color: 'var(--navy)' }}>
+                <span className="text-sm font-medium" style={{ color: 'var(--brand)' }}>
                   {pk.num_sesiones_usadas}/{pk.num_sesiones_total} {t('patientDetail.sessions')}
                 </span>
                 <div className="flex items-center gap-2">
@@ -380,9 +380,9 @@ export default function PacienteDetalle() {
                 </span>
                 <span className="text-xs px-2 py-0.5 rounded-full"
                   style={contratoEstado === 'completado'
-                    ? { backgroundColor: '#e8f5e9', color: '#2e7d32' }
+                    ? { backgroundColor: '#E9F0E1', color: '#3B6D2A' }
                     : contratoEstado === 'firmado_paciente'
-                    ? { backgroundColor: '#fff8e1', color: '#f57f17' }
+                    ? { backgroundColor: '#F8EFD2', color: '#B07A2B' }
                     : { backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
                   {contratoLabel}
                 </span>
@@ -418,7 +418,7 @@ export default function PacienteDetalle() {
             {['upcoming', 'past'].map((t_) => (
               <button key={t_} onClick={() => setTab(t_)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-md transition"
-                style={tab === t_ ? { backgroundColor: 'var(--navy)', color: 'white' } : { color: 'var(--text)' }}>
+                style={tab === t_ ? { backgroundColor: 'var(--brand)', color: 'white' } : { color: 'var(--text)' }}>
                 {t(`patientDetail.${t_ === 'upcoming' ? 'upcoming' : 'past'}`)}
                 {t_ === 'upcoming' && proximas.length > 0 && (
                   <span className="ml-1.5 text-xs rounded-full px-1.5"
@@ -459,7 +459,7 @@ export default function PacienteDetalle() {
             <div key={s.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--brand)' }}>
                     {format(parseWall(s.fecha_hora), "d MMM yyyy · HH:mm", { locale })}
                   </p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text)' }}>

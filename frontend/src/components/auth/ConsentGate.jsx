@@ -65,9 +65,8 @@ export default function ConsentGate({ children }) {
         style={{ border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(26,45,74,0.08)', maxWidth: '640px' }}>
 
         <div className="text-center pt-8 px-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4"
-            style={{ backgroundColor: 'var(--navy)' }}>R</div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <img src="/logo-studio-renacer.svg" alt="Studio Renacer" className="h-14 w-auto mx-auto mb-4" />
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             {t('activate.rgpdTitle')}
           </h1>
         </div>
@@ -83,8 +82,8 @@ export default function ConsentGate({ children }) {
           <label className="flex items-start gap-3 cursor-pointer mb-5">
             <input type="checkbox" checked={aceptado}
               onChange={(e) => { setAceptado(e.target.checked); setError(''); }}
-              className="mt-0.5 w-4 h-4 rounded accent-[var(--navy)] shrink-0" />
-            <span className="text-sm font-medium leading-snug" style={{ color: 'var(--navy)' }}>
+              className="mt-0.5 w-4 h-4 rounded accent-[var(--brand)] shrink-0" />
+            <span className="text-sm font-medium leading-snug" style={{ color: 'var(--brand)' }}>
               {t('activate.rgpdCheckbox')}
             </span>
           </label>

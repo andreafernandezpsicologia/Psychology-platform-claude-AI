@@ -3,36 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="theme-color" content="#5B4128" />
   <title>Studio Renacer — Terapia online para la ansiedad del trabajo | Andrea Fernández</title>
   <meta name="description" content="Psicóloga colegiada. Ayudo a profesionales exigentes a salir de la ansiedad y el estrés del trabajo, sin renunciar a su carrera. Terapia online ES·EN·DA. Próximamente — únete y llévate la guía gratis." />
   <meta property="og:title" content="Studio Renacer — Terapia online para la ansiedad del trabajo" />
   <meta property="og:description" content="Sal de la ansiedad del trabajo, sin renunciar a tu carrera. Terapia online ES·EN·DA. Próximamente." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://studiorenacer.com" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231e3a5f'/%3E%3Ctext x='50' y='65' font-family='serif' font-size='50' fill='white' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet" />
 
   <style>
     /* ---------- Reset & base ---------- */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --c-bg: #fafbfc;
-      --c-surface: #ffffff;
-      --c-ink: #0f1f33;
-      --c-ink-soft: #4a5b73;
-      --c-muted: #7e8a9c;
-      --c-line: #e6ebf2;
-      --c-brand: #1e3a5f;
-      --c-brand-2: #2c5282;
-      --c-accent: #c9a96e;
-      --c-soft: #eef3f9;
-      --c-success: #2f7a52;
-      --shadow-sm: 0 1px 3px rgba(15, 31, 51, 0.05), 0 1px 2px rgba(15, 31, 51, 0.04);
-      --shadow-md: 0 10px 25px -10px rgba(15, 31, 51, 0.15), 0 4px 10px -4px rgba(15, 31, 51, 0.08);
-      --shadow-lg: 0 25px 50px -12px rgba(15, 31, 51, 0.15);
+      /* Kit de Marca Studio Renacer */
+      --c-bg: #F8F1E3;         /* crema — fondo principal */
+      --c-surface: #ffffff;    /* blanco — aire y limpieza */
+      --c-ink: #5B4128;        /* marrón — texto principal */
+      --c-ink-soft: #6B4F2E;   /* marrón claro — cuerpo */
+      --c-muted: #7A6A53;      /* gris cálido — notas y pies */
+      --c-line: #E7DCC6;       /* línea cálida sobre crema */
+      --c-brand: #5B4128;      /* marrón — botones y marca */
+      --c-brand-2: #6B4F2E;    /* marrón claro — hover */
+      --c-accent: #E3A52A;     /* oro firma — acentos y detalles */
+      --c-ocre: #B07A2B;       /* ocre — etiquetas legibles sobre crema */
+      --c-link: #2C3E54;       /* azul profundo — enlaces */
+      --c-soft: #F3E7CF;       /* crema profunda — chips y fondos suaves */
+      --c-success: #3B6D2A;    /* verde marca */
+      --c-error: #A33B2D;      /* terracota marca */
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Spectral', Georgia, serif;
+      --font-sans: 'Jost', 'Segoe UI', sans-serif;
+      --shadow-sm: 0 1px 3px rgba(91, 65, 40, 0.06), 0 1px 2px rgba(91, 65, 40, 0.05);
+      --shadow-md: 0 10px 25px -10px rgba(91, 65, 40, 0.18), 0 4px 10px -4px rgba(91, 65, 40, 0.10);
+      --shadow-lg: 0 25px 50px -12px rgba(91, 65, 40, 0.20);
       --radius: 14px;
       --radius-sm: 8px;
       --container: 1140px;
@@ -40,47 +47,61 @@
     }
     html { scroll-behavior: smooth; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: var(--font-body);
       color: var(--c-ink);
       background: var(--c-bg);
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
-    h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; line-height: 1.2; letter-spacing: -0.01em; }
-    h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); }
-    h2 { font-size: clamp(1.7rem, 3.5vw, 2.4rem); margin-bottom: 1rem; }
-    h3 { font-size: 1.2rem; font-weight: 600; font-family: 'Inter', sans-serif; }
+    h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; letter-spacing: -0.005em; }
+    h1 { font-size: clamp(2.5rem, 5.5vw, 4rem); }
+    h2 { font-size: clamp(1.9rem, 3.8vw, 2.7rem); margin-bottom: 1rem; }
+    h3 { font-size: 1.15rem; font-weight: 600; font-family: var(--font-body); line-height: 1.3; }
     p  { color: var(--c-ink-soft); }
-    a  { color: var(--c-brand-2); text-decoration: none; transition: color var(--transition); }
-    a:hover { color: var(--c-brand); }
+    a  { color: var(--c-link); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--c-ocre); }
 
     .container { max-width: var(--container); margin: 0 auto; padding: 0 1.5rem; }
 
     /* ---------- Header ---------- */
     .site-header {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(250, 251, 252, 0.85);
+      background: rgba(248, 241, 227, 0.88);
       backdrop-filter: saturate(180%) blur(12px);
       -webkit-backdrop-filter: saturate(180%) blur(12px);
       border-bottom: 1px solid var(--c-line);
+      transition: box-shadow var(--transition);
     }
+    .site-header.scrolled { box-shadow: 0 4px 24px rgba(91, 65, 40, 0.10); }
     .nav {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 1rem 0;
+      padding-top: 0.85rem; padding-bottom: 0.85rem; gap: 1rem;
     }
     .brand {
       display: flex; align-items: center; gap: 0.65rem;
-      font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 600;
+      font-family: var(--font-display); font-size: 1.35rem; font-weight: 600;
       color: var(--c-brand);
     }
     .brand-mark {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--c-brand) 0%, var(--c-brand-2) 100%);
-      color: white; display: grid; place-items: center;
-      font-family: 'Fraunces', serif; font-weight: 600;
-      box-shadow: var(--shadow-sm);
+      height: 42px; width: auto; display: block;
     }
+    .nav-links {
+      display: flex; gap: 1.6rem;
+      font-family: var(--font-sans); font-size: 0.9rem; font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .nav-links a {
+      color: var(--c-ink-soft); position: relative; padding: 4px 0;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; left: 0; bottom: 0;
+      width: 100%; height: 2px; background: var(--c-accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .nav-links a:hover { color: var(--c-brand); }
+    .nav-links a:hover::after { transform: scaleX(1); }
     .lang-switch {
       display: flex; gap: 4px;
       background: var(--c-surface);
@@ -90,21 +111,22 @@
     }
     .lang-switch button {
       border: none; background: transparent; color: var(--c-muted);
-      font-family: inherit; font-size: 0.78rem; font-weight: 600;
+      font-family: var(--font-sans); font-size: 0.78rem; font-weight: 500;
       padding: 6px 12px; border-radius: 999px;
       cursor: pointer; transition: all var(--transition);
       letter-spacing: 0.05em;
     }
     .lang-switch button:hover { color: var(--c-ink); }
     .lang-switch button.active {
-      background: var(--c-brand); color: white;
+      background: var(--c-brand); color: var(--c-bg);
       box-shadow: var(--shadow-sm);
     }
     .btn-login {
       display: inline-flex; align-items: center; gap: 0.4rem;
       background: var(--c-brand);
-      color: white;
-      font-family: inherit; font-size: 0.85rem; font-weight: 600;
+      color: var(--c-bg);
+      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.03em;
       padding: 8px 18px; border-radius: 999px;
       border: none; cursor: pointer;
       text-decoration: none;
@@ -112,7 +134,7 @@
       box-shadow: var(--shadow-sm);
       white-space: nowrap;
     }
-    .btn-login:hover { opacity: 0.88; color: white; transform: translateY(-1px); }
+    .btn-login:hover { opacity: 0.88; color: var(--c-bg); transform: translateY(-1px); }
     .nav-right { display: flex; align-items: center; gap: 0.75rem; }
 
     /* ---------- Hero ---------- */
@@ -124,7 +146,7 @@
       content: '';
       position: absolute; top: -150px; right: -150px;
       width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(201, 169, 110, 0.08) 0%, transparent 70%);
+      background: radial-gradient(circle, rgba(227, 165, 42, 0.14) 0%, transparent 70%);
       border-radius: 50%; z-index: 0;
     }
     .hero-grid {
@@ -134,23 +156,25 @@
     }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 0.5rem;
-      background: var(--c-soft); color: var(--c-brand);
+      background: var(--c-soft); color: var(--c-ink);
       padding: 6px 14px; border-radius: 999px;
-      font-size: 0.82rem; font-weight: 500;
+      font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.04em;
       margin-bottom: 1.5rem;
+      border: 1px solid rgba(227, 165, 42, 0.35);
     }
     .hero-badge::before {
       content: ''; width: 8px; height: 8px; border-radius: 50%;
       background: var(--c-accent);
-      box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.2);
+      box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.25);
       animation: pulse 2.4s ease-out infinite;
     }
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 4px rgba(201, 169, 110, 0.2); }
-      50%      { box-shadow: 0 0 0 8px rgba(201, 169, 110, 0); }
+      0%, 100% { box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.25); }
+      50%      { box-shadow: 0 0 0 8px rgba(227, 165, 42, 0); }
     }
     .hero h1 { color: var(--c-ink); margin-bottom: 1.25rem; }
-    .hero h1 em { font-style: italic; color: var(--c-brand); font-weight: 400; }
+    .hero h1 em { font-style: italic; color: var(--c-ocre); font-weight: 500; }
     .hero-sub {
       font-size: 1.1rem; color: var(--c-ink-soft);
       margin-bottom: 2rem; max-width: 32em;
@@ -161,25 +185,26 @@
     .btn {
       display: inline-flex; align-items: center; gap: 0.55rem;
       padding: 14px 26px;
-      font-family: inherit; font-size: 0.96rem; font-weight: 600;
+      font-family: var(--font-sans); font-size: 0.95rem; font-weight: 500;
+      letter-spacing: 0.03em;
       border: none; border-radius: 999px;
       cursor: pointer; transition: all var(--transition);
       text-decoration: none;
     }
     .btn-primary {
-      background: var(--c-brand); color: white;
+      background: var(--c-brand); color: var(--c-bg);
       box-shadow: var(--shadow-md);
     }
     .btn-primary:hover {
-      background: var(--c-brand-2); color: white;
+      background: var(--c-brand-2); color: var(--c-bg);
       transform: translateY(-1px);
       box-shadow: var(--shadow-lg);
     }
     .btn-ghost {
       background: transparent; color: var(--c-brand);
-      border: 1px solid var(--c-line);
+      border: 1px solid rgba(91, 65, 40, 0.28);
     }
-    .btn-ghost:hover { background: var(--c-soft); }
+    .btn-ghost:hover { background: var(--c-surface); border-color: var(--c-accent); color: var(--c-brand); }
     .btn svg { transition: transform var(--transition); }
     .btn:hover svg { transform: translateX(3px); }
 
@@ -195,7 +220,7 @@
     .hero-image-wrap::after {
       content: '';
       position: absolute; inset: 0;
-      background: linear-gradient(180deg, transparent 50%, rgba(15, 31, 51, 0.18) 100%);
+      background: linear-gradient(180deg, transparent 50%, rgba(91, 65, 40, 0.20) 100%);
       pointer-events: none;
     }
     .hero-image {
@@ -205,10 +230,10 @@
     }
     .hero-image-fallback {
       width: 100%; height: 100%;
-      background: linear-gradient(135deg, #1e3a5f 0%, #2c5282 50%, #4a7ba8 100%);
+      background: linear-gradient(135deg, #5B4128 0%, #6B4F2E 55%, #B07A2B 100%);
       display: grid; place-items: center;
-      color: rgba(255, 255, 255, 0.4);
-      font-family: 'Fraunces', serif; font-size: 6rem;
+      color: rgba(248, 241, 227, 0.5);
+      font-family: var(--font-display); font-size: 6rem;
     }
     .hero-image-tag {
       position: absolute; left: 1.25rem; bottom: 1.25rem;
@@ -230,18 +255,19 @@
       gap: 2rem; text-align: center;
     }
     .trust-item .num {
-      font-family: 'Fraunces', serif; font-size: 1.8rem; color: var(--c-brand); display: block;
+      font-family: var(--font-display); font-weight: 600; font-size: 1.9rem; color: var(--c-brand); display: block;
     }
     .trust-item .label {
-      font-size: 0.84rem; color: var(--c-muted); letter-spacing: 0.04em; text-transform: uppercase;
+      font-family: var(--font-sans); font-size: 0.8rem; color: var(--c-muted); letter-spacing: 0.08em; text-transform: uppercase;
     }
 
     /* ---------- Sections ---------- */
     section.block { padding: clamp(3.5rem, 7vw, 6rem) 0; }
     .section-eyebrow {
       display: block;
-      font-size: 0.82rem; color: var(--c-accent);
-      font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      font-family: var(--font-sans);
+      font-size: 0.8rem; color: var(--c-ocre);
+      font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
       margin-bottom: 0.75rem;
     }
     .section-intro { max-width: 38em; margin-bottom: 3rem; }
@@ -263,15 +289,15 @@
     .about-img-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .about-img-fallback {
       width: 100%; height: 100%;
-      background: linear-gradient(135deg, #1e3a5f, #4a7ba8);
-      color: white; display: grid; place-items: center;
-      font-family: 'Fraunces', serif; font-size: 3.5rem;
+      background: linear-gradient(135deg, #5B4128, #B07A2B);
+      color: rgba(248, 241, 227, 0.8); display: grid; place-items: center;
+      font-family: var(--font-display); font-size: 3.5rem;
     }
     .about-text p + p { margin-top: 1rem; }
     .about-signature {
       margin-top: 1.5rem;
-      font-family: 'Fraunces', serif; font-style: italic;
-      color: var(--c-brand); font-size: 1.1rem;
+      font-family: var(--font-display); font-style: italic;
+      color: var(--c-ocre); font-size: 1.35rem;
     }
 
     /* ---------- Why us ---------- */
@@ -289,11 +315,11 @@
     .why-card:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow-md);
-      border-color: transparent;
+      border-color: rgba(227, 165, 42, 0.45);
     }
     .why-icon {
       width: 48px; height: 48px;
-      background: var(--c-soft); color: var(--c-brand);
+      background: rgba(227, 165, 42, 0.14); color: var(--c-ocre);
       border-radius: 12px;
       display: grid; place-items: center;
       margin-bottom: 1.25rem;
@@ -319,10 +345,11 @@
     }
     .service-tag {
       display: inline-block;
-      font-size: 0.75rem; font-weight: 600;
-      color: var(--c-brand); background: var(--c-soft);
-      padding: 4px 10px; border-radius: 999px;
-      margin-bottom: 1rem; letter-spacing: 0.04em;
+      font-family: var(--font-sans);
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--c-ocre); background: rgba(227, 165, 42, 0.14);
+      padding: 4px 12px; border-radius: 999px;
+      margin-bottom: 1rem; letter-spacing: 0.1em; text-transform: uppercase;
     }
     .service-card h3 { margin-bottom: 0.65rem; }
 
@@ -343,11 +370,11 @@
     .testimonial-card:hover {
       transform: translateY(-3px);
       box-shadow: var(--shadow-md);
-      border-color: transparent;
+      border-color: rgba(227, 165, 42, 0.45);
     }
     .testimonial-card .mark {
-      font-family: 'Fraunces', Georgia, serif; font-size: 2.8rem; line-height: 0.7;
-      color: var(--c-accent); opacity: 0.5; margin-bottom: 0.5rem;
+      font-family: var(--font-display); font-size: 2.8rem; line-height: 0.7;
+      color: var(--c-accent); opacity: 0.7; margin-bottom: 0.5rem;
     }
     .testimonial-quote {
       font-size: 1rem; color: var(--c-ink-soft); font-style: italic;
@@ -359,8 +386,9 @@
     }
     .testimonial-name { font-weight: 600; color: var(--c-ink); font-size: 0.95rem; }
     .testimonial-tag {
-      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.04em;
-      color: var(--c-brand); background: var(--c-soft);
+      font-family: var(--font-sans);
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--c-ocre); background: rgba(227, 165, 42, 0.14);
       padding: 4px 10px; border-radius: 999px; white-space: nowrap;
     }
 
@@ -380,13 +408,13 @@
     .form-card > p { text-align: center; margin-bottom: 2rem; }
     .form-row { margin-bottom: 1.1rem; }
     .form-row label {
-      display: block; font-size: 0.85rem; font-weight: 500;
-      color: var(--c-ink); margin-bottom: 0.45rem;
+      display: block; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
+      color: var(--c-ink); margin-bottom: 0.45rem; letter-spacing: 0.02em;
     }
-    .form-row label .req { color: var(--c-brand-2); }
+    .form-row label .req { color: var(--c-error); }
     .form-row input {
       width: 100%; padding: 12px 14px;
-      font-family: inherit; font-size: 0.96rem;
+      font-family: var(--font-body); font-size: 0.96rem;
       border: 1.5px solid var(--c-line);
       border-radius: var(--radius-sm);
       background: var(--c-bg);
@@ -395,9 +423,9 @@
     }
     .form-row input:focus {
       outline: none;
-      border-color: var(--c-brand);
+      border-color: var(--c-ocre);
       background: var(--c-surface);
-      box-shadow: 0 0 0 4px rgba(30, 58, 95, 0.08);
+      box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.16);
     }
     .privacy {
       display: flex; gap: 0.6rem; align-items: flex-start;
@@ -415,15 +443,15 @@
     }
     .form-msg.success {
       display: block;
-      background: rgba(47, 122, 82, 0.08);
+      background: rgba(59, 109, 42, 0.08);
       color: var(--c-success);
-      border: 1px solid rgba(47, 122, 82, 0.2);
+      border: 1px solid rgba(59, 109, 42, 0.25);
     }
     .form-msg.error {
       display: block;
-      background: rgba(178, 50, 50, 0.08);
-      color: #b23232;
-      border: 1px solid rgba(178, 50, 50, 0.2);
+      background: rgba(163, 59, 45, 0.08);
+      color: var(--c-error);
+      border: 1px solid rgba(163, 59, 45, 0.25);
     }
     .form-success-state {
       display: none;
@@ -432,7 +460,7 @@
     }
     .form-success-state .check {
       width: 64px; height: 64px;
-      background: rgba(47, 122, 82, 0.1);
+      background: rgba(59, 109, 42, 0.1);
       color: var(--c-success);
       border-radius: 50%;
       display: inline-grid; place-items: center;
@@ -441,40 +469,63 @@
 
     /* ---------- Footer ---------- */
     footer {
-      background: var(--c-ink); color: rgba(255,255,255,0.85);
+      background: var(--c-ink); color: rgba(248,241,227,0.9);
       padding: 3rem 0 2rem;
     }
     footer .container {
       display: grid; grid-template-columns: 1.5fr 1fr 1fr;
       gap: 2.5rem;
     }
-    footer .brand { color: white; margin-bottom: 1rem; }
-    footer p { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+    footer .brand { color: var(--c-bg); margin-bottom: 1rem; }
+    footer p { color: rgba(248,241,227,0.65); font-size: 0.9rem; }
     footer h4 {
-      font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.5); margin-bottom: 1rem; font-weight: 600;
+      font-family: var(--font-sans);
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--c-accent); margin-bottom: 1rem; font-weight: 500;
     }
     footer ul { list-style: none; }
     footer ul li { margin-bottom: 0.5rem; font-size: 0.92rem; }
-    footer a { color: rgba(255,255,255,0.85); }
-    footer a:hover { color: white; }
+    footer a { color: rgba(248,241,227,0.9); }
+    footer a:hover { color: var(--c-accent); }
+    .footer-social {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+    }
+    .footer-social svg { opacity: 0.85; }
     .footer-bottom {
       max-width: var(--container); margin: 2.5rem auto 0;
       padding: 1.5rem 1.5rem 0;
-      border-top: 1px solid rgba(255,255,255,0.1);
+      border-top: 1px solid rgba(248,241,227,0.14);
       display: flex; justify-content: space-between; flex-wrap: wrap;
       gap: 1rem;
-      color: rgba(255,255,255,0.5); font-size: 0.85rem;
+      color: rgba(248,241,227,0.55); font-size: 0.85rem;
     }
     .footer-bottom .coming-tag {
       display: inline-flex; align-items: center; gap: 0.4rem;
-      background: rgba(201, 169, 110, 0.15);
+      background: rgba(227, 165, 42, 0.16);
       color: var(--c-accent);
+      font-family: var(--font-sans);
       padding: 4px 12px; border-radius: 999px;
-      font-weight: 500;
+      font-weight: 500; letter-spacing: 0.04em;
     }
 
+    /* ---------- Back to top ---------- */
+    .to-top {
+      position: fixed; right: 1.4rem; bottom: 1.4rem; z-index: 90;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--c-brand); color: var(--c-bg);
+      border: none; cursor: pointer;
+      display: grid; place-items: center;
+      box-shadow: var(--shadow-md);
+      opacity: 0; pointer-events: none; transform: translateY(8px);
+      transition: opacity var(--transition), transform var(--transition), background var(--transition);
+    }
+    .to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+    .to-top:hover { background: var(--c-ocre); }
+
     /* ---------- Responsive ---------- */
+    @media (max-width: 960px) {
+      .nav-links { display: none; }
+    }
     @media (max-width: 880px) {
       .hero-grid { grid-template-columns: 1fr; }
       .hero-image-wrap { order: -1; max-width: 380px; margin: 0 auto; }
@@ -495,6 +546,7 @@
     .reveal {
       opacity: 0; transform: translateY(20px);
       transition: opacity 0.7s ease, transform 0.7s ease;
+      transition-delay: var(--reveal-delay, 0ms);
     }
     .reveal.in { opacity: 1; transform: none; }
 
@@ -510,9 +562,14 @@
   <header class="site-header">
     <div class="container nav">
       <a href="#" class="brand" aria-label="Studio Renacer">
-        <span class="brand-mark">R</span>
+        <img class="brand-mark" src="/assets/logo-studio-renacer.svg" alt="" />
         <span>Studio Renacer</span>
       </a>
+      <nav class="nav-links" aria-label="Secciones">
+        <a href="#about" data-i18n="nav.about">Sobre mí</a>
+        <a href="#servicios" data-i18n="nav.services">Servicios</a>
+        <a href="#waitlist" data-i18n="nav.guide">Guía gratis</a>
+      </nav>
       <div class="nav-right">
         <div class="lang-switch" role="group" aria-label="Idioma">
           <button data-lang="es" class="active" aria-pressed="true">ES</button>
@@ -664,7 +721,7 @@
     </section>
 
     <!-- ============== SERVICES ============== -->
-    <section class="block services">
+    <section class="block services" id="servicios">
       <div class="container">
         <div class="section-intro reveal">
           <span class="section-eyebrow" data-i18n="serv.eyebrow">Qué ofreceré</span>
@@ -763,7 +820,7 @@
     <div class="container">
       <div>
         <div class="brand">
-          <span class="brand-mark">R</span>
+          <img class="brand-mark" src="/assets/logo-studio-renacer-claro.svg" alt="" />
           <span>Studio Renacer</span>
         </div>
         <p data-i18n="footer.tagline">Terapia online para la ansiedad del trabajo. A la raíz, a tu ritmo.</p>
@@ -772,7 +829,18 @@
         <h4 data-i18n="footer.contact">Contacto</h4>
         <ul>
           <li><a href="mailto:info@studiorenacer.com">info@studiorenacer.com</a></li>
-          <li><a href="tel:+34668541597">+34 668 541 597</a></li>
+          <li>
+            <a href="https://wa.me/34668541597" target="_blank" rel="noopener" class="footer-social">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35M12.05 21.79h-.01a9.86 9.86 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.82 9.82 0 0 1-1.51-5.25c0-5.44 4.43-9.87 9.89-9.87 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.45-4.43 9.87-9.87 9.87m8.4-18.27A11.8 11.8 0 0 0 12.04 0C5.5 0 .16 5.33.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.33 11.89-11.9 0-3.18-1.24-6.16-3.49-8.41"/></svg>
+              +34 668 541 597
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/andreapsicologaonline" target="_blank" rel="noopener" class="footer-social">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              @andreapsicologaonline
+            </a>
+          </li>
         </ul>
       </div>
       <div>
@@ -790,24 +858,48 @@
     </div>
   </footer>
 
+  <button id="to-top" class="to-top" aria-label="Volver arriba">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
   <script>
     // ============== YEAR ==============
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ============== REVEAL ON SCROLL ==============
+    // ============== REVEAL ON SCROLL (con escalonado en grids) ==============
+    document.querySelectorAll('.why-grid, .services-grid, .testimonials-grid').forEach(grid => {
+      [...grid.children].forEach((card, i) => card.style.setProperty('--reveal-delay', (i * 90) + 'ms'));
+    });
     const io = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('in');
           io.unobserve(e.target);
+          // al terminar, quitar la clase para que el hover de las tarjetas vaya a su velocidad normal
+          setTimeout(() => {
+            e.target.classList.remove('reveal', 'in');
+            e.target.style.removeProperty('--reveal-delay');
+          }, 1100);
         }
       });
     }, { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => io.observe(el));
 
+    // ============== HEADER + BOTÓN VOLVER ARRIBA ==============
+    const header = document.querySelector('.site-header');
+    const toTop = document.getElementById('to-top');
+    function onScroll() {
+      header.classList.toggle('scrolled', window.scrollY > 10);
+      toTop.classList.toggle('show', window.scrollY > 600);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
     // ============== I18N ==============
     const translations = {
       es: {
+        'nav.about': 'Sobre mí', 'nav.services': 'Servicios', 'nav.guide': 'Guía gratis',
         'hero.badge': 'Próximamente · Verano 2026',
         'hero.title': 'Un espacio para <em>renacer</em>, a tu ritmo.',
         'hero.sub': 'Studio Renacer es la nueva consulta online de Andrea Fernández, psicóloga colegiada. Un acompañamiento empático, profesional y a tu medida para profesionales exigentes que quieren salir de la ansiedad y el estrés del trabajo, sin renunciar a su carrera — en construcción.',
@@ -850,6 +942,7 @@
         'login': 'Iniciar sesión'
       },
       en: {
+        'nav.about': 'About me', 'nav.services': 'Services', 'nav.guide': 'Free guide',
         'hero.badge': 'Coming soon · Summer 2026',
         'hero.title': 'A space to <em>begin again</em>, at your pace.',
         'hero.sub': "Studio Renacer is the new online practice of Andrea Fernández, licensed psychologist. Empathetic, professional and personal support for demanding professionals who want to leave the anxiety and stress of work behind, without giving up their career — in the making.",
@@ -892,6 +985,7 @@
         'login': 'Log in'
       },
       da: {
+        'nav.about': 'Om mig', 'nav.services': 'Ydelser', 'nav.guide': 'Gratis guide',
         'hero.badge': 'Kommer snart · Sommer 2026',
         'hero.title': 'Et rum til at <em>begynde igen</em>, i dit eget tempo.',
         'hero.sub': 'Studio Renacer er den nye onlinepraksis fra Andrea Fernández, autoriseret psykolog. Empatisk, professionel og personlig støtte til krævende fagfolk, der vil slippe arbejdets angst og stress uden at opgive deres karriere — under opbygning.',

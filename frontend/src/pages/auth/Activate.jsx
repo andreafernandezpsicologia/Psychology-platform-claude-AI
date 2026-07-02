@@ -120,9 +120,9 @@ export default function Activate() {
             <button key={lang} onClick={() => i18n.changeLanguage(code)}
               className="text-xs font-semibold px-3 py-1.5 rounded-full transition"
               style={{
-                backgroundColor: active ? 'var(--navy)' : 'white',
-                color: active ? 'white' : 'var(--navy)',
-                border: '1px solid var(--navy)',
+                backgroundColor: active ? 'var(--brand)' : 'white',
+                color: active ? 'white' : 'var(--brand)',
+                border: '1px solid var(--brand)',
               }}>
               {lang}
             </button>
@@ -140,9 +140,8 @@ export default function Activate() {
 
         {/* Cabecera */}
         <div className="text-center pt-8 px-8 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
-          <div className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold mx-auto mb-4"
-            style={{ backgroundColor: 'var(--navy)' }}>R</div>
-          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <img src="/logo-studio-renacer.svg" alt="Studio Renacer" className="h-14 w-auto mx-auto mb-4" />
+          <h1 className="text-2xl font-bold" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             {t('activate.title')}
           </h1>
           {/* Indicador de pasos */}
@@ -151,15 +150,15 @@ export default function Activate() {
               <div key={s} className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-all"
                   style={{
-                    backgroundColor: step >= s ? 'var(--navy)' : 'var(--border)',
+                    backgroundColor: step >= s ? 'var(--brand)' : 'var(--border)',
                     color: step >= s ? 'white' : 'var(--text)',
                   }}>
                   {step > s ? '✓' : s}
                 </div>
-                <span className="text-xs font-medium" style={{ color: step >= s ? 'var(--navy)' : 'var(--text)' }}>
+                <span className="text-xs font-medium" style={{ color: step >= s ? 'var(--brand)' : 'var(--text)' }}>
                   {t(`activate.step${s}`)}
                 </span>
-                {s < 2 && <div className="w-8 h-px" style={{ backgroundColor: step > s ? 'var(--navy)' : 'var(--border)' }} />}
+                {s < 2 && <div className="w-8 h-px" style={{ backgroundColor: step > s ? 'var(--brand)' : 'var(--border)' }} />}
               </div>
             ))}
           </div>
@@ -169,7 +168,7 @@ export default function Activate() {
         {step === 1 && (
           <form onSubmit={handlePassword} className="p-8 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                 {t('activate.newPassword')}
               </label>
               <input
@@ -181,7 +180,7 @@ export default function Activate() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+              <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                 {t('activate.confirmPassword')}
               </label>
               <input
@@ -225,9 +224,9 @@ export default function Activate() {
                 type="checkbox"
                 checked={rgpdAccepted}
                 onChange={(e) => { setRgpdAccepted(e.target.checked); setError(''); }}
-                className="mt-0.5 w-4 h-4 rounded accent-[var(--navy)] shrink-0"
+                className="mt-0.5 w-4 h-4 rounded accent-[var(--brand)] shrink-0"
               />
-              <span className="text-sm font-medium leading-snug" style={{ color: 'var(--navy)' }}>
+              <span className="text-sm font-medium leading-snug" style={{ color: 'var(--brand)' }}>
                 {t('activate.rgpdCheckbox')}
               </span>
             </label>

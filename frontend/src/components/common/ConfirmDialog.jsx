@@ -17,7 +17,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl" style={{ border: '1px solid var(--border)' }}>
-        <h3 className="font-bold text-base mb-1" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+        <h3 className="font-bold text-base mb-1" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
           {title}
         </h3>
         {description && (
@@ -30,7 +30,7 @@ export default function ConfirmDialog({ open, title, description, confirmLabel, 
           <button
             onClick={onConfirm}
             className="text-xs font-semibold px-3 py-1.5 rounded-lg transition hover:opacity-90"
-            style={danger ? { backgroundColor: '#fce4ec', color: '#c62828' } : { backgroundColor: 'var(--navy)', color: 'white' }}
+            style={danger ? { backgroundColor: '#F6E3DD', color: '#A33B2D' } : { backgroundColor: 'var(--brand)', color: 'white' }}
           >
             {confirmLabel}
           </button>

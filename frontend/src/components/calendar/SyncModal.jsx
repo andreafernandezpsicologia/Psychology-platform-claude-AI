@@ -83,13 +83,13 @@ export default function SyncModal({ open, onClose, onChanged }) {
         onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-xl my-8" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="font-bold text-base mb-4" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <h3 className="font-bold text-base mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             🔄 {t('calendar.syncTitle')}
           </h3>
 
           {/* ── Saliente: feed de suscripción ── */}
           <div className="mb-5">
-            <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>
+            <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>
               {t('calendar.feedSectionTitle')}
             </h4>
             <p className="text-xs mb-2" style={{ color: 'var(--text)' }}>{t('calendar.feedHint')}</p>
@@ -100,7 +100,7 @@ export default function SyncModal({ open, onClose, onChanged }) {
             <button
               onClick={() => setConfirmRegen(true)}
               className="mt-1.5 text-xs font-medium transition hover:opacity-70"
-              style={{ color: '#c62828' }}
+              style={{ color: '#A33B2D' }}
             >
               ↻ {t('calendar.regenerate')}
             </button>
@@ -110,7 +110,7 @@ export default function SyncModal({ open, onClose, onChanged }) {
 
           {/* ── Entrante: calendarios externos ── */}
           <div>
-            <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>
+            <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>
               {t('calendar.externalSectionTitle')}
             </h4>
             <p className="text-xs mb-3" style={{ color: 'var(--text)' }}>{t('calendar.externalHint')}</p>
@@ -118,8 +118,8 @@ export default function SyncModal({ open, onClose, onChanged }) {
             {externos.map((c) => (
               <div key={c.id} className="flex items-center justify-between py-2" style={{ borderBottom: '1px solid var(--border)' }}>
                 <div>
-                  <p className="text-sm font-medium" style={{ color: 'var(--navy)' }}>{c.nombre}</p>
-                  <p className="text-xs" style={{ color: c.last_error ? '#c62828' : 'var(--text)' }}>
+                  <p className="text-sm font-medium" style={{ color: 'var(--brand)' }}>{c.nombre}</p>
+                  <p className="text-xs" style={{ color: c.last_error ? '#A33B2D' : 'var(--text)' }}>
                     {c.last_error
                       ? `⚠ ${t('calendar.externalError')}`
                       : c.last_synced_at

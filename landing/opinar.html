@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="theme-color" content="#5B4128" />
   <meta name="robots" content="noindex, nofollow" />
   <title>Comparte tu experiencia · Studio Renacer</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231e3a5f'/%3E%3Ctext x='50' y='65' font-family='serif' font-size='50' fill='white' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --c-bg:#fafbfc; --c-surface:#ffffff; --c-ink:#0f1f33; --c-ink-soft:#4a5b73;
-      --c-muted:#7e8a9c; --c-line:#e6ebf2; --c-brand:#1e3a5f; --c-brand-2:#2c5282;
-      --c-accent:#c9a96e; --c-soft:#eef3f9; --c-success:#2f7a52;
+      --c-bg:#F8F1E3; --c-surface:#ffffff; --c-ink:#5B4128; --c-ink-soft:#6B4F2E;
+      --c-muted:#7A6A53; --c-line:#E7DCC6; --c-brand:#5B4128; --c-brand-2:#6B4F2E;
+      --c-accent:#E3A52A; --c-ocre:#B07A2B; --c-link:#2C3E54; --c-soft:#F3E7CF; --c-success:#3B6D2A; --c-error:#A33B2D;
       --radius:14px; --radius-sm:8px; --transition:0.3s cubic-bezier(.2,.7,.2,1);
-      --shadow-md:0 10px 25px -10px rgba(15,31,51,.15), 0 4px 10px -4px rgba(15,31,51,.08);
+      --shadow-md:0 10px 25px -10px rgba(91,65,40,.18), 0 4px 10px -4px rgba(91,65,40,.10);
     }
-    body { font-family:'Inter',-apple-system,'Segoe UI',sans-serif; color:var(--c-ink);
+    body { font-family:'Spectral',Georgia,serif; color:var(--c-ink);
       background:var(--c-bg); line-height:1.6; -webkit-font-smoothing:antialiased; padding:2rem 1.25rem 4rem; }
-    h1 { font-family:'Fraunces',Georgia,serif; font-weight:500; font-size:clamp(1.6rem,4vw,2.2rem);
+    h1 { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; font-size:clamp(1.7rem,4vw,2.3rem);
       line-height:1.2; letter-spacing:-.01em; color:var(--c-ink); margin-bottom:.6rem; }
     p { color:var(--c-ink-soft); }
     .brand { display:flex; align-items:center; justify-content:center; gap:.6rem;
-      font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; color:var(--c-brand); margin-bottom:1.75rem; }
-    .brand-mark { width:36px; height:36px; border-radius:50%;
-      background:linear-gradient(135deg,var(--c-brand),var(--c-brand-2)); color:#fff;
-      display:grid; place-items:center; font-family:'Fraunces',serif; font-weight:600; }
+      font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:600; color:var(--c-brand); margin-bottom:1.75rem;
+      text-decoration:none; }
+    a.brand:hover { color:var(--c-brand); }
+    .brand-mark { height:44px; width:auto; display:block; }
     .card { max-width:600px; margin:0 auto; background:var(--c-surface); border:1px solid var(--c-line);
       border-radius:var(--radius); box-shadow:var(--shadow-md); padding:clamp(1.6rem,4vw,2.6rem); }
-    .eyebrow { display:block; font-size:.8rem; color:var(--c-accent); font-weight:600;
-      letter-spacing:.12em; text-transform:uppercase; margin-bottom:.6rem; }
+    .eyebrow { display:block; font-family:'Jost',sans-serif; font-size:.8rem; color:var(--c-ocre); font-weight:600;
+      letter-spacing:.14em; text-transform:uppercase; margin-bottom:.6rem; }
     .intro { margin-bottom:1.75rem; }
     .row { margin-bottom:1.25rem; }
     label.field { display:block; font-size:.85rem; font-weight:500; color:var(--c-ink); margin-bottom:.45rem; }
@@ -42,8 +42,8 @@
       border:1.5px solid var(--c-line); border-radius:var(--radius-sm); background:var(--c-bg);
       transition:all var(--transition); }
     textarea { min-height:120px; resize:vertical; }
-    textarea:focus, input:focus { outline:none; border-color:var(--c-brand); background:var(--c-surface);
-      box-shadow:0 0 0 4px rgba(30,58,95,.08); }
+    textarea:focus, input:focus { outline:none; border-color:var(--c-ocre); background:var(--c-surface);
+      box-shadow:0 0 0 4px rgba(227,165,42,.16); }
     .choices { display:flex; flex-wrap:wrap; gap:.5rem; }
     .choice { flex:1 1 auto; }
     .choice input { position:absolute; opacity:0; pointer-events:none; }
@@ -58,26 +58,27 @@
     .note { font-size:.8rem; color:var(--c-muted); background:var(--c-soft); border-radius:var(--radius-sm);
       padding:12px 14px; margin:1.25rem 0; line-height:1.5; }
     .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; width:100%;
-      background:var(--c-brand); color:#fff; font-family:inherit; font-size:1rem; font-weight:600;
+      background:var(--c-brand); color:var(--c-bg); font-family:'Jost',sans-serif; font-size:1rem; font-weight:500;
+      letter-spacing:.03em;
       padding:14px 22px; border:none; border-radius:999px; cursor:pointer; transition:all var(--transition); }
     .btn:hover { opacity:.9; transform:translateY(-1px); }
     .btn:disabled { opacity:.6; cursor:default; transform:none; }
     .msg { margin-top:1rem; padding:12px 16px; border-radius:var(--radius-sm); font-size:.9rem;
       text-align:center; display:none; }
-    .msg.error { display:block; background:rgba(178,50,50,.08); color:#b23232; border:1px solid rgba(178,50,50,.2); }
+    .msg.error { display:block; background:rgba(163,59,45,.08); color:var(--c-error); border:1px solid rgba(163,59,45,.25); }
     .success { display:none; text-align:center; padding:1rem 0; }
-    .success .check { width:64px; height:64px; background:rgba(47,122,82,.1); color:var(--c-success);
+    .success .check { width:64px; height:64px; background:rgba(59,109,42,.1); color:var(--c-success);
       border-radius:50%; display:inline-grid; place-items:center; margin-bottom:1rem; }
     .lang { text-align:center; margin-bottom:1.5rem; }
-    .lang button { border:none; background:transparent; color:var(--c-muted); font-family:inherit;
-      font-size:.78rem; font-weight:600; padding:5px 10px; border-radius:999px; cursor:pointer; letter-spacing:.05em; }
-    .lang button.active { background:var(--c-brand); color:#fff; }
-    a { color:var(--c-brand-2); }
+    .lang button { border:none; background:transparent; color:var(--c-muted); font-family:'Jost',sans-serif;
+      font-size:.78rem; font-weight:500; padding:5px 10px; border-radius:999px; cursor:pointer; letter-spacing:.05em; }
+    .lang button.active { background:var(--c-brand); color:var(--c-bg); }
+    a { color:var(--c-link); }
     .name-wrap.hidden { display:none; }
   </style>
 </head>
 <body>
-  <div class="brand"><span class="brand-mark">R</span><span>Studio Renacer</span></div>
+  <a href="/" class="brand" aria-label="Volver a la página principal"><img class="brand-mark" src="/assets/logo-studio-renacer.svg" alt="" /><span>Studio Renacer</span></a>
 
   <div class="card">
     <div class="lang" role="group" aria-label="Idioma">

@@ -69,7 +69,7 @@ export default function AdminDashboard() {
 
       {showInvite && (
         <div className="bg-white rounded-xl p-5 mb-5" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="font-semibold mb-4 text-sm" style={{ color: 'var(--navy)' }}>
+          <h3 className="font-semibold mb-4 text-sm" style={{ color: 'var(--brand)' }}>
             {t('admin.newInvitation')}
           </h3>
           <form onSubmit={handleInvite} className="flex gap-3 flex-wrap">
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
               onClick={() => setShowInactivos(!showInactivos)}
               className="text-xs font-medium px-3 py-1.5 rounded-lg transition"
               style={{
-                backgroundColor: showInactivos ? 'var(--navy)' : 'var(--bg)',
+                backgroundColor: showInactivos ? 'var(--brand)' : 'var(--bg)',
                 color: showInactivos ? 'white' : 'var(--text)',
                 border: '1px solid var(--border)',
               }}
@@ -127,7 +127,7 @@ export default function AdminDashboard() {
         <SkeletonTable rows={5} />
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-xl p-12 text-center" style={{ border: '1px solid var(--border)' }}>
-          <p className="font-medium" style={{ color: 'var(--navy)' }}>
+          <p className="font-medium" style={{ color: 'var(--brand)' }}>
             {search ? t('admin.noResults', 'Sin resultados') : t('admin.noPatients')}
           </p>
           {!search && (
@@ -156,7 +156,7 @@ export default function AdminDashboard() {
                     className="transition hover:bg-[var(--bg)]"
                     style={{ borderBottom: '1px solid var(--border)', opacity: inactivo ? 0.5 : 1 }}
                   >
-                    <td className="px-4 py-3 font-semibold" style={{ color: 'var(--navy)' }}>{p.nombre_completo}</td>
+                    <td className="px-4 py-3 font-semibold" style={{ color: 'var(--brand)' }}>{p.nombre_completo}</td>
                     <td className="px-4 py-3" style={{ color: 'var(--text)' }}>{p.email}</td>
                     <td className="px-4 py-3">
                       <Badge estado={estado} label={pac?.estado || t('admin.statusPending')} />

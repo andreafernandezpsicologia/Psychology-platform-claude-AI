@@ -87,7 +87,7 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
         onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}
       >
         <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="font-bold text-base mb-4" style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}>
+          <h3 className="font-bold text-base mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             {reagendar ? t('calendar.reschedule') : t('calendar.newSessionTitle')}
           </h3>
 

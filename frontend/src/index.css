@@ -1,23 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Jost:wght@400;500;600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 @import "tailwindcss";
 
 :root {
-  --navy: #1a2d4a;
-  --navy-light: #2a3d5a;
-  --bg: #f7f7f5;
+  /* Kit de Marca Studio Renacer */
+  --brand: #5B4128;        /* marrón — texto principal, botones */
+  --brand-light: #6B4F2E;  /* marrón claro */
+  --gold: #E3A52A;         /* oro firma — acentos */
+  --ocre: #B07A2B;         /* ocre — etiquetas, focus */
+  --bg: #F8F1E3;           /* crema — fondo */
   --white: #ffffff;
-  --border: #e5e3de;
-  --text: #4a4a4a;
+  --border: #E7DCC6;       /* línea cálida */
+  --text: #6B4F2E;         /* cuerpo de texto */
+  --muted: #7A6A53;        /* gris cálido */
+  --success: #3B6D2A;      /* verde marca */
+  --error: #A33B2D;        /* terracota marca */
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Jost', system-ui, sans-serif;
   background-color: var(--bg);
-  color: var(--navy);
+  color: var(--brand);
 }
 
 h1, h2, h3 {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
 .field-input {
@@ -26,17 +32,18 @@ h1, h2, h3 {
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.15s;
-  color: var(--navy);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  color: var(--brand);
   width: 100%;
 }
 
 .field-input:focus {
-  border-color: var(--navy);
+  border-color: var(--ocre);
+  box-shadow: 0 0 0 3px rgba(227, 165, 42, 0.16);
 }
 
 .heading-serif {
-  font-family: 'Playfair Display', Georgia, serif;
-  color: var(--navy);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  color: var(--brand);
   font-weight: 700;
 }

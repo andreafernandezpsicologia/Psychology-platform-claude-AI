@@ -1,17 +1,17 @@
 const styles = {
-  activo:               { bg: '#e8f5e9', color: '#2e7d32' },
-  pendiente:            { bg: '#fff8e1', color: '#f57f17' },
-  inactivo:             { bg: '#f5f5f5', color: '#9e9e9e' },
-  archivado:            { bg: '#f5f5f5', color: '#757575' },
-  programada:           { bg: '#e3f2fd', color: '#1565c0' },
-  completada:           { bg: '#e8f5e9', color: '#2e7d32' },
-  cancelada:            { bg: '#fce4ec', color: '#c62828' },
-  cancelada_con_cargo:  { bg: '#fce4ec', color: '#c62828' },
-  solicitada:           { bg: '#ede7f6', color: '#5e35b1' },
-  ocupado:              { bg: '#eceff1', color: '#546e7a' },
+  activo:               { bg: '#E9F0E1', color: '#3B6D2A' },
+  pendiente:            { bg: '#F8EFD2', color: '#B07A2B' },
+  inactivo:             { bg: '#F1EBDE', color: '#8A7C64' },
+  archivado:            { bg: '#F1EBDE', color: '#7A6A53' },
+  programada:           { bg: '#E3EAF2', color: '#2C3E54' },
+  completada:           { bg: '#E9F0E1', color: '#3B6D2A' },
+  cancelada:            { bg: '#F6E3DD', color: '#A33B2D' },
+  cancelada_con_cargo:  { bg: '#F6E3DD', color: '#A33B2D' },
+  solicitada:           { bg: '#ECE6F0', color: '#6A4E8F' },
+  ocupado:              { bg: '#EFEAE0', color: '#7A6A53' },
 };
 
-const defaultStyle = { bg: '#f5f5f5', color: '#757575' };
+const defaultStyle = { bg: '#F1EBDE', color: '#7A6A53' };
 
 export default function Badge({ estado, label }) {
   const s = styles[estado] || defaultStyle;

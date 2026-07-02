@@ -83,7 +83,7 @@ export default function Seguridad() {
       <div className="max-w-xl mx-auto py-8 px-4">
         <h1
           className="text-2xl font-bold mb-1"
-          style={{ fontFamily: "'Playfair Display', serif", color: 'var(--navy)' }}
+          style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}
         >
           Seguridad
         </h1>
@@ -100,12 +100,12 @@ export default function Seguridad() {
             <div className="flex items-center gap-3">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                style={{ backgroundColor: totpEnabled ? '#e8f5e9' : '#f5f5f5' }}
+                style={{ backgroundColor: totpEnabled ? '#E9F0E1' : '#F1EBDE' }}
               >
                 🔐
               </div>
               <div>
-                <h2 className="text-base font-semibold" style={{ color: 'var(--navy)' }}>
+                <h2 className="text-base font-semibold" style={{ color: 'var(--brand)' }}>
                   Autenticación en dos pasos (2FA)
                 </h2>
                 <p className="text-sm mt-0.5" style={{ color: 'var(--text)' }}>
@@ -119,8 +119,8 @@ export default function Seguridad() {
               <span
                 className="text-xs font-semibold px-3 py-1 rounded-full flex-shrink-0"
                 style={{
-                  backgroundColor: totpEnabled ? '#e8f5e9' : '#fff3e0',
-                  color: totpEnabled ? '#2e7d32' : '#e65100',
+                  backgroundColor: totpEnabled ? '#E9F0E1' : '#F8E9D0',
+                  color: totpEnabled ? '#3B6D2A' : '#A85B18',
                 }}
               >
                 {totpEnabled ? '✓ Activo' : '⚠ Inactivo'}
@@ -137,7 +137,7 @@ export default function Seguridad() {
           {/* Aviso de normativa */}
           <div
             className="mt-4 p-3 rounded-xl text-xs"
-            style={{ backgroundColor: '#f0f4ff', color: 'var(--navy)' }}
+            style={{ backgroundColor: '#F3E7CF', color: 'var(--brand)' }}
           >
             <strong>Normativa:</strong> La NIS2 y el ENS recomiendan el doble factor para
             acceso a plataformas que tratan datos de salud. Tu Política de Privacidad lo
@@ -152,7 +152,7 @@ export default function Seguridad() {
                   onClick={handleStartSetup}
                   disabled={loadingSetup}
                   className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--navy)' }}
+                  style={{ backgroundColor: 'var(--brand)' }}
                 >
                   {loadingSetup ? 'Generando QR...' : 'Activar 2FA'}
                 </button>
@@ -160,7 +160,7 @@ export default function Seguridad() {
                 <button
                   onClick={() => setShowDisable(true)}
                   className="w-full font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-80"
-                  style={{ backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }}
+                  style={{ backgroundColor: '#F8E9D0', color: '#A85B18', border: '1px solid #E8C98A' }}
                 >
                   Desactivar 2FA
                 </button>
@@ -173,7 +173,7 @@ export default function Seguridad() {
         {showSetup && (
           <div className="fixed inset-0 flex items-center justify-center z-50 px-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="bg-white rounded-2xl p-6 w-full max-w-sm" style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-              <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--navy)' }}>
+              <h3 className="text-lg font-bold mb-1" style={{ color: 'var(--brand)' }}>
                 Configura tu aplicación
               </h3>
               <p className="text-sm mb-4" style={{ color: 'var(--text)' }}>
@@ -188,11 +188,11 @@ export default function Seguridad() {
               )}
 
               {/* Clave manual */}
-              <div className="mb-4 p-3 rounded-xl text-center" style={{ backgroundColor: '#f5f5f5' }}>
+              <div className="mb-4 p-3 rounded-xl text-center" style={{ backgroundColor: '#F1EBDE' }}>
                 <p className="text-xs mb-1" style={{ color: 'var(--text)' }}>
                   ¿No puedes escanear? Introduce esta clave manualmente:
                 </p>
-                <p className="font-mono text-sm font-semibold tracking-widest" style={{ color: 'var(--navy)' }}>
+                <p className="font-mono text-sm font-semibold tracking-widest" style={{ color: 'var(--brand)' }}>
                   {secret}
                 </p>
               </div>
@@ -200,7 +200,7 @@ export default function Seguridad() {
               {/* Verificación */}
               <form onSubmit={handleVerifySetup} className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--navy)' }}>
+                  <label className="block text-sm font-medium mb-1" style={{ color: 'var(--brand)' }}>
                     Código de verificación
                   </label>
                   <input
@@ -212,7 +212,7 @@ export default function Seguridad() {
                     value={setupCode}
                     onChange={e => setSetupCode(e.target.value.replace(/\D/g, ''))}
                     className="w-full rounded-lg px-3 py-2.5 text-sm outline-none text-center tracking-widest font-mono"
-                    style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                    style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
                     placeholder="000000"
                     autoFocus
                   />
@@ -225,7 +225,7 @@ export default function Seguridad() {
                   type="submit"
                   disabled={loadingSetup || setupCode.length !== 6}
                   className="w-full text-white font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--navy)' }}
+                  style={{ backgroundColor: 'var(--brand)' }}
                 >
                   {loadingSetup ? 'Verificando...' : 'Activar 2FA'}
                 </button>
@@ -246,7 +246,7 @@ export default function Seguridad() {
         {showDisable && (
           <div className="fixed inset-0 flex items-center justify-center z-50 px-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="bg-white rounded-2xl p-6 w-full max-w-sm" style={{ boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-              <h3 className="text-lg font-bold mb-1" style={{ color: '#c62828' }}>
+              <h3 className="text-lg font-bold mb-1" style={{ color: '#A33B2D' }}>
                 Desactivar 2FA
               </h3>
               <p className="text-sm mb-4" style={{ color: 'var(--text)' }}>
@@ -263,7 +263,7 @@ export default function Seguridad() {
                   value={disableCode}
                   onChange={e => setDisableCode(e.target.value.replace(/\D/g, ''))}
                   className="w-full rounded-lg px-3 py-2.5 text-sm outline-none text-center tracking-widest font-mono"
-                  style={{ border: '1.5px solid var(--border)', color: 'var(--navy)' }}
+                  style={{ border: '1.5px solid var(--border)', color: 'var(--brand)' }}
                   placeholder="000000"
                   autoFocus
                 />
@@ -271,7 +271,7 @@ export default function Seguridad() {
                   type="submit"
                   disabled={loadingDisable || disableCode.length !== 6}
                   className="w-full font-semibold py-2.5 rounded-lg text-sm transition hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: '#c62828', color: 'white' }}
+                  style={{ backgroundColor: '#A33B2D', color: 'white' }}
                 >
                   {loadingDisable ? 'Desactivando...' : 'Confirmar desactivación'}
                 </button>

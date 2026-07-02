@@ -7,6 +7,13 @@
       "runtimeArgs": ["run", "dev"],
       "cwd": "C:\\Users\\fg_an\\OneDrive\\Documentos\\Claude\\Projects\\Psychology platform\\frontend",
       "port": 5173
+    },
+    {
+      "name": "landing",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", ".", "-l", "4000"],
+      "cwd": "C:\\Users\\fg_an\\OneDrive\\Documentos\\Claude\\Projects\\Psychology platform\\landing",
+      "port": 4000
     }
   ]
 }

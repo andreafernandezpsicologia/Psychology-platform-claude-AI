@@ -109,13 +109,13 @@ export default function Calendario() {
       <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
         <h2 className="heading-serif capitalize" style={{ fontSize: '1.25rem' }}>{titulo}</h2>
         <div className="flex items-center gap-2 flex-wrap">
-          <button onClick={() => navegar(-1)} className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white" style={{ color: 'var(--navy)', border: '1px solid var(--border)' }}>
+          <button onClick={() => navegar(-1)} className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white" style={{ color: 'var(--brand)', border: '1px solid var(--border)' }}>
             ‹
           </button>
           <Button variant="ghost" size="sm" onClick={() => setFecha(new Date())}>
             {t('calendar.today')}
           </Button>
-          <button onClick={() => navegar(1)} className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white" style={{ color: 'var(--navy)', border: '1px solid var(--border)' }}>
+          <button onClick={() => navegar(1)} className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white" style={{ color: 'var(--brand)', border: '1px solid var(--border)' }}>
             ›
           </button>
 
@@ -126,7 +126,7 @@ export default function Calendario() {
                   key={v}
                   onClick={() => setVista(v)}
                   className="text-xs font-semibold px-3 py-1.5 rounded-md transition"
-                  style={vista === v ? { backgroundColor: 'var(--navy)', color: 'white' } : { color: 'var(--text)' }}
+                  style={vista === v ? { backgroundColor: 'var(--brand)', color: 'white' } : { color: 'var(--text)' }}
                 >
                   {t(`calendar.${v}`)}
                 </button>
@@ -140,7 +140,7 @@ export default function Calendario() {
           <button
             onClick={() => setShowSync(true)}
             className="px-2.5 py-1 text-base rounded-lg transition hover:bg-white"
-            style={{ color: 'var(--navy)', border: '1px solid var(--border)' }}
+            style={{ color: 'var(--brand)', border: '1px solid var(--border)' }}
             title={t('calendar.syncTitle')}
           >
             🔄

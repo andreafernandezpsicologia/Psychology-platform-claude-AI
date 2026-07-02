@@ -170,17 +170,17 @@ export default function PacienteDashboard() {
       <div className="space-y-4">
         {/* ── Cobertura ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--navy)' }}>{t('patientDashboard.coverage')}</h3>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>{t('patientDashboard.coverage')}</h3>
           {packActivo ? (
             <div>
               <div className="flex items-end gap-2 mb-2">
-                <span className="text-4xl font-bold heading-serif" style={{ color: 'var(--navy)' }}>
+                <span className="text-4xl font-bold heading-serif" style={{ color: 'var(--brand)' }}>
                   {packActivo.num_sesiones_total - packActivo.num_sesiones_usadas}
                 </span>
                 <span className="text-sm mb-1" style={{ color: 'var(--text)' }}>{t('patientDashboard.sessionsAvailable')}</span>
               </div>
               <div className="w-full rounded-full h-1.5" style={{ backgroundColor: 'var(--border)' }}>
-                <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: 'var(--navy)' }} />
+                <div className="h-1.5 rounded-full transition-all" style={{ width: `${pct}%`, backgroundColor: 'var(--brand)' }} />
               </div>
               <p className="text-xs mt-1.5" style={{ color: 'var(--text)' }}>
                 {t('patientDashboard.sessionsUsed', { used: packActivo.num_sesiones_usadas, total: packActivo.num_sesiones_total })}
@@ -194,7 +194,7 @@ export default function PacienteDashboard() {
         {/* ── Contrato de servicios ── */}
         {packActivo && (
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--navy)' }}>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>
               {t('patientDashboard.contratoTitle')}
             </h3>
 
@@ -221,7 +221,7 @@ export default function PacienteDashboard() {
 
             {contratoEstado === 'firmado_paciente' && (
               <div className="flex items-center gap-3">
-                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#fff8e1', color: '#f57f17' }}>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F8EFD2', color: '#B07A2B' }}>
                   ✓ {t('patientDashboard.contratoEnviado')}
                 </span>
                 <Button size="sm" variant="ghost"
@@ -234,7 +234,7 @@ export default function PacienteDashboard() {
 
             {contratoEstado === 'completado' && (
               <div className="flex items-center gap-3">
-                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#e8f5e9', color: '#2e7d32' }}>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#E9F0E1', color: '#3B6D2A' }}>
                   ✓ {t('patientDashboard.contratoFirmadoAmbos')}
                 </span>
                 <Button size="sm" onClick={() => descargarContratoFinal(packActivo.id)}>
@@ -247,14 +247,14 @@ export default function PacienteDashboard() {
 
         {/* ── Próximas sesiones ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--navy)' }}>{t('patientDashboard.upcoming')}</h3>
+          <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>{t('patientDashboard.upcoming')}</h3>
           {proximas.length === 0 ? (
             <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDashboard.noUpcoming')}</p>
           ) : proximas.map((s) => (
             <div key={s.id} className="py-3" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--brand)' }}>
                     {format(parseWall(s.fecha_hora), "EEEE d 'de' MMMM · HH:mm", { locale })}
                   </p>
                   <p className="text-xs mt-0.5 capitalize" style={{ color: 'var(--text)' }}>
@@ -269,7 +269,7 @@ export default function PacienteDashboard() {
                 <button
                   onClick={() => descargarIcs(s.id)}
                   className="mt-2 text-xs font-medium transition hover:opacity-70"
-                  style={{ color: 'var(--navy)' }}
+                  style={{ color: 'var(--brand)' }}
                 >
                   📅 {t('calendar.addToCalendar')}
                 </button>
@@ -280,7 +280,7 @@ export default function PacienteDashboard() {
 
         {/* ── Pedir cita ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>{t('calendar.requestTitle')}</h3>
+          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>{t('calendar.requestTitle')}</h3>
           <p className="text-xs mb-3" style={{ color: 'var(--text)' }}>{t('calendar.requestHint')}</p>
           <div className="flex gap-3 flex-wrap items-center mb-3">
             <input
@@ -311,8 +311,8 @@ export default function PacienteDashboard() {
                   onClick={() => setSlotElegido(h)}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg transition"
                   style={slotElegido === h
-                    ? { backgroundColor: 'var(--navy)', color: 'white' }
-                    : { backgroundColor: 'var(--bg)', color: 'var(--navy)', border: '1px solid var(--border)' }}
+                    ? { backgroundColor: 'var(--brand)', color: 'white' }
+                    : { backgroundColor: 'var(--bg)', color: 'var(--brand)', border: '1px solid var(--border)' }}
                 >
                   {h}
                 </button>
@@ -329,22 +329,22 @@ export default function PacienteDashboard() {
         {/* ── Mi calendario ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold" style={{ color: 'var(--navy)' }}>{t('calendar.myCalendar')}</h3>
+            <h3 className="text-sm font-semibold" style={{ color: 'var(--brand)' }}>{t('calendar.myCalendar')}</h3>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setMesCalendario(addMonths(mesCalendario, -1))}
                 className="px-2 py-0.5 text-sm rounded transition hover:bg-[var(--bg)]"
-                style={{ color: 'var(--navy)' }}
+                style={{ color: 'var(--brand)' }}
               >
                 ‹
               </button>
-              <span className="text-xs font-semibold capitalize w-28 text-center" style={{ color: 'var(--navy)' }}>
+              <span className="text-xs font-semibold capitalize w-28 text-center" style={{ color: 'var(--brand)' }}>
                 {format(mesCalendario, 'MMMM yyyy', { locale })}
               </span>
               <button
                 onClick={() => setMesCalendario(addMonths(mesCalendario, 1))}
                 className="px-2 py-0.5 text-sm rounded transition hover:bg-[var(--bg)]"
-                style={{ color: 'var(--navy)' }}
+                style={{ color: 'var(--brand)' }}
               >
                 ›
               </button>
@@ -356,7 +356,7 @@ export default function PacienteDashboard() {
         {/* ── Historial ── */}
         {sesiones.some((s) => s.estado === 'completada' || s.estado === 'cancelada_con_cargo') && (
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--navy)' }}>{t('patientDashboard.history')}</h3>
+            <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>{t('patientDashboard.history')}</h3>
             {sesiones.filter((s) => s.estado === 'completada' || s.estado === 'cancelada_con_cargo')
               .sort((a, b) => parseWall(b.fecha_hora) - parseWall(a.fecha_hora))
               .map((s) => (
@@ -374,7 +374,7 @@ export default function PacienteDashboard() {
         )}
         {/* ── Mis datos (RGPD) ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
-          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--navy)' }}>{t('patientDashboard.gdprTitle')}</h3>
+          <h3 className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>{t('patientDashboard.gdprTitle')}</h3>
           <p className="text-xs mb-3" style={{ color: 'var(--text)' }}>{t('patientDashboard.gdprDesc')}</p>
           <Button size="sm" variant="ghost" loading={exportando} onClick={exportarMisDatos}>
             ⬇ {exportando ? t('patientDashboard.gdprDownloading') : t('patientDashboard.gdprDownload')}

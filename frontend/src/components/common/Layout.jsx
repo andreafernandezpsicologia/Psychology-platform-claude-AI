@@ -17,14 +17,18 @@ export default function Layout({ children }) {
       <header className="bg-white border-b px-6 py-3 flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ backgroundColor: 'var(--navy)' }}>
-            R
-          </div>
-          <span className="font-semibold text-base" style={{ color: 'var(--navy)', fontFamily: "'Playfair Display', serif" }}>
-            Studio Renacer
-          </span>
+          <a
+            href="https://www.studiorenacer.com"
+            className="flex items-center gap-2.5 transition hover:opacity-80"
+            title="Ir a studiorenacer.com"
+          >
+            <img src="/logo-studio-renacer.svg" alt="" className="h-9 w-auto" />
+            <span className="font-semibold text-lg" style={{ color: 'var(--brand)', fontFamily: "'Cormorant Garamond', serif" }}>
+              Studio Renacer
+            </span>
+          </a>
           {user?.role === 'admin' && (
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: 'var(--navy)', color: 'white' }}>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>
               {t('layout.admin')}
             </span>
           )}
@@ -43,8 +47,8 @@ export default function Layout({ children }) {
                   onClick={() => i18n.changeLanguage(code)}
                   className="text-xs font-semibold px-2 py-1 rounded transition"
                   style={{
-                    backgroundColor: active ? 'var(--navy)' : 'transparent',
-                    color: active ? 'white' : 'var(--navy)',
+                    backgroundColor: active ? 'var(--brand)' : 'transparent',
+                    color: active ? 'white' : 'var(--brand)',
                   }}
                 >
                   {lang}
@@ -58,7 +62,7 @@ export default function Layout({ children }) {
             <button
               onClick={() => navigate('/admin/calendario')}
               className="text-sm font-medium transition hover:opacity-70"
-              style={{ color: 'var(--navy)' }}
+              style={{ color: 'var(--brand)' }}
               title={t('calendar.title')}
             >
               📅
@@ -68,13 +72,13 @@ export default function Layout({ children }) {
             <button
               onClick={() => navigate('/admin/seguridad')}
               className="text-sm font-medium transition hover:opacity-70"
-              style={{ color: 'var(--navy)' }}
+              style={{ color: 'var(--brand)' }}
               title="Seguridad y 2FA"
             >
               🔐
             </button>
           )}
-          <button onClick={handleLogout} className="text-sm font-medium transition hover:opacity-70" style={{ color: 'var(--navy)' }}>
+          <button onClick={handleLogout} className="text-sm font-medium transition hover:opacity-70" style={{ color: 'var(--brand)' }}>
             {t('layout.logout')}
           </button>
         </div>

@@ -52,7 +52,7 @@ export default function WeekGrid({ date, events, locale, onSelectSlot, onSelectE
               </p>
               <p
                 className="text-sm font-bold w-7 h-7 mx-auto flex items-center justify-center rounded-full"
-                style={isToday(day) ? { backgroundColor: 'var(--navy)', color: 'white' } : { color: 'var(--navy)' }}
+                style={isToday(day) ? { backgroundColor: 'var(--brand)', color: 'white' } : { color: 'var(--brand)' }}
               >
                 {format(day, 'd')}
               </p>

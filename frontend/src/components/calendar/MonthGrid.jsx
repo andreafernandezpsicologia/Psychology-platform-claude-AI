@@ -73,12 +73,12 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
               className={`bg-white p-1 ${compact ? 'min-h-11' : 'min-h-24'} ${clickable ? 'cursor-pointer hover:bg-[var(--bg)]' : ''} transition`}
               style={{
                 opacity: dentro ? 1 : 0.45,
-                ...(seleccionado ? { backgroundColor: 'var(--bg)', boxShadow: 'inset 0 0 0 2px var(--navy)' } : {}),
+                ...(seleccionado ? { backgroundColor: 'var(--bg)', boxShadow: 'inset 0 0 0 2px var(--brand)' } : {}),
               }}
             >
               <div
                 className={`text-xs font-semibold mb-0.5 w-5 h-5 flex items-center justify-center rounded-full ${compact ? 'mx-auto' : ''}`}
-                style={isToday(day) ? { backgroundColor: 'var(--navy)', color: 'white' } : { color: 'var(--navy)' }}
+                style={isToday(day) ? { backgroundColor: 'var(--brand)', color: 'white' } : { color: 'var(--brand)' }}
               >
                 {format(day, 'd')}
               </div>
@@ -118,7 +118,7 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
 
       {compact && (
         <div className="mt-3">
-          <p className="text-xs font-semibold mb-1.5 capitalize" style={{ color: 'var(--navy)' }}>
+          <p className="text-xs font-semibold mb-1.5 capitalize" style={{ color: 'var(--brand)' }}>
             {format(selectedDay, 'EEEE d MMMM', { locale })}
           </p>
           {agenda.length === 0 ? (
@@ -128,7 +128,7 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
             const contenido = (
               <>
                 <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
-                <span className="font-semibold" style={{ color: 'var(--navy)' }}>
+                <span className="font-semibold" style={{ color: 'var(--brand)' }}>
                   {format(parseWall(e.fecha_hora), 'HH:mm')}
                 </span>
                 <span className="truncate" style={{ color: 'var(--text)' }}>
@@ -155,7 +155,7 @@ export default function MonthGrid({ date, events, locale, onSelectDay, onSelectE
             <button
               onClick={() => onSelectDay(selectedDay)}
               className="mt-2 text-xs font-semibold transition hover:opacity-70"
-              style={{ color: 'var(--navy)' }}
+              style={{ color: 'var(--brand)' }}
             >
               {t('calendar.newSession')}
             </button>

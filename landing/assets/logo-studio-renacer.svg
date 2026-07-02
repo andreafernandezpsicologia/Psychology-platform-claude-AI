@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="534" viewBox="0 0 200 267">
+  <!-- Studio Renacer · marca simplificada v2 (fiel al logo original) -->
+  <circle cx="69" cy="68" r="66" fill="#E3A52A"/>
+  <g fill="none" stroke="#5B4128" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- copa nube/cerebro -->
+    <path d="M100,49 A42,42 0 0 1 165,71 A42,42 0 0 1 192,123 A42,42 0 0 1 165,175 A42,42 0 0 1 100,197 A42,42 0 0 1 35,175 A42,42 0 0 1 8,123 A42,42 0 0 1 35,71 A42,42 0 0 1 100,49"/>
+    <!-- crossbar de la Psi -->
+    <path d="M86,101 L114,101"/>
+    <!-- tronco -->
+    <path d="M100,101 L100,254"/>
+    <!-- brazos de la copa de la Psi -->
+    <path d="M36,101 C48,101 56,108 56,124 C56,154 76,166 100,166"/>
+    <path d="M164,101 C152,101 144,108 144,124 C144,154 124,166 100,166"/>
+    <!-- raíz en V -->
+    <path d="M137,197 L102,250"/>
+  </g>
+</svg>

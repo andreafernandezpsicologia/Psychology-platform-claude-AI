@@ -2,9 +2,9 @@ export default function Button({ children, variant = 'primary', size = 'md', loa
   const base = 'inline-flex items-center justify-center font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
-    primary: 'bg-[var(--navy)] text-white hover:opacity-90',
-    ghost: 'text-[var(--navy)] hover:opacity-70',
-    danger: 'text-[#c62828] hover:opacity-70',
+    primary: 'bg-[var(--brand)] text-white hover:opacity-90',
+    ghost: 'text-[var(--brand)] hover:opacity-70',
+    danger: 'text-[#A33B2D] hover:opacity-70',
   };
 
   const sizes = {

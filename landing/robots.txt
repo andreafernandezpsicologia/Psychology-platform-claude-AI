@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /opinar
+Disallow: /api/
+
+Sitemap: https://www.studiorenacer.com/sitemap.xml

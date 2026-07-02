@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Comparte tu experiencia · Studio Renacer</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%231e3a5f'/%3E%3Ctext x='50' y='65' font-family='serif' font-size='50' fill='white' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fraunces:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --c-bg:#fafbfc; --c-surface:#ffffff; --c-ink:#0f1f33; --c-ink-soft:#4a5b73;
+      --c-muted:#7e8a9c; --c-line:#e6ebf2; --c-brand:#1e3a5f; --c-brand-2:#2c5282;
+      --c-accent:#c9a96e; --c-soft:#eef3f9; --c-success:#2f7a52;
+      --radius:14px; --radius-sm:8px; --transition:0.3s cubic-bezier(.2,.7,.2,1);
+      --shadow-md:0 10px 25px -10px rgba(15,31,51,.15), 0 4px 10px -4px rgba(15,31,51,.08);
+    }
+    body { font-family:'Inter',-apple-system,'Segoe UI',sans-serif; color:var(--c-ink);
+      background:var(--c-bg); line-height:1.6; -webkit-font-smoothing:antialiased; padding:2rem 1.25rem 4rem; }
+    h1 { font-family:'Fraunces',Georgia,serif; font-weight:500; font-size:clamp(1.6rem,4vw,2.2rem);
+      line-height:1.2; letter-spacing:-.01em; color:var(--c-ink); margin-bottom:.6rem; }
+    p { color:var(--c-ink-soft); }
+    .brand { display:flex; align-items:center; justify-content:center; gap:.6rem;
+      font-family:'Fraunces',serif; font-size:1.2rem; font-weight:600; color:var(--c-brand); margin-bottom:1.75rem; }
+    .brand-mark { width:36px; height:36px; border-radius:50%;
+      background:linear-gradient(135deg,var(--c-brand),var(--c-brand-2)); color:#fff;
+      display:grid; place-items:center; font-family:'Fraunces',serif; font-weight:600; }
+    .card { max-width:600px; margin:0 auto; background:var(--c-surface); border:1px solid var(--c-line);
+      border-radius:var(--radius); box-shadow:var(--shadow-md); padding:clamp(1.6rem,4vw,2.6rem); }
+    .eyebrow { display:block; font-size:.8rem; color:var(--c-accent); font-weight:600;
+      letter-spacing:.12em; text-transform:uppercase; margin-bottom:.6rem; }
+    .intro { margin-bottom:1.75rem; }
+    .row { margin-bottom:1.25rem; }
+    label.field { display:block; font-size:.85rem; font-weight:500; color:var(--c-ink); margin-bottom:.45rem; }
+    .hint { font-size:.78rem; color:var(--c-muted); margin-top:.3rem; }
+    textarea, input[type=text], input[type=email] {
+      width:100%; padding:12px 14px; font-family:inherit; font-size:.96rem; color:var(--c-ink);
+      border:1.5px solid var(--c-line); border-radius:var(--radius-sm); background:var(--c-bg);
+      transition:all var(--transition); }
+    textarea { min-height:120px; resize:vertical; }
+    textarea:focus, input:focus { outline:none; border-color:var(--c-brand); background:var(--c-surface);
+      box-shadow:0 0 0 4px rgba(30,58,95,.08); }
+    .choices { display:flex; flex-wrap:wrap; gap:.5rem; }
+    .choice { flex:1 1 auto; }
+    .choice input { position:absolute; opacity:0; pointer-events:none; }
+    .choice span { display:block; text-align:center; padding:10px 12px; font-size:.9rem;
+      border:1.5px solid var(--c-line); border-radius:999px; cursor:pointer; color:var(--c-ink-soft);
+      transition:all var(--transition); background:var(--c-bg); }
+    .choice input:checked + span { border-color:var(--c-brand); background:var(--c-soft);
+      color:var(--c-brand); font-weight:600; }
+    .consent { display:flex; gap:.6rem; align-items:flex-start; font-size:.85rem; color:var(--c-ink-soft);
+      margin:1rem 0; line-height:1.5; }
+    .consent input { margin-top:3px; accent-color:var(--c-brand); flex:0 0 auto; }
+    .note { font-size:.8rem; color:var(--c-muted); background:var(--c-soft); border-radius:var(--radius-sm);
+      padding:12px 14px; margin:1.25rem 0; line-height:1.5; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; width:100%;
+      background:var(--c-brand); color:#fff; font-family:inherit; font-size:1rem; font-weight:600;
+      padding:14px 22px; border:none; border-radius:999px; cursor:pointer; transition:all var(--transition); }
+    .btn:hover { opacity:.9; transform:translateY(-1px); }
+    .btn:disabled { opacity:.6; cursor:default; transform:none; }
+    .msg { margin-top:1rem; padding:12px 16px; border-radius:var(--radius-sm); font-size:.9rem;
+      text-align:center; display:none; }
+    .msg.error { display:block; background:rgba(178,50,50,.08); color:#b23232; border:1px solid rgba(178,50,50,.2); }
+    .success { display:none; text-align:center; padding:1rem 0; }
+    .success .check { width:64px; height:64px; background:rgba(47,122,82,.1); color:var(--c-success);
+      border-radius:50%; display:inline-grid; place-items:center; margin-bottom:1rem; }
+    .lang { text-align:center; margin-bottom:1.5rem; }
+    .lang button { border:none; background:transparent; color:var(--c-muted); font-family:inherit;
+      font-size:.78rem; font-weight:600; padding:5px 10px; border-radius:999px; cursor:pointer; letter-spacing:.05em; }
+    .lang button.active { background:var(--c-brand); color:#fff; }
+    a { color:var(--c-brand-2); }
+    .name-wrap.hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="brand"><span class="brand-mark">R</span><span>Studio Renacer</span></div>
+
+  <div class="card">
+    <div class="lang" role="group" aria-label="Idioma">
+      <button data-lang="es" class="active">ES</button>
+      <button data-lang="en">EN</button>
+      <button data-lang="da">DA</button>
+    </div>
+
+    <span class="eyebrow" data-i18n="eyebrow">Tu experiencia</span>
+    <h1 data-i18n="title">Comparte tu experiencia</h1>
+    <p class="intro" data-i18n="intro">Si te apetece, cuéntame cómo ha sido tu experiencia. Tú eliges cómo aparecer y nada se publica sin tu permiso.</p>
+
+    <form id="op-form" novalidate>
+      <div class="row">
+        <label class="field" data-i18n="q.tipo">¿Sobre qué es tu opinión?</label>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="tipo" value="terapia" /><span data-i18n="tipo.terapia">Terapia</span></label>
+          <label class="choice"><input type="radio" name="tipo" value="formacion" checked /><span data-i18n="tipo.formacion">Guía / formación</span></label>
+        </div>
+      </div>
+
+      <div class="row">
+        <label class="field" for="opinion" data-i18n="q.opinion">Tu opinión</label>
+        <textarea id="opinion" name="opinion" maxlength="800" required></textarea>
+        <div class="hint" data-i18n="hint.opinion">Con tus palabras. Lo que quieras contar.</div>
+      </div>
+
+      <div class="row">
+        <label class="field" for="context" data-i18n="q.context">¿Qué te ayudó? (opcional)</label>
+        <input type="text" id="context" name="context" maxlength="200" />
+      </div>
+
+      <div class="row">
+        <label class="field" data-i18n="q.display">¿Cómo quieres aparecer?</label>
+        <div class="choices">
+          <label class="choice"><input type="radio" name="display" value="nombre" checked /><span data-i18n="display.nombre">Nombre + inicial</span></label>
+          <label class="choice"><input type="radio" name="display" value="iniciales" /><span data-i18n="display.iniciales">Solo iniciales</span></label>
+          <label class="choice"><input type="radio" name="display" value="anonimo" /><span data-i18n="display.anonimo">Anónimo</span></label>
+        </div>
+      </div>
+
+      <div class="row name-wrap" id="name-wrap">
+        <label class="field" for="name" data-i18n="q.name">Tu nombre</label>
+        <input type="text" id="name" name="name" maxlength="80" autocomplete="given-name" />
+        <div class="hint" data-i18n="hint.name">Solo lo usaré para mostrarte como elegiste (p. ej. «María G.»).</div>
+      </div>
+
+      <div class="row">
+        <label class="field" for="email" data-i18n="q.email">Tu email (opcional)</label>
+        <input type="email" id="email" name="email" maxlength="200" autocomplete="email" />
+        <div class="hint" data-i18n="hint.email">Solo para confirmarte y para que puedas pedir que la retire cuando quieras.</div>
+      </div>
+
+      <label class="consent"><input type="checkbox" id="consent" required />
+        <span data-i18n="consent.data">Doy mi consentimiento para tratar estos datos con esta finalidad (RGPD).</span></label>
+      <label class="consent"><input type="checkbox" id="publish" required />
+        <span data-i18n="consent.publish">Autorizo a Studio Renacer a publicar mi opinión con la identidad protegida que he elegido, sabiendo que puedo pedir que la retire en cualquier momento.</span></label>
+
+      <p class="note" data-i18n="note">Esto es una experiencia personal, no una promesa de resultados. Tu privacidad está protegida y tu opinión no se publicará hasta que Andrea la revise.</p>
+
+      <button type="submit" class="btn" data-i18n="submit">Enviar mi opinión</button>
+      <div id="op-msg" class="msg" role="status" aria-live="polite"></div>
+    </form>
+
+    <div id="op-success" class="success">
+      <div class="check">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h1 data-i18n="success.t" style="font-size:1.4rem">¡Gracias!</h1>
+      <p data-i18n="success.p">He recibido tu opinión. La revisaré con cariño antes de publicarla, siempre con la identidad que elegiste.</p>
+    </div>
+  </div>
+
+  <script>
+    const T = {
+      es: {
+        eyebrow:'Tu experiencia', title:'Comparte tu experiencia',
+        intro:'Si te apetece, cuéntame cómo ha sido tu experiencia. Tú eliges cómo aparecer y nada se publica sin tu permiso.',
+        'q.tipo':'¿Sobre qué es tu opinión?', 'tipo.terapia':'Terapia', 'tipo.formacion':'Guía / formación',
+        'q.opinion':'Tu opinión', 'hint.opinion':'Con tus palabras. Lo que quieras contar.',
+        'q.context':'¿Qué te ayudó? (opcional)',
+        'q.display':'¿Cómo quieres aparecer?', 'display.nombre':'Nombre + inicial', 'display.iniciales':'Solo iniciales', 'display.anonimo':'Anónimo',
+        'q.name':'Tu nombre', 'hint.name':'Solo lo usaré para mostrarte como elegiste (p. ej. «María G.»).',
+        'q.email':'Tu email (opcional)', 'hint.email':'Solo para confirmarte y para que puedas pedir que la retire cuando quieras.',
+        'consent.data':'Doy mi consentimiento para tratar estos datos con esta finalidad (RGPD).',
+        'consent.publish':'Autorizo a Studio Renacer a publicar mi opinión con la identidad protegida que he elegido, sabiendo que puedo pedir que la retire en cualquier momento.',
+        note:'Esto es una experiencia personal, no una promesa de resultados. Tu privacidad está protegida y tu opinión no se publicará hasta que Andrea la revise.',
+        submit:'Enviar mi opinión', 'success.t':'¡Gracias!',
+        'success.p':'He recibido tu opinión. La revisaré con cariño antes de publicarla, siempre con la identidad que elegiste.',
+        err_short:'⚠ Cuéntame un poco más, por favor.', err_consent:'⚠ Necesito ambos consentimientos para poder usar tu opinión.',
+        err_net:'✕ Ha habido un error. Inténtalo de nuevo o escríbeme a info@studiorenacer.com.', sending:'Enviando…'
+      },
+      en: {
+        eyebrow:'Your experience', title:'Share your experience',
+        intro:'If you feel like it, tell me about your experience. You choose how you appear and nothing is published without your permission.',
+        'q.tipo':'What is your feedback about?', 'tipo.terapia':'Therapy', 'tipo.formacion':'Guide / training',
+        'q.opinion':'Your feedback', 'hint.opinion':'In your own words. Whatever you want to share.',
+        'q.context':'What helped you? (optional)',
+        'q.display':'How do you want to appear?', 'display.nombre':'First name + initial', 'display.iniciales':'Initials only', 'display.anonimo':'Anonymous',
+        'q.name':'Your name', 'hint.name':'Only used to show you as you chose (e.g. “María G.”).',
+        'q.email':'Your email (optional)', 'hint.email':'Only to confirm and so you can ask me to remove it whenever you want.',
+        'consent.data':'I consent to the processing of this data for this purpose (GDPR).',
+        'consent.publish':'I authorise Studio Renacer to publish my feedback with the protected identity I chose, knowing I can ask to remove it at any time.',
+        note:'This is a personal experience, not a promise of results. Your privacy is protected and your feedback will not be published until Andrea reviews it.',
+        submit:'Send my feedback', 'success.t':'Thank you!',
+        'success.p':'I\'ve received your feedback. I\'ll review it carefully before publishing, always with the identity you chose.',
+        err_short:'⚠ Please tell me a little more.', err_consent:'⚠ I need both consents to use your feedback.',
+        err_net:'✕ Something went wrong. Try again or email me at info@studiorenacer.com.', sending:'Sending…'
+      },
+      da: {
+        eyebrow:'Din oplevelse', title:'Del din oplevelse',
+        intro:'Hvis du har lyst, så fortæl mig om din oplevelse. Du vælger, hvordan du vises, og intet udgives uden din tilladelse.',
+        'q.tipo':'Hvad handler din udtalelse om?', 'tipo.terapia':'Terapi', 'tipo.formacion':'Guide / kursus',
+        'q.opinion':'Din udtalelse', 'hint.opinion':'Med dine egne ord. Det, du har lyst til at fortælle.',
+        'q.context':'Hvad hjalp dig? (valgfrit)',
+        'q.display':'Hvordan vil du vises?', 'display.nombre':'Fornavn + initial', 'display.iniciales':'Kun initialer', 'display.anonimo':'Anonym',
+        'q.name':'Dit navn', 'hint.name':'Bruges kun til at vise dig, som du valgte (f.eks. »María G.«).',
+        'q.email':'Din e-mail (valgfrit)', 'hint.email':'Kun for at bekræfte og så du kan bede mig fjerne den, når du vil.',
+        'consent.data':'Jeg giver samtykke til behandling af disse data til dette formål (GDPR).',
+        'consent.publish':'Jeg giver Studio Renacer tilladelse til at udgive min udtalelse med den beskyttede identitet, jeg valgte, velvidende at jeg kan bede om at få den fjernet når som helst.',
+        note:'Dette er en personlig oplevelse, ikke et løfte om resultater. Dit privatliv er beskyttet, og din udtalelse udgives først, når Andrea har gennemgået den.',
+        submit:'Send min udtalelse', 'success.t':'Tak!',
+        'success.p':'Jeg har modtaget din udtalelse. Jeg gennemgår den omhyggeligt, før jeg udgiver den — altid med den identitet, du valgte.',
+        err_short:'⚠ Fortæl mig lidt mere, tak.', err_consent:'⚠ Jeg har brug for begge samtykker for at kunne bruge din udtalelse.',
+        err_net:'✕ Der opstod en fejl. Prøv igen, eller skriv til info@studiorenacer.com.', sending:'Sender…'
+      }
+    };
+
+    const params = new URLSearchParams(location.search);
+    let lang = ['es','en','da'].includes(params.get('lang')) ? params.get('lang') : 'es';
+    const tipoParam = params.get('tipo');
+    if (tipoParam === 'terapia' || tipoParam === 'formacion') {
+      const r = document.querySelector(`input[name="tipo"][value="${tipoParam}"]`);
+      if (r) r.checked = true;
+    }
+
+    function applyLang(l) {
+      lang = l;
+      const dict = T[l] || T.es;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (dict[k]) el.textContent = dict[k];
+      });
+      document.documentElement.lang = l;
+      document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
+    }
+    document.querySelectorAll('.lang button').forEach(b => b.addEventListener('click', () => applyLang(b.dataset.lang)));
+    applyLang(lang);
+
+    // Mostrar/ocultar el campo de nombre según la elección
+    const nameWrap = document.getElementById('name-wrap');
+    function syncName() {
+      const val = document.querySelector('input[name="display"]:checked').value;
+      nameWrap.classList.toggle('hidden', val === 'anonimo');
+    }
+    document.querySelectorAll('input[name="display"]').forEach(r => r.addEventListener('change', syncName));
+    syncName();
+
+    const form = document.getElementById('op-form');
+    const msg = document.getElementById('op-msg');
+    const success = document.getElementById('op-success');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const dict = T[lang] || T.es;
+      msg.className = 'msg'; msg.textContent = '';
+
+      const data = {
+        tipo:    (document.querySelector('input[name="tipo"]:checked') || {}).value || 'formacion',
+        opinion: document.getElementById('opinion').value.trim(),
+        context: document.getElementById('context').value.trim(),
+        display: (document.querySelector('input[name="display"]:checked') || {}).value || 'nombre',
+        name:    document.getElementById('name').value.trim(),
+        email:   document.getElementById('email').value.trim(),
+        consent: document.getElementById('consent').checked,
+        publish: document.getElementById('publish').checked,
+        lang
+      };
+
+      if (data.opinion.length < 10) { msg.className = 'msg error'; msg.textContent = dict.err_short; return; }
+      if (!data.consent || !data.publish) { msg.className = 'msg error'; msg.textContent = dict.err_consent; return; }
+
+      const btn = form.querySelector('.btn');
+      const label = btn.textContent;
+      btn.disabled = true; btn.textContent = dict.sending;
+
+      try {
+        const res = await fetch('/api/feedback', {
+          method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('net');
+        form.style.display = 'none';
+        success.style.display = 'block';
+      } catch (err) {
+        btn.disabled = false; btn.textContent = label;
+        msg.className = 'msg error'; msg.textContent = dict.err_net;
+      }
+    });
+  </script>
+</body>
+</html>

@@ -48,6 +48,16 @@ export default function Calendario() {
     return () => mq.removeEventListener('change', fn);
   }, []);
 
+  // Vuelta del consentimiento de Google (conectar cuenta para enlaces de Meet)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const resultado = params.get('google');
+    if (!resultado) return;
+    if (resultado === 'ok') toast.success(t('calendar.googleConnected'));
+    else toast.error(t('calendar.googleConnectError'));
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [t]);
+
   const cargar = () => {
     const rango = vistaActual === 'week'
       ? { start: startOfWeek(fecha, { locale }), end: endOfWeek(fecha, { locale }) }

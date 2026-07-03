@@ -223,6 +223,21 @@
     "videoLinkSaved": "Link gemt",
     "videoLinkMissing": "Der er endnu intet link til videoopkaldet",
     "joinCall": "Deltag i videoopkaldet",
-    "joinCallPending": "Linket til videoopkaldet kommer inden sessionen"
+    "joinCallPending": "Linket til videoopkaldet kommer inden sessionen",
+    "googleSectionTitle": "Automatisk Google Meet",
+    "googleHint": "Forbind din Google-konto, så får hvert videoopkald sit eget Meet-link med det samme. Din Google Kalender gemmer kun dato og tidspunkt, aldrig patientdata.",
+    "googleConnect": "Forbind med Google",
+    "googleConnectedAs": "Forbundet som {{email}}",
+    "googleDisconnect": "Afbryd",
+    "googleDisconnected": "Google-konto afbrudt",
+    "googleDisconnectConfirmTitle": "Afbryd Google?",
+    "googleDisconnectConfirmDesc": "Allerede genererede links virker fortsat, men nye videoopkald går tilbage til manuel tilstand.",
+    "googleConnected": "Google-konto forbundet — Meet-links genereres automatisk",
+    "googleConnectError": "Kunne ikke forbinde med Google. Prøv igen.",
+    "meetGenerate": "Generér Meet-link",
+    "meetGenerating": "Genererer…",
+    "meetGenerated": "Meet-link genereret",
+    "meetAutoHint": "Der genereres automatisk et Meet-link, når sessionen oprettes.",
+    "meetAutoPlaceholder": "Tomt = automatisk Meet-link"
   }
 }

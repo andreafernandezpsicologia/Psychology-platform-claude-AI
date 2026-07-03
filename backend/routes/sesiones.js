@@ -7,8 +7,41 @@ const { buildSessionICS } = require('../services/icsService');
 const { bloquesOcupados } = require('../services/externalCalendarService');
 const { FECHA_NAIVE_RE, naiveToMs, msToNaive, ahoraParedMs, diaSemana } = require('../services/fechaPared');
 const { HORA_INICIO, HORA_FIN, DIAS_LABORALES, ANTELACION_MINIMA_HORAS } = require('../config/horario');
+const meet = require('../services/googleMeetService');
 
 const router = express.Router();
+
+// El enlace lo abre el paciente desde su panel y sus emails: solo https válido.
+function enlaceValido(url) {
+  try {
+    return new URL(String(url)).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+// Genera enlaces de Meet para las sesiones de videollamada que no traen enlace
+// manual y actualiza las filas (muta cada sesión in situ para que la respuesta
+// y los emails ya salgan con el enlace). Best-effort: si Google falla o la
+// cuenta no está conectada, las sesiones quedan sin enlace y se añade a mano.
+async function generarEnlacesMeet(sesiones) {
+  for (const s of sesiones) {
+    if (s.tipo !== 'videollamada' || s.enlace_videollamada) continue;
+    try {
+      const resultado = await meet.crearEventoMeet(s.fecha_hora, s.duracion_minutos);
+      if (!resultado) return; // cuenta no conectada: no insistir con el resto
+      const { error } = await supabase
+        .from('sesiones')
+        .update({ enlace_videollamada: resultado.enlace, google_event_id: resultado.eventId, updated_at: new Date().toISOString() })
+        .eq('id', s.id);
+      if (error) throw new Error(error.message);
+      s.enlace_videollamada = resultado.enlace;
+      s.google_event_id = resultado.eventId;
+    } catch (err) {
+      console.error('[meet] generar enlace:', err.message);
+    }
+  }
+}
 
 // Devuelve el conflicto que se solapa con [fecha_hora, fecha_hora + duración), o null.
 // Comprueba sesiones programadas/solicitadas y, si los hay, los bloques de los
@@ -76,6 +109,9 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
   if (!FECHA_NAIVE_RE.test(String(fecha_hora))) {
     return res.status(400).json({ error: 'fecha_hora debe tener formato YYYY-MM-DDTHH:MM' });
   }
+  if (enlace_videollamada && !enlaceValido(enlace_videollamada)) {
+    return res.status(400).json({ error: 'El enlace debe ser una URL https válida' });
+  }
   const repeticiones = Math.min(Math.max(parseInt(req.body.repeticiones) || 1, 1), 20);
   const intervaloDias = parseInt(req.body.intervalo_dias) === 14 ? 14 : 7;
 
@@ -124,6 +160,10 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         ...(repeticiones > 1 ? { serie: true, repeticiones } : {}),
       });
     });
+
+    // Si Andrea tiene Google conectado y no pegó enlace manual, cada sesión de
+    // videollamada recibe su propio Meet antes de responder y de enviar el email.
+    await generarEnlacesMeet(data || []);
 
     // Confirmación inmediata al paciente, con el .ics (fire-and-forget)
     supabase
@@ -289,6 +329,9 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 // (p. ej. cuando el Meet se genera después de agendar la cita).
 router.put('/:id/enlace', verifyToken, requireAdmin, async (req, res) => {
   const { enlace_videollamada } = req.body;
+  if (enlace_videollamada && !enlaceValido(enlace_videollamada)) {
+    return res.status(400).json({ error: 'El enlace debe ser una URL https válida' });
+  }
 
   try {
     const { data: current, error: fetchError } = await supabase
@@ -313,6 +356,42 @@ router.put('/:id/enlace', verifyToken, requireAdmin, async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Admin: generar un enlace de Google Meet para una sesión ya creada (botón
+// "Generar enlace de Meet"). Requiere la cuenta de Google conectada.
+router.post('/:id/generar-meet', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: sesion, error: fetchError } = await supabase
+      .from('sesiones')
+      .select('id, tipo, estado, fecha_hora, duracion_minutos, enlace_videollamada')
+      .eq('id', req.params.id)
+      .single();
+    if (fetchError) return res.status(404).json({ error: 'Sesión no encontrada' });
+    if (sesion.tipo !== 'videollamada') {
+      return res.status(400).json({ error: 'Solo las sesiones de videollamada llevan enlace' });
+    }
+    if (!['programada', 'solicitada'].includes(sesion.estado)) {
+      return res.status(400).json({ error: 'La sesión ya no está activa' });
+    }
+
+    const resultado = await meet.crearEventoMeet(sesion.fecha_hora, sesion.duracion_minutos);
+    if (!resultado) return res.status(409).json({ error: 'google_no_conectado' });
+
+    const { data, error } = await supabase
+      .from('sesiones')
+      .update({ enlace_videollamada: resultado.enlace, google_event_id: resultado.eventId, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) return res.status(400).json({ error: error.message });
+
+    audit(req, 'generate_meet_link', 'sessions', req.params.id, {});
+    res.json(data);
+  } catch (err) {
+    console.error('[generar-meet]', err.message);
+    res.status(502).json({ error: 'No se pudo generar el enlace de Meet' });
   }
 });
 
@@ -353,7 +432,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data: current, error: fetchError } = await supabase
       .from('sesiones')
-      .select('estado, pack_id, pacientes ( users ( email, nombre_completo ) )')
+      .select('estado, pack_id, tipo, google_event_id, pacientes ( users ( email, nombre_completo ) )')
       .eq('id', req.params.id)
       .single();
 
@@ -372,6 +451,18 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
       estado_anterior: current.estado,
       estado_nuevo: estado,
     });
+
+    // Al aceptar una solicitud de videollamada, generar su Meet antes del email
+    // de confirmación para que el paciente ya reciba el enlace (best-effort).
+    if (current.estado === 'solicitada' && estado === 'programada') {
+      await generarEnlacesMeet([data]);
+    }
+
+    // Al cancelar, quitar el evento del Google Calendar de Andrea (best-effort)
+    if ((estado === 'cancelada' || estado === 'cancelada_con_cargo') && current.google_event_id) {
+      meet.borrarEventoMeet(current.google_event_id)
+        .catch((e) => console.error('[estado] borrar evento Meet:', e.message));
+    }
 
     // Si era una solicitud del paciente, avisarle del resultado (fire-and-forget)
     if (current.estado === 'solicitada' && (estado === 'programada' || estado === 'cancelada')) {
@@ -464,6 +555,12 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
       fecha_anterior: current.fecha_hora,
       fecha_nueva: fecha_hora,
     });
+
+    // Mover el evento de Meet a la nueva hora (el enlace no cambia; best-effort)
+    if (data.google_event_id) {
+      meet.moverEventoMeet(data.google_event_id, fecha_hora, data.duracion_minutos)
+        .catch((e) => console.error('[reagendar] mover evento Meet:', e.message));
+    }
 
     // Avisar al paciente del cambio de fecha, con el .ics actualizado (fire-and-forget)
     const user = current.pacientes?.users;

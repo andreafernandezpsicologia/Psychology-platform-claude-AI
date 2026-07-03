@@ -7,6 +7,7 @@ import Button from '../common/Button';
 import Badge from '../common/Badge';
 import ConfirmDialog from '../common/ConfirmDialog';
 import api from '../../utils/api';
+import { estadoGoogle } from '../../utils/googleMeet';
 import { parseWall } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
@@ -21,9 +22,15 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
   const [editandoEnlace, setEditandoEnlace] = useState(false);
   const [enlaceInput, setEnlaceInput] = useState('');
   const [savingEnlace, setSavingEnlace] = useState(false);
+  const [googleOk, setGoogleOk] = useState(false);
+  const [generandoMeet, setGenerandoMeet] = useState(false);
 
   // Al cambiar de sesión (o cerrar y abrir otra), no arrastrar el modo edición.
   useEffect(() => { setEditandoEnlace(false); }, [event?.id]);
+
+  useEffect(() => {
+    if (open) estadoGoogle().then((g) => setGoogleOk(g.conectado));
+  }, [open]);
 
   if (!open || !event) return null;
 
@@ -47,6 +54,19 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
   const abrirEdicionEnlace = () => {
     setEnlaceInput(event.enlace_videollamada || '');
     setEditandoEnlace(true);
+  };
+
+  const generarMeet = async () => {
+    setGenerandoMeet(true);
+    try {
+      await api.post(`/sesiones/${event.id}/generar-meet`);
+      toast.success(t('calendar.meetGenerated'));
+      onChanged();
+    } catch (err) {
+      toast.error('Error: ' + (err.response?.data?.error || ''));
+    } finally {
+      setGenerandoMeet(false);
+    }
   };
 
   const guardarEnlace = async () => {
@@ -118,9 +138,17 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
                   </button>
                 </div>
               ) : (
-                <button onClick={abrirEdicionEnlace} className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
-                  + {t('calendar.videoLinkAdd')}
-                </button>
+                <div className="flex items-center gap-3 flex-wrap">
+                  {googleOk && ['programada', 'solicitada'].includes(event.estado) && (
+                    <button disabled={generandoMeet} onClick={generarMeet}
+                      className="text-xs font-medium hover:opacity-70 disabled:opacity-50" style={{ color: 'var(--brand)' }}>
+                      ⚡ {generandoMeet ? t('calendar.meetGenerating') : t('calendar.meetGenerate')}
+                    </button>
+                  )}
+                  <button onClick={abrirEdicionEnlace} className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                    + {t('calendar.videoLinkAdd')}
+                  </button>
+                </div>
               )}
             </div>
           )}

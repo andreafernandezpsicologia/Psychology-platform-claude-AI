@@ -6,6 +6,7 @@ import { es, enUS, da } from 'date-fns/locale';
 import Button from '../common/Button';
 import ConfirmDialog from '../common/ConfirmDialog';
 import api from '../../utils/api';
+import { estadoGoogle } from '../../utils/googleMeet';
 import { parseWall } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
@@ -21,8 +22,13 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
   });
   const [saving, setSaving] = useState(false);
   const [conflicto, setConflicto] = useState(null);
+  const [googleOk, setGoogleOk] = useState(false);
 
   const reagendar = !!session;
+
+  useEffect(() => {
+    if (open && !reagendar) estadoGoogle().then((g) => setGoogleOk(g.conectado));
+  }, [open, reagendar]);
 
   useEffect(() => {
     if (!open) return;
@@ -169,6 +175,11 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
                   onChange={(e) => setForm({ ...form, enlace_videollamada: e.target.value })}
                   className="field-input"
                 />
+                {googleOk && !form.enlace_videollamada.trim() && (
+                  <p className="text-xs mt-1" style={{ color: '#3B6D2A' }}>
+                    ⚡ {t('calendar.meetAutoHint')}
+                  </p>
+                )}
               </div>
             )}
 

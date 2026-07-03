@@ -223,6 +223,21 @@
     "videoLinkSaved": "Link saved",
     "videoLinkMissing": "No video call link yet",
     "joinCall": "Join the video call",
-    "joinCallPending": "The video call link will arrive before the session"
+    "joinCallPending": "The video call link will arrive before the session",
+    "googleSectionTitle": "Automatic Google Meet",
+    "googleHint": "Connect your Google account and every video call gets its own Meet link instantly, hands-free. Your Google Calendar only stores the date and time, never patient data.",
+    "googleConnect": "Connect with Google",
+    "googleConnectedAs": "Connected as {{email}}",
+    "googleDisconnect": "Disconnect",
+    "googleDisconnected": "Google account disconnected",
+    "googleDisconnectConfirmTitle": "Disconnect Google?",
+    "googleDisconnectConfirmDesc": "Links already generated will keep working, but new video calls will fall back to manual mode.",
+    "googleConnected": "Google account connected — Meet links will be generated automatically",
+    "googleConnectError": "Could not connect with Google. Please try again.",
+    "meetGenerate": "Generate Meet link",
+    "meetGenerating": "Generating…",
+    "meetGenerated": "Meet link generated",
+    "meetAutoHint": "A Meet link will be generated automatically when the session is created.",
+    "meetAutoPlaceholder": "Empty = automatic Meet link"
   }
 }

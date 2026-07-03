@@ -223,6 +223,21 @@
     "videoLinkSaved": "Enlace guardado",
     "videoLinkMissing": "Aún no tiene enlace de videollamada",
     "joinCall": "Unirse a la videollamada",
-    "joinCallPending": "El enlace de la videollamada llegará antes de la sesión"
+    "joinCallPending": "El enlace de la videollamada llegará antes de la sesión",
+    "googleSectionTitle": "Google Meet automático",
+    "googleHint": "Conecta tu cuenta de Google y cada videollamada tendrá su enlace de Meet al momento, sin hacer nada. En tu Google Calendar solo se guarda fecha y hora, nunca datos del paciente.",
+    "googleConnect": "Conectar con Google",
+    "googleConnectedAs": "Conectada como {{email}}",
+    "googleDisconnect": "Desconectar",
+    "googleDisconnected": "Cuenta de Google desconectada",
+    "googleDisconnectConfirmTitle": "¿Desconectar Google?",
+    "googleDisconnectConfirmDesc": "Los enlaces ya generados seguirán funcionando, pero las nuevas videollamadas volverán al modo manual.",
+    "googleConnected": "Cuenta de Google conectada — los enlaces de Meet se generarán automáticamente",
+    "googleConnectError": "No se pudo conectar con Google. Inténtalo de nuevo.",
+    "meetGenerate": "Generar enlace de Meet",
+    "meetGenerating": "Generando…",
+    "meetGenerated": "Enlace de Meet generado",
+    "meetAutoHint": "Se generará un enlace de Meet automáticamente al crear la sesión.",
+    "meetAutoPlaceholder": "Vacío = enlace de Meet automático"
   }
 }

@@ -4,22 +4,51 @@ import { toast } from 'sonner';
 import Button from '../common/Button';
 import ConfirmDialog from '../common/ConfirmDialog';
 import api from '../../utils/api';
+import { estadoGoogle, invalidarEstadoGoogle } from '../../utils/googleMeet';
 
 // Sincronización de calendarios (solo admin):
-// 1) Saliente: URL de suscripción iCal para ver la agenda en Google/Apple/Outlook.
-// 2) Entrante: conectar calendarios personales cuyas citas bloquean horas como "Ocupado".
+// 1) Google Meet: conectar la cuenta de Google para generar enlaces automáticamente.
+// 2) Saliente: URL de suscripción iCal para ver la agenda en Google/Apple/Outlook.
+// 3) Entrante: conectar calendarios personales cuyas citas bloquean horas como "Ocupado".
 export default function SyncModal({ open, onClose, onChanged }) {
   const { t } = useTranslation();
   const [feedUrl, setFeedUrl] = useState('');
   const [externos, setExternos] = useState([]);
+  const [google, setGoogle] = useState(null);
   const [form, setForm] = useState({ nombre: '', url: '' });
   const [saving, setSaving] = useState(false);
+  const [conectando, setConectando] = useState(false);
   const [confirmRegen, setConfirmRegen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmGoogleOff, setConfirmGoogleOff] = useState(false);
 
   const cargar = () => {
     api.get('/calendarios/feed-url').then((res) => setFeedUrl(res.data.url)).catch(() => {});
     api.get('/calendarios/externos').then((res) => setExternos(res.data)).catch(() => {});
+    estadoGoogle(true).then(setGoogle);
+  };
+
+  const conectarGoogle = async () => {
+    setConectando(true);
+    try {
+      const res = await api.post('/google/conectar');
+      window.location.href = res.data.url; // consentimiento de Google y vuelta al calendario
+    } catch (err) {
+      setConectando(false);
+      toast.error('Error: ' + (err.response?.data?.error || ''));
+    }
+  };
+
+  const desconectarGoogle = async () => {
+    setConfirmGoogleOff(false);
+    try {
+      await api.delete('/google');
+      invalidarEstadoGoogle();
+      toast.success(t('calendar.googleDisconnected'));
+      cargar();
+    } catch (err) {
+      toast.error('Error: ' + (err.response?.data?.error || ''));
+    }
   };
 
   useEffect(() => { if (open) cargar(); }, [open]);
@@ -86,6 +115,33 @@ export default function SyncModal({ open, onClose, onChanged }) {
           <h3 className="font-bold text-base mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", color: 'var(--brand)' }}>
             🔄 {t('calendar.syncTitle')}
           </h3>
+
+          {/* ── Google Meet: enlaces automáticos ── */}
+          {google?.configurado && (
+            <>
+              <div className="mb-5">
+                <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>
+                  {t('calendar.googleSectionTitle')}
+                </h4>
+                <p className="text-xs mb-2" style={{ color: 'var(--text)' }}>{t('calendar.googleHint')}</p>
+                {google.conectado ? (
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-medium" style={{ color: '#3B6D2A' }}>
+                      ✓ {t('calendar.googleConnectedAs', { email: google.email || '' })}
+                    </p>
+                    <Button variant="danger" size="sm" onClick={() => setConfirmGoogleOff(true)}>
+                      {t('calendar.googleDisconnect')}
+                    </Button>
+                  </div>
+                ) : (
+                  <Button size="sm" loading={conectando} onClick={conectarGoogle}>
+                    {t('calendar.googleConnect')}
+                  </Button>
+                )}
+              </div>
+              <hr style={{ border: 'none', borderTop: '1px solid var(--border)' }} className="my-4" />
+            </>
+          )}
 
           {/* ── Saliente: feed de suscripción ── */}
           <div className="mb-5">
@@ -176,6 +232,14 @@ export default function SyncModal({ open, onClose, onChanged }) {
         confirmLabel={t('calendar.delete')}
         onConfirm={eliminar}
         onCancel={() => setConfirmDelete(null)}
+      />
+      <ConfirmDialog
+        open={confirmGoogleOff}
+        title={t('calendar.googleDisconnectConfirmTitle')}
+        description={t('calendar.googleDisconnectConfirmDesc')}
+        confirmLabel={t('calendar.googleDisconnect')}
+        onConfirm={desconectarGoogle}
+        onCancel={() => setConfirmGoogleOff(false)}
       />
     </>
   );

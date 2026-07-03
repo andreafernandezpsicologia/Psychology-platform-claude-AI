@@ -10,6 +10,7 @@ import Badge from '../../components/common/Badge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { SkeletonCard } from '../../components/common/Skeleton';
 import api from '../../utils/api';
+import { estadoGoogle } from '../../utils/googleMeet';
 import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
@@ -73,6 +74,8 @@ export default function PacienteDetalle() {
   const [editandoEnlaceId, setEditandoEnlaceId] = useState(null);
   const [enlaceInput, setEnlaceInput] = useState('');
   const [savingEnlace, setSavingEnlace] = useState(false);
+  const [googleOk, setGoogleOk] = useState(false);
+  const [generandoMeetId, setGenerandoMeetId] = useState(null);
   const [packForm, setPackForm] = useState({ num_sesiones_total: 10 });
   const [savingSesion, setSavingSesion] = useState(false);
   const [savingPack, setSavingPack] = useState(false);
@@ -94,6 +97,7 @@ export default function PacienteDetalle() {
       .finally(() => setLoading(false));
   };
   useEffect(() => { cargar(); }, [id]);
+  useEffect(() => { estadoGoogle().then((g) => setGoogleOk(g.conectado)); }, []);
 
   // ── Sesiones ──────────────────────────────────────────────────────────────
   const crearSesion = async (e) => {
@@ -109,6 +113,16 @@ export default function PacienteDetalle() {
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
     finally { setSavingSesion(false); }
+  };
+
+  const generarMeet = async (sesionId) => {
+    setGenerandoMeetId(sesionId);
+    try {
+      await api.post(`/sesiones/${sesionId}/generar-meet`);
+      toast.success(t('calendar.meetGenerated'));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setGenerandoMeetId(null); }
   };
 
   const guardarEnlace = async (sesionId) => {
@@ -459,7 +473,9 @@ export default function PacienteDetalle() {
               <option value="presencial">{t('patientDetail.inPerson')}</option>
             </select>
             {sesionForm.tipo === 'videollamada' && (
-              <input type="url" placeholder={t('calendar.videoLinkOptional')} value={sesionForm.enlace_videollamada}
+              <input type="url"
+                placeholder={googleOk ? t('calendar.meetAutoPlaceholder') : t('calendar.videoLinkOptional')}
+                value={sesionForm.enlace_videollamada}
                 onChange={(e) => setSesionForm({ ...sesionForm, enlace_videollamada: e.target.value })}
                 className="field-input w-auto" style={{ minWidth: '220px' }} />
             )}
@@ -511,10 +527,18 @@ export default function PacienteDetalle() {
                       </button>
                     </div>
                   ) : (
-                    <button onClick={() => { setEditandoEnlaceId(s.id); setEnlaceInput(''); }}
-                      className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
-                      + {t('calendar.videoLinkAdd')}
-                    </button>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      {googleOk && (
+                        <button disabled={generandoMeetId === s.id} onClick={() => generarMeet(s.id)}
+                          className="text-xs font-medium hover:opacity-70 disabled:opacity-50" style={{ color: 'var(--brand)' }}>
+                          ⚡ {generandoMeetId === s.id ? t('calendar.meetGenerating') : t('calendar.meetGenerate')}
+                        </button>
+                      )}
+                      <button onClick={() => { setEditandoEnlaceId(s.id); setEnlaceInput(''); }}
+                        className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                        + {t('calendar.videoLinkAdd')}
+                      </button>
+                    </div>
                   )}
                 </div>
               )}

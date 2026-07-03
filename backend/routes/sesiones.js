@@ -69,7 +69,7 @@ async function checkSolape(fechaHora, duracionMinutos, excludeId = null, { inclu
 // Admin: crear sesión para un paciente.
 // Con `repeticiones` > 1 crea una serie (semanal: intervalo_dias=7, quincenal: 14).
 router.post('/', verifyToken, requireAdmin, async (req, res) => {
-  const { paciente_id, pack_id, fecha_hora, tipo, duracion_minutos, force } = req.body;
+  const { paciente_id, pack_id, fecha_hora, tipo, duracion_minutos, enlace_videollamada, force } = req.body;
   if (!paciente_id || !fecha_hora || !tipo) {
     return res.status(400).json({ error: 'paciente_id, fecha_hora y tipo son obligatorios' });
   }
@@ -104,6 +104,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       tipo,
       duracion_minutos: duracion,
       estado: 'programada',
+      enlace_videollamada: tipo === 'videollamada' ? (enlace_videollamada || null) : null,
     }));
 
     const { data, error } = await supabase.from('sesiones').insert(filas).select();
@@ -284,6 +285,37 @@ router.post('/solicitar', verifyToken, async (req, res) => {
   }
 });
 
+// Admin: añadir o actualizar el enlace de videollamada de una sesión ya creada
+// (p. ej. cuando el Meet se genera después de agendar la cita).
+router.put('/:id/enlace', verifyToken, requireAdmin, async (req, res) => {
+  const { enlace_videollamada } = req.body;
+
+  try {
+    const { data: current, error: fetchError } = await supabase
+      .from('sesiones')
+      .select('tipo')
+      .eq('id', req.params.id)
+      .single();
+    if (fetchError) return res.status(404).json({ error: 'Sesión no encontrada' });
+    if (current.tipo !== 'videollamada') {
+      return res.status(400).json({ error: 'Solo las sesiones de videollamada llevan enlace' });
+    }
+
+    const { data, error } = await supabase
+      .from('sesiones')
+      .update({ enlace_videollamada: enlace_videollamada || null, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) return res.status(400).json({ error: error.message });
+
+    audit(req, 'update_session_link', 'sessions', req.params.id, {});
+    res.json(data);
+  } catch (err) {
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Admin: todas las sesiones (para el calendario)
 router.get('/', verifyToken, requireAdmin, async (req, res) => {
   const { desde, hasta } = req.query;
@@ -292,7 +324,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
     let query = supabase
       .from('sesiones')
       .select(`
-        id, paciente_id, pack_id, fecha_hora, tipo, estado, duracion_minutos,
+        id, paciente_id, pack_id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada,
         pacientes ( users ( nombre_completo, email ) )
       `)
       .order('fecha_hora', { ascending: true });
@@ -460,7 +492,7 @@ router.get('/mis-sesiones', verifyToken, async (req, res) => {
 
     const { data, error } = await supabase
       .from('sesiones')
-      .select('id, fecha_hora, tipo, estado, duracion_minutos')
+      .select('id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada')
       .eq('paciente_id', paciente.id)
       .order('fecha_hora', { ascending: false });
 
@@ -476,7 +508,7 @@ router.get('/:id/ics', verifyToken, async (req, res) => {
   try {
     const { data: sesion, error } = await supabase
       .from('sesiones')
-      .select('id, fecha_hora, duracion_minutos, tipo, pacientes ( user_id )')
+      .select('id, fecha_hora, duracion_minutos, tipo, enlace_videollamada, pacientes ( user_id )')
       .eq('id', req.params.id)
       .single();
 

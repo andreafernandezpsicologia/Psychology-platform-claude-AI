@@ -213,6 +213,16 @@
     "slotTaken": "Tidspunktet er lige blevet optaget. Vælg et andet.",
     "requestSend": "Anmod om tid kl. {{time}}",
     "requestSent": "Tid anmodet — Andrea bekræfter snart",
-    "pendingBadge": "Afventer bekræftelse"
+    "pendingBadge": "Afventer bekræftelse",
+    "videoLink": "Link til videoopkald",
+    "videoLinkOptional": "Link til videoopkald (valgfrit)",
+    "videoLinkPlaceholder": "https://meet.google.com/...",
+    "videoLinkAdd": "Tilføj link",
+    "videoLinkEdit": "Rediger link",
+    "videoLinkSave": "Gem",
+    "videoLinkSaved": "Link gemt",
+    "videoLinkMissing": "Der er endnu intet link til videoopkaldet",
+    "joinCall": "Deltag i videoopkaldet",
+    "joinCallPending": "Linket til videoopkaldet kommer inden sessionen"
   }
 }

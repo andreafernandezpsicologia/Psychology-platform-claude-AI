@@ -80,7 +80,7 @@ router.get('/feed/:token', async (req, res) => {
 
     let query = supabase
       .from('sesiones')
-      .select('id, fecha_hora, duracion_minutos, tipo, estado, pacientes ( user_id, users ( nombre_completo ) )')
+      .select('id, fecha_hora, duracion_minutos, tipo, estado, enlace_videollamada, pacientes ( user_id, users ( nombre_completo ) )')
       .in('estado', ['programada', 'completada', 'solicitada'])
       .gte('fecha_hora', desde)
       .lte('fecha_hora', hasta)

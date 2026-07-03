@@ -69,7 +69,10 @@ export default function PacienteDetalle() {
   const [loading, setLoading] = useState(true);
   const [showSesion, setShowSesion] = useState(false);
   const [showPack, setShowPack] = useState(false);
-  const [sesionForm, setSesionForm] = useState({ fecha_hora: '', tipo: 'videollamada' });
+  const [sesionForm, setSesionForm] = useState({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '' });
+  const [editandoEnlaceId, setEditandoEnlaceId] = useState(null);
+  const [enlaceInput, setEnlaceInput] = useState('');
+  const [savingEnlace, setSavingEnlace] = useState(false);
   const [packForm, setPackForm] = useState({ num_sesiones_total: 10 });
   const [savingSesion, setSavingSesion] = useState(false);
   const [savingPack, setSavingPack] = useState(false);
@@ -102,10 +105,21 @@ export default function PacienteDetalle() {
       await api.post('/sesiones', { paciente_id: pacienteId, pack_id: packActivo?.id || null, ...sesionForm });
       toast.success(t('patientDetail.sessionCreated', 'Sesión creada'));
       setShowSesion(false);
-      setSesionForm({ fecha_hora: '', tipo: 'videollamada' });
+      setSesionForm({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '' });
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
     finally { setSavingSesion(false); }
+  };
+
+  const guardarEnlace = async (sesionId) => {
+    setSavingEnlace(true);
+    try {
+      await api.put(`/sesiones/${sesionId}/enlace`, { enlace_videollamada: enlaceInput.trim() });
+      toast.success(t('calendar.videoLinkSaved'));
+      setEditandoEnlaceId(null);
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingEnlace(false); }
   };
 
   const crearPack = async (e) => {
@@ -444,6 +458,11 @@ export default function PacienteDetalle() {
               <option value="videollamada">{t('patientDetail.videocall')}</option>
               <option value="presencial">{t('patientDetail.inPerson')}</option>
             </select>
+            {sesionForm.tipo === 'videollamada' && (
+              <input type="url" placeholder={t('calendar.videoLinkOptional')} value={sesionForm.enlace_videollamada}
+                onChange={(e) => setSesionForm({ ...sesionForm, enlace_videollamada: e.target.value })}
+                className="field-input w-auto" style={{ minWidth: '220px' }} />
+            )}
             <Button type="submit" size="sm" loading={savingSesion}>{t('patientDetail.create')}</Button>
           </form>
         )}
@@ -468,6 +487,38 @@ export default function PacienteDetalle() {
                 </div>
                 <Badge estado={s.estado} label={t(statusKey)} />
               </div>
+
+              {s.tipo === 'videollamada' && s.estado === 'programada' && (
+                <div className="mt-1.5">
+                  {editandoEnlaceId === s.id ? (
+                    <div className="flex gap-2">
+                      <input type="url" autoFocus placeholder={t('calendar.videoLinkPlaceholder')}
+                        value={enlaceInput} onChange={(e) => setEnlaceInput(e.target.value)}
+                        className="field-input text-xs" />
+                      <Button size="sm" loading={savingEnlace} onClick={() => guardarEnlace(s.id)}>
+                        {t('calendar.videoLinkSave')}
+                      </Button>
+                    </div>
+                  ) : s.enlace_videollamada ? (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <a href={s.enlace_videollamada} target="_blank" rel="noopener noreferrer"
+                        className="text-xs font-medium truncate max-w-[200px]" style={{ color: '#2C3E54' }}>
+                        🔗 {s.enlace_videollamada}
+                      </a>
+                      <button onClick={() => { setEditandoEnlaceId(s.id); setEnlaceInput(s.enlace_videollamada || ''); }}
+                        className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                        {t('calendar.videoLinkEdit')}
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => { setEditandoEnlaceId(s.id); setEnlaceInput(''); }}
+                      className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                      + {t('calendar.videoLinkAdd')}
+                    </button>
+                  )}
+                </div>
+              )}
+
               {(esProxima || (s.estado === 'programada' && parseWall(s.fecha_hora) < ahora)) && (
                 <div className="flex flex-wrap gap-2 mt-2.5">
                   <button onClick={() => cambiarEstado(s.id, 'completada')}

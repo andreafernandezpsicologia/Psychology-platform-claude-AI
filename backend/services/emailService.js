@@ -27,6 +27,19 @@ const enviarEmail = ({ to, subject, body, attachments }) =>
 // Adjunto .ics en base64 (formato que espera Resend)
 const icsAdjunto = (filename, ics) => ({ filename, content: Buffer.from(ics).toString('base64') });
 
+// Botón "Unirse a la videollamada": solo se muestra si la sesión es de ese
+// tipo y ya tiene el enlace cargado (Andrea lo añade al crear la cita o más
+// tarde, cuando genera el Meet).
+const botonVideollamada = (sesion) => {
+  if (sesion.tipo !== 'videollamada' || !sesion.enlace_videollamada) return '';
+  return `
+        <a href="${sesion.enlace_videollamada}"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:12px 0;">
+          Unirse a la videollamada
+        </a>`;
+};
+
 // fechaHora es hora de pared (Europe/Madrid) sin zona horaria: se construye la
 // fecha por componentes y se formatea sin opción timeZone, para que el resultado
 // no dependa de la zona horaria del servidor (Render corre en UTC).
@@ -65,6 +78,7 @@ const sendSessionReminder = async (email, nombre, sesion) => {
         <p>Te recuerdo que mañana tienes una sesión de psicología:</p>
         <p><strong>Fecha:</strong> ${fecha}</p>
         <p><strong>Modalidad:</strong> ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        ${botonVideollamada(sesion)}
         <p>Si necesitas cancelar o cambiar la cita, contacta con antelación.</p>`,
     attachments: [icsAdjunto('cita-studio-renacer.ics', buildSessionICS(sesion))],
   });
@@ -76,7 +90,13 @@ const sendSessionConfirmation = async (email, nombre, sesiones) => {
   const lista = [...sesiones].sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
   const varias = lista.length > 1;
   const filas = lista
-    .map((s) => `<li><strong>${formatFechaPared(s.fecha_hora)}</strong> · ${s.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</li>`)
+    .map((s) => {
+      const modalidad = s.tipo === 'videollamada' ? 'Videollamada' : 'Presencial';
+      const enlace = s.tipo === 'videollamada' && s.enlace_videollamada
+        ? ` — <a href="${s.enlace_videollamada}">unirse</a>`
+        : '';
+      return `<li><strong>${formatFechaPared(s.fecha_hora)}</strong> · ${modalidad}${enlace}</li>`;
+    })
     .join('');
   const ics = varias
     ? buildFeedICS(lista, 'Studio Renacer — Tus citas')
@@ -89,6 +109,7 @@ const sendSessionConfirmation = async (email, nombre, sesiones) => {
         <h2>Hola, ${nombre}</h2>
         <p>${varias ? 'Tus citas han quedado agendadas:' : 'Tu cita ha quedado agendada:'}</p>
         <ul>${filas}</ul>
+        ${!varias ? botonVideollamada(lista[0]) : ''}
         <p>Adjuntamos un archivo para que ${varias ? 'las añadas' : 'la añadas'} a tu calendario.</p>
         <p>Recibirás un recordatorio el día antes. Si necesitas cambiarla, contacta con antelación.</p>`,
     attachments: [icsAdjunto(varias ? 'citas-studio-renacer.ics' : 'cita-studio-renacer.ics', ics)],
@@ -105,6 +126,7 @@ const sendSessionRescheduled = async (email, nombre, sesion, fechaAnterior) => {
         <p>Tu cita se ha movido a una nueva fecha:</p>
         <p style="color:#888;text-decoration:line-through;">${formatFechaPared(fechaAnterior)}</p>
         <p><strong>${formatFechaPared(sesion.fecha_hora)}</strong> · ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+        ${botonVideollamada(sesion)}
         <p>Adjuntamos un archivo actualizado para tu calendario. Recibirás un recordatorio el día antes.</p>`,
     attachments: [icsAdjunto('cita-studio-renacer.ics', buildSessionICS(sesion))],
   });
@@ -154,6 +176,7 @@ const sendSessionRequestResult = async (email, nombre, sesion, confirmada) => {
           ? `<p>Tu cita ha sido <strong>confirmada</strong>:</p>
              <p><strong>Fecha:</strong> ${fecha}</p>
              <p><strong>Modalidad:</strong> ${sesion.tipo === 'videollamada' ? 'Videollamada' : 'Presencial'}</p>
+             ${botonVideollamada(sesion)}
              <p>Encontrarás el archivo adjunto para añadirla a tu calendario.</p>`
           : `<p>La hora que solicitaste (<strong>${fecha}</strong>) no ha podido confirmarse.</p>
              <p>Puedes proponer otra hora desde tu espacio personal, o Andrea se pondrá en contacto contigo.</p>`}`,

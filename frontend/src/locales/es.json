@@ -213,6 +213,16 @@
     "slotTaken": "Esa hora acaba de ocuparse. Elige otra.",
     "requestSend": "Solicitar cita a las {{time}}",
     "requestSent": "Cita solicitada — Andrea te confirmará pronto",
-    "pendingBadge": "Pendiente de confirmar"
+    "pendingBadge": "Pendiente de confirmar",
+    "videoLink": "Enlace de videollamada",
+    "videoLinkOptional": "Enlace de videollamada (opcional)",
+    "videoLinkPlaceholder": "https://meet.google.com/...",
+    "videoLinkAdd": "Añadir enlace",
+    "videoLinkEdit": "Editar enlace",
+    "videoLinkSave": "Guardar",
+    "videoLinkSaved": "Enlace guardado",
+    "videoLinkMissing": "Aún no tiene enlace de videollamada",
+    "joinCall": "Unirse a la videollamada",
+    "joinCallPending": "El enlace de la videollamada llegará antes de la sesión"
   }
 }

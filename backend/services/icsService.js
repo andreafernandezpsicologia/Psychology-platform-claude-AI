@@ -60,7 +60,7 @@ function foldLine(line) {
   return segmentos.join('\r\n ');
 }
 
-function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, status = 'CONFIRMED' } = {}) {
+function buildVEvent({ id, fecha_hora, duracion_minutos, tipo, enlace_videollamada }, { summary, status = 'CONFIRMED' } = {}) {
   // naiveToMs valida el formato y hace la aritmética en UTC "ficticio"
   // (independiente de la TZ del servidor); fmtLocal lo reformatea a 'YYYYMMDDTHHMMSS'.
   const inicioMs = naiveToMs(fecha_hora);
@@ -68,9 +68,14 @@ function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, stat
   const fmtLocal = (ms) => new Date(ms).toISOString().slice(0, 19).replace(/[-:]/g, '');
   const dtstamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z';
 
-  const location = tipo === 'videollamada' ? 'Videollamada' : 'Studio Renacer (presencial)';
+  // Si hay enlace de videollamada, va en LOCATION (la mayoría de apps de
+  // calendario lo muestran como enlace clicable) y también en DESCRIPTION
+  // y URL, por si el cliente de calendario no linkifica LOCATION.
+  const location = tipo === 'videollamada'
+    ? (enlace_videollamada || 'Videollamada (enlace pendiente)')
+    : 'Studio Renacer (presencial)';
 
-  return [
+  const lineas = [
     'BEGIN:VEVENT',
     `UID:${id}@studiorenacer.com`,
     `DTSTAMP:${dtstamp}`,
@@ -78,9 +83,14 @@ function buildVEvent({ id, fecha_hora, duracion_minutos, tipo }, { summary, stat
     `DTEND;TZID=Europe/Madrid:${fmtLocal(finMs)}`,
     `SUMMARY:${escapeText(summary || 'Sesión de psicología — Studio Renacer')}`,
     `LOCATION:${escapeText(location)}`,
-    `STATUS:${status}`,
-    'END:VEVENT',
-  ].map(foldLine).join('\r\n');
+  ];
+  if (tipo === 'videollamada' && enlace_videollamada) {
+    lineas.push(`DESCRIPTION:${escapeText('Enlace de videollamada: ' + enlace_videollamada)}`);
+    lineas.push(`URL:${enlace_videollamada}`);
+  }
+  lineas.push(`STATUS:${status}`, 'END:VEVENT');
+
+  return lineas.map(foldLine).join('\r\n');
 }
 
 function buildCalendar(vevents, nombre = 'Studio Renacer') {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -18,6 +18,12 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
   const locale = localeMap[i18n.language] || es;
   const [saving, setSaving] = useState(false);
   const [confirmando, setConfirmando] = useState(null); // 'cancelada' | 'cancelada_con_cargo'
+  const [editandoEnlace, setEditandoEnlace] = useState(false);
+  const [enlaceInput, setEnlaceInput] = useState('');
+  const [savingEnlace, setSavingEnlace] = useState(false);
+
+  // Al cambiar de sesión (o cerrar y abrir otra), no arrastrar el modo edición.
+  useEffect(() => { setEditandoEnlace(false); }, [event?.id]);
 
   if (!open || !event) return null;
 
@@ -35,6 +41,25 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
     } finally {
       setSaving(false);
       setConfirmando(null);
+    }
+  };
+
+  const abrirEdicionEnlace = () => {
+    setEnlaceInput(event.enlace_videollamada || '');
+    setEditandoEnlace(true);
+  };
+
+  const guardarEnlace = async () => {
+    setSavingEnlace(true);
+    try {
+      await api.put(`/sesiones/${event.id}/enlace`, { enlace_videollamada: enlaceInput.trim() });
+      toast.success(t('calendar.videoLinkSaved'));
+      setEditandoEnlace(false);
+      onChanged();
+    } catch (err) {
+      toast.error('Error: ' + (err.response?.data?.error || ''));
+    } finally {
+      setSavingEnlace(false);
     }
   };
 
@@ -57,9 +82,48 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
           <p className="text-sm font-semibold capitalize" style={{ color: 'var(--brand)' }}>
             {format(parseWall(event.fecha_hora), 'EEEE d MMMM · HH:mm', { locale })}
           </p>
-          <p className="text-xs mt-0.5 mb-4" style={{ color: 'var(--text)' }}>
+          <p className={`text-xs mt-0.5 ${event.tipo === 'videollamada' ? '' : 'mb-4'}`} style={{ color: 'var(--text)' }}>
             {t(event.tipo === 'videollamada' ? 'calendar.videocall' : 'calendar.inPerson')} · {event.duracion_minutos} min
           </p>
+
+          {event.tipo === 'videollamada' && (
+            <div className="mt-2 mb-4">
+              {editandoEnlace ? (
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    autoFocus
+                    placeholder={t('calendar.videoLinkPlaceholder')}
+                    value={enlaceInput}
+                    onChange={(e) => setEnlaceInput(e.target.value)}
+                    className="field-input text-xs"
+                  />
+                  <Button size="sm" loading={savingEnlace} onClick={guardarEnlace}>
+                    {t('calendar.videoLinkSave')}
+                  </Button>
+                </div>
+              ) : event.enlace_videollamada ? (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <a
+                    href={event.enlace_videollamada}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-medium truncate max-w-[200px]"
+                    style={{ color: '#2C3E54' }}
+                  >
+                    🔗 {event.enlace_videollamada}
+                  </a>
+                  <button onClick={abrirEdicionEnlace} className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                    {t('calendar.videoLinkEdit')}
+                  </button>
+                </div>
+              ) : (
+                <button onClick={abrirEdicionEnlace} className="text-xs font-medium hover:opacity-70" style={{ color: 'var(--brand)' }}>
+                  + {t('calendar.videoLinkAdd')}
+                </button>
+              )}
+            </div>
+          )}
 
           {event.estado === 'programada' && (
             <div className="flex flex-wrap gap-2">

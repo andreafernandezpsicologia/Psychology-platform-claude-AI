@@ -266,13 +266,31 @@ export default function PacienteDashboard() {
                   : <Badge estado="programada" label={t('patientDashboard.scheduled')} />}
               </div>
               {s.estado === 'programada' && (
-                <button
-                  onClick={() => descargarIcs(s.id)}
-                  className="mt-2 text-xs font-medium transition hover:opacity-70"
-                  style={{ color: 'var(--brand)' }}
-                >
-                  📅 {t('calendar.addToCalendar')}
-                </button>
+                <div className="mt-2 flex items-center gap-3 flex-wrap">
+                  {s.tipo === 'videollamada' && s.enlace_videollamada && (
+                    <a
+                      href={s.enlace_videollamada}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                      style={{ backgroundColor: 'var(--brand)', color: 'var(--bg)' }}
+                    >
+                      🎥 {t('calendar.joinCall')}
+                    </a>
+                  )}
+                  {s.tipo === 'videollamada' && !s.enlace_videollamada && (
+                    <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                      {t('calendar.joinCallPending')}
+                    </span>
+                  )}
+                  <button
+                    onClick={() => descargarIcs(s.id)}
+                    className="text-xs font-medium transition hover:opacity-70"
+                    style={{ color: 'var(--brand)' }}
+                  >
+                    📅 {t('calendar.addToCalendar')}
+                  </button>
+                </div>
               )}
             </div>
           ))}

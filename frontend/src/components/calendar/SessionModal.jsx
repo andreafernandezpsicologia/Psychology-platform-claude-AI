@@ -17,7 +17,7 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
   const locale = localeMap[i18n.language] || es;
   const [form, setForm] = useState({
     paciente_id: '', fecha_hora: '', tipo: 'videollamada', duracion_minutos: 50,
-    repetir: 'no', repeticiones: 4,
+    repetir: 'no', repeticiones: 4, enlace_videollamada: '',
   });
   const [saving, setSaving] = useState(false);
   const [conflicto, setConflicto] = useState(null);
@@ -35,6 +35,7 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
       duracion_minutos: session?.duracion_minutos || 50,
       repetir: 'no',
       repeticiones: 4,
+      enlace_videollamada: '',
     });
     setConflicto(null);
   }, [open, session, initialDate]);
@@ -59,6 +60,8 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
           fecha_hora: form.fecha_hora,
           tipo: form.tipo,
           duracion_minutos: Number(form.duracion_minutos),
+          ...(form.tipo === 'videollamada' && form.enlace_videollamada.trim()
+            ? { enlace_videollamada: form.enlace_videollamada.trim() } : {}),
           ...(repite ? {
             repeticiones: Number(form.repeticiones),
             intervalo_dias: form.repetir === 'quincenal' ? 14 : 7,
@@ -151,6 +154,21 @@ export default function SessionModal({ open, initialDate, session, pacientes = [
                     {[50, 60, 90].map((d) => <option key={d} value={d}>{d} min</option>)}
                   </select>
                 </div>
+              </div>
+            )}
+
+            {!reagendar && form.tipo === 'videollamada' && (
+              <div>
+                <label className="text-xs font-medium block mb-1" style={{ color: 'var(--text)' }}>
+                  {t('calendar.videoLinkOptional')}
+                </label>
+                <input
+                  type="url"
+                  placeholder={t('calendar.videoLinkPlaceholder')}
+                  value={form.enlace_videollamada}
+                  onChange={(e) => setForm({ ...form, enlace_videollamada: e.target.value })}
+                  className="field-input"
+                />
               </div>
             )}
 

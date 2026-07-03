@@ -16,7 +16,7 @@ router.get('/me/perfil', verifyToken, async (req, res) => {
         pacientes (
           id, estado,
           packs ( id, num_sesiones_total, num_sesiones_usadas, estado, contrato_estado, contrato_path_paciente, contrato_path_admin ),
-          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos )
+          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada )
         )
       `)
       .eq('id', req.user.id)
@@ -83,7 +83,7 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
         pacientes (
           id, estado, notas_admin,
           packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, contrato_estado, contrato_path_paciente, contrato_path_admin ),
-          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos )
+          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada )
         )
       `)
       .eq('id', req.params.id)

@@ -213,6 +213,16 @@
     "slotTaken": "That time was just taken. Pick another.",
     "requestSend": "Request appointment at {{time}}",
     "requestSent": "Appointment requested — Andrea will confirm soon",
-    "pendingBadge": "Pending confirmation"
+    "pendingBadge": "Pending confirmation",
+    "videoLink": "Video call link",
+    "videoLinkOptional": "Video call link (optional)",
+    "videoLinkPlaceholder": "https://meet.google.com/...",
+    "videoLinkAdd": "Add link",
+    "videoLinkEdit": "Edit link",
+    "videoLinkSave": "Save",
+    "videoLinkSaved": "Link saved",
+    "videoLinkMissing": "No video call link yet",
+    "joinCall": "Join the video call",
+    "joinCallPending": "The video call link will arrive before the session"
   }
 }

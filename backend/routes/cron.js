@@ -42,7 +42,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
     const { data: sesiones, error } = await supabase
       .from('sesiones')
       .select(`
-        id, fecha_hora, tipo, duracion_minutos,
+        id, fecha_hora, tipo, duracion_minutos, enlace_videollamada,
         pacientes (
           users ( email, nombre_completo )
         )

@@ -10,7 +10,7 @@
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet" />
 
   <style>
     /* ---------- Reset & base (Kit de Marca Studio Renacer) ---------- */
@@ -174,7 +174,7 @@
       display: block;
       font-family: var(--font-sans);
       font-size: 0.8rem; color: var(--c-ocre);
-      font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+      font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
       margin-bottom: 0.75rem;
     }
     .section-intro { max-width: 38em; margin-bottom: 3rem; }
@@ -201,7 +201,7 @@
       padding: 0.45rem 0;
       font-size: 0.97rem; color: var(--c-ink-soft);
     }
-    .fit-list li::before { font-family: var(--font-sans); font-weight: 700; flex-shrink: 0; }
+    .fit-list li::before { font-family: var(--font-sans); font-weight: 500; flex-shrink: 0; }
     .fit-card.yes .fit-list li::before { content: '✓'; color: var(--c-success); }
     .fit-card.no .fit-list li::before { content: '✕'; color: var(--c-error); }
 
@@ -248,7 +248,7 @@
     }
     .includes-card.bonus { border: 1.5px solid rgba(227, 165, 42, 0.5); background: var(--c-surface); }
     .includes-card h3 {
-      font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+      font-family: var(--font-sans); font-size: 0.82rem; font-weight: 500;
       letter-spacing: 0.12em; text-transform: uppercase;
       color: var(--c-ocre); margin-bottom: 1rem;
     }
@@ -297,7 +297,7 @@
     .price-ribbon {
       position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
       background: var(--c-accent); color: var(--c-brand);
-      font-family: var(--font-sans); font-size: 0.72rem; font-weight: 600;
+      font-family: var(--font-sans); font-size: 0.72rem; font-weight: 500;
       letter-spacing: 0.1em; text-transform: uppercase;
       padding: 6px 18px; border-radius: 999px;
       box-shadow: var(--shadow-sm);
@@ -314,7 +314,7 @@
       display: flex; gap: 0.6rem; align-items: flex-start;
       padding: 0.35rem 0; font-size: 0.95rem; color: var(--c-ink-soft);
     }
-    .price-perks li::before { content: '✓'; color: var(--c-success); font-weight: 700; font-family: var(--font-sans); flex-shrink: 0; }
+    .price-perks li::before { content: '✓'; color: var(--c-success); font-weight: 500; font-family: var(--font-sans); flex-shrink: 0; }
     .price-note { font-family: var(--font-sans); font-size: 0.8rem; color: var(--c-muted); margin-top: 1rem; }
 
     /* ---------- Garantía ---------- */
@@ -360,15 +360,15 @@
 
     /* ---------- Disclaimer ---------- */
     .disclaimer-card {
-      max-width: 720px; margin: 0 auto;
+      max-width: 640px; margin: 0 auto;
       background: var(--c-soft);
       border: 1px solid rgba(227, 165, 42, 0.4);
-      border-left: 4px solid var(--c-accent);
       border-radius: var(--radius);
       padding: 1.75rem 2rem;
+      text-align: center;
     }
     .disclaimer-card h3 {
-      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
+      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
       letter-spacing: 0.1em; text-transform: uppercase;
       color: var(--c-ocre); margin-bottom: 0.6rem;
     }
@@ -795,7 +795,7 @@
     </section>
 
     <!-- ============== BLOQUE 10 · DISCLAIMER + CTA FINAL ============== -->
-    <section class="block" style="padding-bottom: 0;">
+    <section class="block">
       <div class="container">
         <div class="disclaimer-card reveal">
           <h3>Aviso importante</h3>

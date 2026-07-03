@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Renacer en casa — Programas de autotrabajo guiado · Studio Renacer</title>
+  <meta name="description" content="Programas de autotrabajo guiado (vídeo + ejercicios) creados por Andrea Fernández, psicóloga colegiada 27327. Trabaja en ti, a tu ritmo, desde casa." />
+  <!-- OCULTA HASTA EL LANZAMIENTO: no indexar -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ---------- Reset & base (Kit de Marca Studio Renacer) ---------- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --c-bg: #F8F1E3;
+      --c-surface: #ffffff;
+      --c-ink: #5B4128;
+      --c-ink-soft: #6B4F2E;
+      --c-muted: #7A6A53;
+      --c-line: #E7DCC6;
+      --c-brand: #5B4128;
+      --c-brand-2: #6B4F2E;
+      --c-accent: #E3A52A;
+      --c-ocre: #B07A2B;
+      --c-link: #2C3E54;
+      --c-soft: #F3E7CF;
+      --c-success: #3B6D2A;
+      --c-error: #A33B2D;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Spectral', Georgia, serif;
+      --font-sans: 'Jost', 'Segoe UI', sans-serif;
+      --shadow-sm: 0 1px 3px rgba(91, 65, 40, 0.06), 0 1px 2px rgba(91, 65, 40, 0.05);
+      --shadow-md: 0 10px 25px -10px rgba(91, 65, 40, 0.18), 0 4px 10px -4px rgba(91, 65, 40, 0.10);
+      --shadow-lg: 0 25px 50px -12px rgba(91, 65, 40, 0.20);
+      --radius: 14px;
+      --radius-sm: 8px;
+      --container: 1140px;
+      --transition: 0.3s cubic-bezier(.2,.7,.2,1);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-body);
+      color: var(--c-ink);
+      background: var(--c-bg);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; letter-spacing: -0.005em; }
+    h1 { font-size: clamp(2.5rem, 5.5vw, 4rem); }
+    h2 { font-size: clamp(1.9rem, 3.8vw, 2.7rem); margin-bottom: 1rem; }
+    h3 { font-size: 1.15rem; font-weight: 600; font-family: var(--font-body); line-height: 1.3; }
+    p  { color: var(--c-ink-soft); }
+    a  { color: var(--c-link); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--c-ocre); }
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 1.5rem; }
+
+    /* ---------- Header ---------- */
+    .site-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(248, 241, 227, 0.88);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--c-line);
+      transition: box-shadow var(--transition);
+    }
+    .site-header.scrolled { box-shadow: 0 4px 24px rgba(91, 65, 40, 0.10); }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding-top: 0.85rem; padding-bottom: 0.85rem; gap: 1rem;
+    }
+    .brand {
+      display: flex; align-items: center; gap: 0.65rem;
+      font-family: var(--font-display); font-size: 1.35rem; font-weight: 600;
+      color: var(--c-brand);
+    }
+    .brand-mark { height: 42px; width: auto; display: block; }
+    .nav-links {
+      display: flex; gap: 1.6rem;
+      font-family: var(--font-sans); font-size: 0.9rem; font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+    .nav-links a { color: var(--c-ink-soft); position: relative; padding: 4px 0; }
+    .nav-links a::after {
+      content: ''; position: absolute; left: 0; bottom: 0;
+      width: 100%; height: 2px; background: var(--c-accent);
+      transform: scaleX(0); transform-origin: left;
+      transition: transform var(--transition);
+    }
+    .nav-links a:hover { color: var(--c-brand); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .nav-right { display: flex; align-items: center; gap: 0.75rem; }
+    .btn-login {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--c-brand); color: var(--c-bg);
+      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
+      letter-spacing: 0.03em;
+      padding: 8px 18px; border-radius: 999px;
+      border: none; cursor: pointer; text-decoration: none;
+      transition: opacity var(--transition), transform var(--transition);
+      box-shadow: var(--shadow-sm);
+      white-space: nowrap;
+    }
+    .btn-login:hover { opacity: 0.88; color: var(--c-bg); transform: translateY(-1px); }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: clamp(2.5rem, 6vw, 5rem) 0 clamp(3rem, 7vw, 6rem); position: relative; overflow: hidden; }
+    .hero::before {
+      content: '';
+      position: absolute; top: -150px; right: -150px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(227, 165, 42, 0.14) 0%, transparent 70%);
+      border-radius: 50%; z-index: 0;
+    }
+    .hero .container { position: relative; z-index: 1; }
+    .hero-inner { max-width: 46em; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--c-soft); color: var(--c-ink);
+      padding: 6px 14px; border-radius: 999px;
+      font-family: var(--font-sans); font-size: 0.8rem; font-weight: 500;
+      letter-spacing: 0.04em;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(227, 165, 42, 0.35);
+    }
+    .hero-badge::before {
+      content: ''; width: 8px; height: 8px; border-radius: 50%;
+      background: var(--c-accent);
+      box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.25);
+      animation: pulse 2.4s ease-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.25); }
+      50%      { box-shadow: 0 0 0 8px rgba(227, 165, 42, 0); }
+    }
+    .hero h1 { color: var(--c-ink); margin-bottom: 1.25rem; }
+    .hero h1 em { font-style: italic; color: var(--c-ocre); font-weight: 500; }
+    .hero-sub { font-size: 1.1rem; color: var(--c-ink-soft); margin-bottom: 2rem; max-width: 36em; }
+    .hero-cta { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      padding: 14px 26px;
+      font-family: var(--font-sans); font-size: 0.95rem; font-weight: 500;
+      letter-spacing: 0.03em;
+      border: none; border-radius: 999px;
+      cursor: pointer; transition: all var(--transition);
+      text-decoration: none;
+    }
+    .btn-primary { background: var(--c-brand); color: var(--c-bg); box-shadow: var(--shadow-md); }
+    .btn-primary:hover { background: var(--c-brand-2); color: var(--c-bg); transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+    .btn-ghost { background: transparent; color: var(--c-brand); border: 1px solid rgba(91, 65, 40, 0.28); }
+    .btn-ghost:hover { background: var(--c-surface); border-color: var(--c-accent); color: var(--c-brand); }
+    .btn svg { transition: transform var(--transition); }
+    .btn:hover svg { transform: translateX(3px); }
+    .hero-note {
+      margin-top: 1.25rem;
+      font-family: var(--font-sans); font-size: 0.82rem; color: var(--c-muted);
+    }
+
+    /* ---------- Trust strip ---------- */
+    .trust { padding: 2rem 0; border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); }
+    .trust-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; text-align: center; }
+    .trust-item .num { font-family: var(--font-display); font-weight: 600; font-size: 1.9rem; color: var(--c-brand); display: block; }
+    .trust-item .label { font-family: var(--font-sans); font-size: 0.8rem; color: var(--c-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* ---------- Sections ---------- */
+    section.block { padding: clamp(3.5rem, 7vw, 6rem) 0; }
+    .section-eyebrow {
+      display: block;
+      font-family: var(--font-sans);
+      font-size: 0.8rem; color: var(--c-ocre);
+      font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .section-intro { max-width: 38em; margin-bottom: 3rem; }
+    .section-intro p { font-size: 1.05rem; }
+
+    /* ---------- Why cards ---------- */
+    .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+    .why-card {
+      background: var(--c-surface);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius);
+      padding: 2rem 1.75rem;
+      transition: all var(--transition);
+    }
+    .why-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: rgba(227, 165, 42, 0.45); }
+    .why-icon {
+      width: 48px; height: 48px;
+      background: rgba(227, 165, 42, 0.14); color: var(--c-ocre);
+      border-radius: 12px;
+      display: grid; place-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .why-card h3 { margin-bottom: 0.5rem; color: var(--c-ink); }
+    .why-card p { font-size: 0.95rem; }
+
+    /* ---------- Programas ---------- */
+    .programs { background: var(--c-surface); border-top: 1px solid var(--c-line); border-bottom: 1px solid var(--c-line); }
+    .prog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; align-items: stretch; }
+    .prog-card {
+      position: relative;
+      display: flex; flex-direction: column;
+      background: var(--c-bg);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius);
+      padding: 2.25rem 2rem 2rem;
+      transition: all var(--transition);
+    }
+    .prog-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .prog-card.featured {
+      background: var(--c-surface);
+      border: 1.5px solid rgba(227, 165, 42, 0.55);
+      box-shadow: var(--shadow-md);
+    }
+    .prog-status {
+      position: absolute; top: -13px; left: 1.75rem;
+      font-family: var(--font-sans); font-size: 0.7rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+    }
+    .prog-status.soon { background: var(--c-accent); color: var(--c-brand); }
+    .prog-status.later { background: var(--c-soft); color: var(--c-muted); border: 1px solid var(--c-line); }
+    .prog-theme {
+      font-family: var(--font-sans); font-size: 0.72rem; font-weight: 600;
+      color: var(--c-ocre); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+    .prog-card h3 {
+      font-family: var(--font-display); font-size: 1.75rem; font-weight: 600;
+      color: var(--c-brand); margin-bottom: 0.35rem;
+    }
+    .prog-tagline { font-style: italic; color: var(--c-ocre); font-size: 0.98rem; margin-bottom: 1rem; }
+    .prog-card > p { font-size: 0.95rem; margin-bottom: 1.25rem; }
+    .prog-list { list-style: none; margin-bottom: 1.5rem; flex: 1; }
+    .prog-list li {
+      display: flex; gap: 0.6rem; align-items: flex-start;
+      font-size: 0.92rem; color: var(--c-ink-soft);
+      padding: 0.3rem 0;
+    }
+    .prog-list li::before {
+      content: '✓';
+      color: var(--c-success); font-weight: 700; flex-shrink: 0;
+      font-family: var(--font-sans);
+    }
+    .prog-card.dimmed .prog-list li::before { content: '·'; color: var(--c-muted); }
+    .prog-cta { margin-top: auto; }
+    .prog-cta .btn { width: 100%; justify-content: center; }
+    .prog-cta .note {
+      display: block; text-align: center;
+      font-family: var(--font-sans); font-size: 0.78rem; color: var(--c-muted);
+      margin-top: 0.6rem;
+    }
+    .prog-card.dimmed { opacity: 0.88; }
+
+    /* ---------- Cómo funciona ---------- */
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
+    .step-card { position: relative; padding: 1.75rem 1.5rem 0; }
+    .step-num {
+      font-family: var(--font-display); font-size: 3rem; font-weight: 600;
+      color: rgba(227, 165, 42, 0.45); line-height: 1;
+      display: block; margin-bottom: 0.75rem;
+    }
+    .step-card h3 { margin-bottom: 0.5rem; color: var(--c-ink); }
+    .step-card p { font-size: 0.93rem; }
+
+    /* ---------- Disclaimer ---------- */
+    .disclaimer-card {
+      max-width: 720px; margin: 0 auto;
+      background: var(--c-soft);
+      border: 1px solid rgba(227, 165, 42, 0.4);
+      border-left: 4px solid var(--c-accent);
+      border-radius: var(--radius);
+      padding: 1.75rem 2rem;
+    }
+    .disclaimer-card h3 {
+      font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--c-ocre); margin-bottom: 0.6rem;
+    }
+    .disclaimer-card p { font-size: 0.93rem; }
+    .disclaimer-card p + p { margin-top: 0.6rem; }
+
+    /* ---------- Form ---------- */
+    .waitlist { background: linear-gradient(180deg, var(--c-soft) 0%, var(--c-bg) 100%); }
+    .form-card {
+      max-width: 560px; margin: 0 auto;
+      background: var(--c-surface);
+      padding: clamp(2rem, 4vw, 3rem);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--c-line);
+    }
+    .form-card h2 { text-align: center; }
+    .form-card > p { text-align: center; margin-bottom: 2rem; }
+    .form-row { margin-bottom: 1.1rem; }
+    .form-row label {
+      display: block; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 500;
+      color: var(--c-ink); margin-bottom: 0.45rem; letter-spacing: 0.02em;
+    }
+    .form-row label .req { color: var(--c-error); }
+    .form-row input {
+      width: 100%; padding: 12px 14px;
+      font-family: var(--font-body); font-size: 0.96rem;
+      border: 1.5px solid var(--c-line);
+      border-radius: var(--radius-sm);
+      background: var(--c-bg);
+      color: var(--c-ink);
+      transition: all var(--transition);
+    }
+    .form-row input:focus {
+      outline: none;
+      border-color: var(--c-ocre);
+      background: var(--c-surface);
+      box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.16);
+    }
+    .privacy {
+      display: flex; gap: 0.6rem; align-items: flex-start;
+      font-size: 0.82rem; color: var(--c-muted);
+      margin: 1rem 0 1.5rem;
+      line-height: 1.5;
+    }
+    .privacy input { margin-top: 3px; accent-color: var(--c-brand); }
+    .form-submit { width: 100%; justify-content: center; }
+    .form-msg {
+      margin-top: 1rem; padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem; text-align: center;
+      display: none;
+    }
+    .form-msg.success { display: block; background: rgba(59, 109, 42, 0.08); color: var(--c-success); border: 1px solid rgba(59, 109, 42, 0.25); }
+    .form-msg.error { display: block; background: rgba(163, 59, 45, 0.08); color: var(--c-error); border: 1px solid rgba(163, 59, 45, 0.25); }
+    .form-success-state { display: none; text-align: center; padding: 1rem 0; }
+    .form-success-state .check {
+      width: 64px; height: 64px;
+      background: rgba(59, 109, 42, 0.1);
+      color: var(--c-success);
+      border-radius: 50%;
+      display: inline-grid; place-items: center;
+      margin-bottom: 1rem;
+    }
+
+    /* ---------- Footer ---------- */
+    footer { background: var(--c-ink); color: rgba(248,241,227,0.9); padding: 3rem 0 2rem; }
+    footer .container { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 2.5rem; }
+    footer .brand { color: var(--c-bg); margin-bottom: 1rem; }
+    footer p { color: rgba(248,241,227,0.65); font-size: 0.9rem; }
+    footer h4 {
+      font-family: var(--font-sans);
+      font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--c-accent); margin-bottom: 1rem; font-weight: 500;
+    }
+    footer ul { list-style: none; }
+    footer ul li { margin-bottom: 0.5rem; font-size: 0.92rem; }
+    footer a { color: rgba(248,241,227,0.9); }
+    footer a:hover { color: var(--c-accent); }
+    .footer-social { display: inline-flex; align-items: center; gap: 0.45rem; }
+    .footer-social svg { opacity: 0.85; }
+    .footer-bottom {
+      max-width: var(--container); margin: 2.5rem auto 0;
+      padding: 1.5rem 1.5rem 0;
+      border-top: 1px solid rgba(248,241,227,0.14);
+      display: flex; justify-content: space-between; flex-wrap: wrap;
+      gap: 1rem;
+      color: rgba(248,241,227,0.55); font-size: 0.85rem;
+    }
+    .footer-bottom .coming-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: rgba(227, 165, 42, 0.16);
+      color: var(--c-accent);
+      font-family: var(--font-sans);
+      padding: 4px 12px; border-radius: 999px;
+      font-weight: 500; letter-spacing: 0.04em;
+    }
+
+    /* ---------- Back to top ---------- */
+    .to-top {
+      position: fixed; right: 1.4rem; bottom: 1.4rem; z-index: 90;
+      width: 46px; height: 46px; border-radius: 50%;
+      background: var(--c-brand); color: var(--c-bg);
+      border: none; cursor: pointer;
+      display: grid; place-items: center;
+      box-shadow: var(--shadow-md);
+      opacity: 0; pointer-events: none; transform: translateY(8px);
+      transition: opacity var(--transition), transform var(--transition), background var(--transition);
+    }
+    .to-top.show { opacity: 1; pointer-events: auto; transform: none; }
+    .to-top:hover { background: var(--c-ocre); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 960px) { .nav-links { display: none; } }
+    @media (max-width: 880px) {
+      .trust-grid { grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+      footer .container { grid-template-columns: 1fr; gap: 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .nav { padding: 0.85rem 0; }
+      .btn { padding: 12px 22px; font-size: 0.92rem; }
+      .trust-item .num { font-size: 1.5rem; }
+      .btn-login { padding: 7px 14px; font-size: 0.8rem; }
+    }
+
+    /* ---------- Reveal on scroll ---------- */
+    .reveal {
+      opacity: 0; transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+      transition-delay: var(--reveal-delay, 0ms);
+    }
+    .reveal.in { opacity: 1; transform: none; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============== HEADER ============== -->
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/" class="brand" aria-label="Studio Renacer — inicio">
+        <img class="brand-mark" src="/assets/logo-studio-renacer.svg" alt="" />
+        <span>Studio Renacer</span>
+      </a>
+      <nav class="nav-links" aria-label="Secciones">
+        <a href="#programas">Programas</a>
+        <a href="#como-funciona">Cómo funciona</a>
+        <a href="#waitlist">Lista de espera</a>
+      </nav>
+      <div class="nav-right">
+        <a href="#waitlist" class="btn-login">Avísame cuando abra</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============== HERO ============== -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-inner reveal">
+          <span class="hero-badge">Muy pronto · Nueva área de Studio Renacer</span>
+          <h1>Renacer <em>en casa</em>.</h1>
+          <p class="hero-sub">
+            Programas de autotrabajo guiado —vídeo, cuaderno de ejercicios y audios— creados por
+            Andrea Fernández, psicóloga colegiada. Para trabajar en ti con método y rigor,
+            a tu ritmo y desde casa, aunque todavía no des el paso a terapia.
+          </p>
+          <div class="hero-cta">
+            <a href="#waitlist" class="btn btn-primary">
+              Avísame cuando abra
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/calma" class="btn btn-ghost">Ver el programa CALMA</a>
+          </div>
+          <p class="hero-note">Andrea Fernández · Psicóloga colegiada 27327 · Programas en español</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== TRUST STRIP ============== -->
+    <section class="trust">
+      <div class="container">
+        <div class="trust-grid">
+          <div class="trust-item">
+            <span class="num">27327</span>
+            <span class="label">Psicóloga colegiada</span>
+          </div>
+          <div class="trust-item">
+            <span class="num">5 pasos</span>
+            <span class="label">Método propio</span>
+          </div>
+          <div class="trust-item">
+            <span class="num">∞</span>
+            <span class="label">Acceso para siempre</span>
+          </div>
+          <div class="trust-item">
+            <span class="num">1:1</span>
+            <span class="label">Puente a sesión real</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== POR QUÉ ============== -->
+    <section class="block" id="por-que">
+      <div class="container">
+        <div class="section-intro">
+          <span class="section-eyebrow">Qué es Renacer en casa</span>
+          <h2>Psicología seria, sin cita previa.</h2>
+          <p>
+            No es una app impersonal ni consejos de gurú: es psicología con base científica,
+            traducida en programas paso a paso que haces cuando y donde tú quieras.
+            Y con una puerta siempre abierta a una sesión de verdad.
+          </p>
+        </div>
+        <div class="why-grid">
+          <div class="why-card reveal">
+            <div class="why-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <h3>Rigor de verdad</h3>
+            <p>Detrás no hay una app ni un coach: hay una psicóloga colegiada (27327) con formación clínica y responsabilidad deontológica.</p>
+          </div>
+          <div class="why-card reveal">
+            <div class="why-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <h3>Método, no vídeos sueltos</h3>
+            <p>Cada programa sigue un método propio de 5 pasos con base en terapia cognitivo-conductual: un camino claro, no consejos al azar.</p>
+          </div>
+          <div class="why-card reveal">
+            <div class="why-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3>A tu ritmo, para siempre</h3>
+            <p>Vídeos cortos, cuaderno de ejercicios y audios guiados. Sin horarios, sin prisas, con acceso de por vida desde cualquier dispositivo.</p>
+          </div>
+          <div class="why-card reveal">
+            <div class="why-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <h3>Con puerta a lo real</h3>
+            <p>Cada programa termina con una Sesión de Claridad: un ratito 1:1 con Andrea para valorar, con honestidad, tu siguiente paso.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== PROGRAMAS ============== -->
+    <section class="block programs" id="programas">
+      <div class="container">
+        <div class="section-intro">
+          <span class="section-eyebrow">Los programas</span>
+          <h2>Empieza por donde más te duele.</h2>
+          <p>Tres caminos, una misma casa. El primero en abrir sus puertas será CALMA.</p>
+        </div>
+        <div class="prog-grid">
+
+          <!-- CALMA — destacado -->
+          <article class="prog-card featured reveal">
+            <span class="prog-status soon">Muy pronto</span>
+            <span class="prog-theme">Ansiedad · Estrés</span>
+            <h3>CALMA</h3>
+            <p class="prog-tagline">Entiende y calma tu ansiedad.</p>
+            <p>El método de 5 pasos para dejar de tenerle miedo al miedo y que tu vida la dirijas tú, no la ansiedad.</p>
+            <ul class="prog-list">
+              <li>6 módulos en vídeo, cortos y sin paja</li>
+              <li>Cuaderno de ejercicios descargable</li>
+              <li>Audios guiados + Kit SOS Ansiedad</li>
+              <li>Sesión de Claridad 1:1 al terminar</li>
+            </ul>
+            <div class="prog-cta">
+              <a href="/calma" class="btn btn-primary">
+                Descubrir CALMA
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+              </a>
+              <span class="note">Precio especial de lanzamiento para la lista de espera</span>
+            </div>
+          </article>
+
+          <!-- VÍNCULOS -->
+          <article class="prog-card dimmed reveal">
+            <span class="prog-status later">Próximamente</span>
+            <span class="prog-theme">Relaciones · Comunicación</span>
+            <h3>VÍNCULOS</h3>
+            <p class="prog-tagline">Deja de perderte en tus relaciones.</p>
+            <p>De callarte, ceder y acumular resentimiento, a decir lo que necesitas y poner límites sin culpa — sin dejar de ser tú.</p>
+            <ul class="prog-list">
+              <li>Entiende tu patrón: complacer, evitar, estallar</li>
+              <li>Una fórmula para decir lo difícil sin atacar</li>
+              <li>Kit «Di NO sin culpa»</li>
+              <li>Tu Plan de Vínculos Sanos por escrito</li>
+            </ul>
+            <div class="prog-cta">
+              <a href="#waitlist" class="btn btn-ghost">Avísame cuando salga</a>
+            </div>
+          </article>
+
+          <!-- RAÍCES -->
+          <article class="prog-card dimmed reveal">
+            <span class="prog-status later">Próximamente</span>
+            <span class="prog-theme">Heridas emocionales</span>
+            <h3>RAÍCES</h3>
+            <p class="prog-tagline">Entiende tus heridas.</p>
+            <p>Para quien se dice «no entiendo por qué soy así» o repite siempre la misma escena. Entender en casa, sanar acompañada/o.</p>
+            <ul class="prog-list">
+              <li>Psicoeducación suave, sin remover de más</li>
+              <li>Recursos de anclaje y autocompasión</li>
+              <li>Kit «Ancla» para los días que algo te remueve</li>
+              <li>El puente honesto hacia la terapia 1:1</li>
+            </ul>
+            <div class="prog-cta">
+              <a href="#waitlist" class="btn btn-ghost">Avísame cuando salga</a>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== CÓMO FUNCIONA ============== -->
+    <section class="block" id="como-funciona">
+      <div class="container">
+        <div class="section-intro">
+          <span class="section-eyebrow">Cómo funciona</span>
+          <h2>Sencillo por fuera, sólido por dentro.</h2>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card reveal">
+            <span class="step-num">1</span>
+            <h3>Ves un vídeo corto</h3>
+            <p>Módulos de 8–15 minutos, directos y en lenguaje claro. Nada de teoría infinita.</p>
+          </div>
+          <div class="step-card reveal">
+            <span class="step-num">2</span>
+            <h3>Haces tu ejercicio</h3>
+            <p>Cada módulo tiene su parte del cuaderno: imprimible, práctica y pensada para tu caso.</p>
+          </div>
+          <div class="step-card reveal">
+            <span class="step-num">3</span>
+            <h3>Practicas con los audios</h3>
+            <p>Respiraciones, anclaje y más, para escuchar cuando lo necesites — incluso andando.</p>
+          </div>
+          <div class="step-card reveal">
+            <span class="step-num">4</span>
+            <h3>Cierras con Andrea</h3>
+            <p>Al terminar, una Sesión de Claridad 1:1 para valorar tu momento y tu siguiente paso.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== DISCLAIMER ============== -->
+    <section class="block" style="padding-top: 0;">
+      <div class="container">
+        <div class="disclaimer-card reveal">
+          <h3>Importante — léelo, es por ti</h3>
+          <p>
+            Los programas de Renacer en casa son <strong>psicoeducación y autotrabajo guiado</strong>.
+            No son terapia ni sustituyen la atención psicológica individual.
+          </p>
+          <p>
+            Si estás en crisis o tienes pensamientos de hacerte daño, lo prioritario es ayuda directa:
+            llama a la línea <strong>024</strong> (atención a la conducta suicida) o al <strong>112</strong> (emergencias).
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============== LISTA DE ESPERA ============== -->
+    <section class="block waitlist" id="waitlist">
+      <div class="container">
+        <div class="form-card reveal">
+          <h2>Sé de las primeras en entrar.</h2>
+          <p>
+            Déjame tu email y te aviso en cuanto abra Renacer en casa — con un
+            <strong>precio especial de lanzamiento</strong> solo para la lista de espera.
+            De regalo, te envío ya la guía «5 señales de que tu ansiedad es laboral».
+          </p>
+          <form id="waitlist-form" novalidate>
+            <div class="form-row">
+              <label for="name">Nombre</label>
+              <input type="text" id="name" name="name" autocomplete="given-name" />
+            </div>
+            <div class="form-row">
+              <label for="email">Email <span class="req">*</span></label>
+              <input type="email" id="email" name="email" autocomplete="email" required />
+            </div>
+            <label class="privacy">
+              <input type="checkbox" id="consent" name="consent" required />
+              <span>He leído y acepto la <a href="/privacy">política de privacidad</a>. Usaré tu email para enviarte la guía y avisarte del lanzamiento (RGPD).</span>
+            </label>
+            <button type="submit" class="btn btn-primary form-submit" id="submit-btn">Apuntarme a la lista</button>
+            <div id="form-msg" class="form-msg" role="status" aria-live="polite"></div>
+          </form>
+          <div id="form-success" class="form-success-state">
+            <div class="check">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+            <h2 style="font-size: 1.6rem;">¡Hecho!</h2>
+            <p>Revisa tu correo: tu guía va de camino (mira también spam). Serás de las primeras personas en saber cuándo abre Renacer en casa. Cuídate mucho.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============== FOOTER ============== -->
+  <footer>
+    <div class="container">
+      <div>
+        <div class="brand">
+          <img class="brand-mark" src="/assets/logo-studio-renacer-claro.svg" alt="" />
+          <span>Studio Renacer</span>
+        </div>
+        <p>Renacer en casa: trabaja en ti, a tu ritmo, de la mano de una psicóloga colegiada.</p>
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <ul>
+          <li><a href="mailto:info@studiorenacer.com">info@studiorenacer.com</a></li>
+          <li>
+            <a href="https://www.instagram.com/andreapsicologaonline" target="_blank" rel="noopener" class="footer-social">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+              @andreapsicologaonline
+            </a>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="/privacy">Política de privacidad</a></li>
+          <li><a href="/cookies">Política de cookies</a></li>
+          <li><a href="/terms">Aviso legal</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year"></span> Studio Renacer · Andrea Fernández</span>
+      <span class="coming-tag">Renacer en casa · Muy pronto</span>
+    </div>
+  </footer>
+
+  <button id="to-top" class="to-top" aria-label="Volver arriba">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <script>
+    // ============== YEAR ==============
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ============== REVEAL ON SCROLL ==============
+    document.querySelectorAll('.why-grid, .prog-grid, .steps-grid').forEach(grid => {
+      [...grid.children].forEach((card, i) => card.style.setProperty('--reveal-delay', (i * 90) + 'ms'));
+    });
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+          setTimeout(() => {
+            e.target.classList.remove('reveal', 'in');
+            e.target.style.removeProperty('--reveal-delay');
+          }, 1100);
+        }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    // ============== HEADER + BOTÓN VOLVER ARRIBA ==============
+    const header = document.querySelector('.site-header');
+    const toTop = document.getElementById('to-top');
+    function onScroll() {
+      header.classList.toggle('scrolled', window.scrollY > 10);
+      toTop.classList.toggle('show', window.scrollY > 600);
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    toTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+    // ============== FORM ==============
+    const form = document.getElementById('waitlist-form');
+    const msg = document.getElementById('form-msg');
+    const successState = document.getElementById('form-success');
+    const submitBtn = document.getElementById('submit-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.className = 'form-msg';
+      msg.textContent = '';
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const consent = document.getElementById('consent').checked;
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.textContent = 'Por favor, escribe un email válido.';
+        msg.classList.add('error');
+        return;
+      }
+      if (!consent) {
+        msg.textContent = 'Necesito tu consentimiento para poder escribirte (RGPD).';
+        msg.classList.add('error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Enviando…';
+
+      try {
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, consent, lang: 'es', source: 'renacer-en-casa' })
+        });
+        if (!res.ok) throw new Error('Request failed');
+        form.style.display = 'none';
+        successState.style.display = 'block';
+      } catch (err) {
+        msg.textContent = 'Algo ha fallado. Inténtalo de nuevo o escríbeme a info@studiorenacer.com.';
+        msg.classList.add('error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Apuntarme a la lista';
+      }
+    });
+  </script>
+</body>
+</html>

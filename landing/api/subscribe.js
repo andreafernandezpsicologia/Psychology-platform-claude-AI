@@ -32,6 +32,10 @@ export default async function handler(req, res) {
     const phone   = (body.phone   || '').trim().slice(0, 40);
     const consent = !!body.consent;
     const lang    = ['es','en','da'].includes(body.lang) ? body.lang : 'es';
+    // Origen del registro: 'renacer-en-casa' | 'calma' | (vacío = landing principal)
+    const source  = (body.source || '').trim().slice(0, 60);
+    const SOURCE_LABELS = { 'renacer-en-casa': 'Renacer en casa (área)', 'calma': 'Programa CALMA' };
+    const sourceLabel = SOURCE_LABELS[source] || (source ? escapeHtml(source) : 'Landing principal');
 
     // Validación servidor
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -61,6 +65,7 @@ export default async function handler(req, res) {
         <tr><td style="padding:6px 12px;color:#7e8a9c">Email</td><td style="padding:6px 12px"><b>${escapeHtml(email)}</b></td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Teléfono</td><td style="padding:6px 12px">${escapeHtml(phone) || '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Idioma</td><td style="padding:6px 12px">${lang.toUpperCase()}</td></tr>
+        <tr><td style="padding:6px 12px;color:#7e8a9c">Origen</td><td style="padding:6px 12px"><b>${sourceLabel}</b></td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">RGPD</td><td style="padding:6px 12px">${consent ? '✓ aceptado' : '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Fecha</td><td style="padding:6px 12px">${new Date().toISOString()}</td></tr>
       </table>
@@ -70,7 +75,7 @@ export default async function handler(req, res) {
       await resendSend(apiKey, {
         from,
         to: [notifyTo],
-        subject: `Nueva inscripción · ${name || email}`,
+        subject: `Nueva inscripción · ${name || email}${SOURCE_LABELS[source] ? ' · ' + SOURCE_LABELS[source] : ''}`,
         html: adminHtml,
         reply_to: email
       });
@@ -212,15 +217,4 @@ function userEmailTemplates(lang, name, guideUrl) {
       <p>${t.intro}</p>
       <p>${t.body}</p>
       <div style="text-align:center;margin:28px 0">
-        <a href="${href}" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decoration:none;padding:13px 28px;border-radius:999px;font-weight:600;font-size:15px">${t.cta}</a>
-      </div>
-      <p style="font-size:12px;color:#7e8a9c;margin-bottom:24px">${t.linkhint}<br>
-        <a href="${href}" style="color:#2c5282;word-break:break-all">${href}</a></p>
-      <p>${t.ps}</p>
-      <p style="margin-top:24px">${t.sign}</p>
-      <hr style="border:none;border-top:1px solid #e6ebf2;margin:24px 0">
-      <p style="font-size:12px;color:#7e8a9c">${t.footer}</p>
-    </div>
-  `;
-  return { subject: t.subject, html };
-}
+        <a href="${href}" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decora

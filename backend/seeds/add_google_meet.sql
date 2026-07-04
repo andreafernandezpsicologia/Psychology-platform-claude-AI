@@ -19,3 +19,12 @@ create table if not exists google_oauth (
 );
 
 alter table sesiones add column if not exists google_event_id text;
+
+-- El backend accede con el rol service_role (SUPABASE_SERVICE_ROLE_KEY). Las
+-- tablas nuevas no heredan esos permisos automáticamente, así que hay que
+-- concederlos explícitamente. NUNCA a anon/authenticated: el refresh token no
+-- debe poder leerse desde el cliente. RLS activado como defensa en profundidad
+-- (service_role la bypassa; anon/authenticated quedan sin acceso al no tener
+-- ni GRANT ni policies).
+grant select, insert, update, delete on table google_oauth to service_role;
+alter table google_oauth enable row level security;

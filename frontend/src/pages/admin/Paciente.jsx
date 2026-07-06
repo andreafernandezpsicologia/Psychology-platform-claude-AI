@@ -422,17 +422,18 @@ export default function PacienteDetalle() {
                   </Button>
                 )}
 
-                {/* Admin sube el contrato definitivo firmado por ambos */}
-                {(contratoEstado === 'firmado_paciente' || contratoEstado === 'completado') && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    loading={uploadingContrato === pk.id}
-                    onClick={() => { setContratoPackRef(pk.id); fileInputRef.current?.click(); }}
-                  >
-                    ⬆ {t('patientDetail.contratoSubirFirmado')}
-                  </Button>
-                )}
+                {/* Admin sube el contrato definitivo firmado por ambos,
+                    o el escaneo del contrato firmado en papel (estado sin_contrato) */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  loading={uploadingContrato === pk.id}
+                  onClick={() => { setContratoPackRef(pk.id); fileInputRef.current?.click(); }}
+                >
+                  ⬆ {contratoEstado === 'sin_contrato'
+                    ? t('patientDetail.contratoSubirPapel')
+                    : t('patientDetail.contratoSubirFirmado')}
+                </Button>
               </div>
             </div>
           );

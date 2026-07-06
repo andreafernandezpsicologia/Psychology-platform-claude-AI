@@ -1,7 +1,23 @@
+const fs = require('fs');
+const path = require('path');
 const { Resend } = require('resend');
 const { buildSessionICS, buildFeedICS } = require('./icsService');
 const { FECHA_NAIVE_RE } = require('./fechaPared');
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Guía de bienvenida "Cómo funciona tu área privada" (PDF), adjunta al email de
+// activación. Se lee una vez al cargar el módulo; si falta el archivo, el email
+// sigue enviándose sin adjunto (no romper la activación por un adjunto).
+const WELCOME_GUIDE_PATH = path.join(__dirname, '..', 'assets', 'guia-area-privada-studio-renacer.pdf');
+let welcomeGuideAttachment = null;
+try {
+  welcomeGuideAttachment = {
+    filename: 'Guia-area-privada-Studio-Renacer.pdf',
+    content: fs.readFileSync(WELCOME_GUIDE_PATH).toString('base64'),
+  };
+} catch (err) {
+  console.warn('[emailService] Guía de bienvenida no encontrada, se enviará sin adjunto:', err.message);
+}
 
 const FROM = process.env.FROM_EMAIL || 'Studio Renacer <admin@studiorenacer.com>';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -64,7 +80,10 @@ const sendWelcomeEmail = async (email, nombre, activationToken) => {
                   text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
           Activar mi cuenta
         </a>
-        <p style="color:#888;font-size:13px;">El enlace caduca en 7 días.</p>`,
+        <p style="color:#888;font-size:13px;">El enlace caduca en 7 días.</p>
+        <p>Te adjunto una guía en PDF con todo lo que necesitas saber: cómo activar tu cuenta,
+           pedir cita, unirte a la videollamada y preparar tu sesión. Cualquier duda, escríbeme.</p>`,
+    ...(welcomeGuideAttachment ? { attachments: [welcomeGuideAttachment] } : {}),
   });
 };
 

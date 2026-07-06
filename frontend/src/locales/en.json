@@ -105,6 +105,7 @@
     "contratoCompletado": "Contract complete",
     "contratoDescargarFirmadoPaciente": "Download patient contract",
     "contratoSubirFirmado": "Upload signed contract (final)",
+    "contratoSubirPapel": "Upload paper-signed contract",
     "rgpdAceptacion": "GDPR Consent",
     "rgpdFecha": "Accepted on",
     "rgpdDescargar": "Download acceptance document",

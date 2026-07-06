@@ -168,13 +168,13 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     // Confirmación inmediata al paciente, con el .ics (fire-and-forget)
     supabase
       .from('pacientes')
-      .select('users ( email, nombre_completo )')
+      .select('users ( email, nombre_completo, idioma_preferido )')
       .eq('id', paciente_id)
       .single()
       .then(({ data: p }) => {
         const u = p?.users;
         if (u?.email) {
-          sendSessionConfirmation(u.email, u.nombre_completo, data)
+          sendSessionConfirmation(u.email, u.nombre_completo, data, u.idioma_preferido)
             .catch((e) => console.error('[create] email confirmación:', e.message));
         }
       }, () => {});
@@ -265,7 +265,7 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     const { data: paciente, error: pError } = await supabase
       .from('pacientes')
-      .select('id, estado, users ( nombre_completo ), packs ( id, estado )')
+      .select('id, estado, users ( nombre_completo, idioma_preferido ), packs ( id, estado )')
       .eq('user_id', req.user.id)
       .single();
     if (pError) return res.status(404).json({ error: 'Perfil de paciente no encontrado' });
@@ -303,7 +303,7 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     // Acuse de recibo al paciente (fire-and-forget)
     if (req.user.email) {
-      sendSessionRequestAck(req.user.email, nombrePaciente, data)
+      sendSessionRequestAck(req.user.email, nombrePaciente, data, paciente.users?.idioma_preferido)
         .catch((e) => console.error('[solicitar] email acuse:', e.message));
     }
 
@@ -432,7 +432,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data: current, error: fetchError } = await supabase
       .from('sesiones')
-      .select('estado, pack_id, tipo, google_event_id, pacientes ( users ( email, nombre_completo ) )')
+      .select('estado, pack_id, tipo, google_event_id, pacientes ( users ( email, nombre_completo, idioma_preferido ) )')
       .eq('id', req.params.id)
       .single();
 
@@ -468,7 +468,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
     if (current.estado === 'solicitada' && (estado === 'programada' || estado === 'cancelada')) {
       const user = current.pacientes?.users;
       if (user?.email) {
-        sendSessionRequestResult(user.email, user.nombre_completo, data, estado === 'programada')
+        sendSessionRequestResult(user.email, user.nombre_completo, data, estado === 'programada', user.idioma_preferido)
           .catch((e) => console.error('[estado] email resultado solicitud:', e.message));
       }
     }
@@ -486,7 +486,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
       try {
         const { data: pack } = await supabase
           .from('packs')
-          .select('num_sesiones_total, num_sesiones_usadas, pacientes ( users ( email, nombre_completo ) )')
+          .select('num_sesiones_total, num_sesiones_usadas, pacientes ( users ( email, nombre_completo, idioma_preferido ) )')
           .eq('id', data.pack_id)
           .single();
 
@@ -495,7 +495,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
           if (restantes > 0 && restantes <= 2) {
             const user = pack.pacientes?.users;
             if (user?.email) {
-              await sendPackLowAlert(user.email, user.nombre_completo, restantes);
+              await sendPackLowAlert(user.email, user.nombre_completo, restantes, user.idioma_preferido);
             }
           }
         }
@@ -522,7 +522,7 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data: current, error: fetchError } = await supabase
       .from('sesiones')
-      .select('estado, fecha_hora, duracion_minutos, pacientes ( users ( email, nombre_completo ) )')
+      .select('estado, fecha_hora, duracion_minutos, pacientes ( users ( email, nombre_completo, idioma_preferido ) )')
       .eq('id', req.params.id)
       .single();
 
@@ -565,7 +565,7 @@ router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
     // Avisar al paciente del cambio de fecha, con el .ics actualizado (fire-and-forget)
     const user = current.pacientes?.users;
     if (user?.email) {
-      sendSessionRescheduled(user.email, user.nombre_completo, data, current.fecha_hora)
+      sendSessionRescheduled(user.email, user.nombre_completo, data, current.fecha_hora, user.idioma_preferido)
         .catch((e) => console.error('[reagendar] email aviso:', e.message));
     }
 

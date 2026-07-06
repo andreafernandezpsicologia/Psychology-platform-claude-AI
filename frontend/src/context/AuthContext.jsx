@@ -1,7 +1,16 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
+import i18n from '../i18n';
 
 const AuthContext = createContext(null);
+
+// Al iniciar sesión, la app se muestra en el idioma preferido del usuario
+// (el que Andrea marca al crear la cuenta). Después puede cambiarlo a mano.
+const aplicarIdioma = (u) => {
+  if (u?.idioma_preferido && ['es', 'en', 'da'].includes(u.idioma_preferido)) {
+    i18n.changeLanguage(u.idioma_preferido);
+  }
+};
 
 export function AuthProvider({ children }) {
   // Solo guardamos los datos del usuario (nombre, rol) — nunca el token
@@ -53,6 +62,7 @@ export function AuthProvider({ children }) {
     explicitAuth.current = true;
     localStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
+    aplicarIdioma(res.data.user);
     setLoading(false); // no esperar al sondeo inicial (puede ir lento si Render está frío)
     return res.data.user;
   };
@@ -63,6 +73,7 @@ export function AuthProvider({ children }) {
     explicitAuth.current = true;
     localStorage.setItem('user', JSON.stringify(res.data.user));
     setUser(res.data.user);
+    aplicarIdioma(res.data.user);
     setLoading(false);
     return res.data.user;
   };

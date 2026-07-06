@@ -12,7 +12,7 @@ export default function AdminDashboard() {
   const [pacientes, setPacientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const [invite, setInvite] = useState({ email: '', nombre: '' });
+  const [invite, setInvite] = useState({ email: '', nombre: '', idioma: 'es' });
   const [inviting, setInviting] = useState(false);
   const [search, setSearch] = useState('');
   const [showInactivos, setShowInactivos] = useState(false);
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     try {
       await api.post('/auth/invitar-paciente', invite);
       toast.success(`${t('admin.inviteSent')} ${invite.email}`);
-      setInvite({ email: '', nombre: '' });
+      setInvite({ email: '', nombre: '', idioma: 'es' });
       setShowInvite(false);
       const res = await api.get('/pacientes');
       setPacientes(res.data);
@@ -89,6 +89,16 @@ export default function AdminDashboard() {
               onChange={(e) => setInvite({ ...invite, email: e.target.value })}
               className="field-input flex-1 min-w-40"
             />
+            <select
+              value={invite.idioma}
+              onChange={(e) => setInvite({ ...invite, idioma: e.target.value })}
+              className="field-input w-auto"
+              title={t('admin.language', 'Idioma de las comunicaciones')}
+            >
+              <option value="es">Español</option>
+              <option value="en">English</option>
+              <option value="da">Dansk</option>
+            </select>
             <Button type="submit" loading={inviting}>
               {t('admin.sendInvitation')}
             </Button>

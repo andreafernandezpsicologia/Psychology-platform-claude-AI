@@ -102,8 +102,9 @@ const DATA = {
         ] },
       { t: 'Pedir y gestionar tus citas',
         body: [
-          'En tu panel puedes <strong>solicitar una cita</strong>: eliges un día, ves las horas libres y reservas la que te venga bien, en videollamada o presencial.',
-          'Yo la confirmo desde mi lado y te llega un email con la fecha. También puedes ver tus próximas sesiones y tu historial cuando quieras.',
+          'En tu panel, en el <strong>calendario</strong>, verás la fecha y la hora de tus citas ya programadas.',
+          'Si quieres <strong>pedir otra cita o cambiar una</strong>, puedes solicitarlo ahí mismo: eliges día y hora libre (videollamada o presencial) y yo lo confirmo desde mi lado; te llega un email con la fecha.',
+          'Y si alguna vez necesitas <strong>cancelar</strong>, recuerda la política de cancelación de 24 h que figura en tu contrato de servicios.',
         ],
         tip: 'Al confirmar una cita puedes añadirla a tu calendario (Google, Apple…) con un solo clic, para que no se te pase.' },
       { t: 'Unirte a la videollamada',
@@ -190,8 +191,9 @@ const DATA = {
         ] },
       { t: 'Booking and managing appointments',
         body: [
-          'From your dashboard you can <strong>request an appointment</strong>: pick a day, see the free times and book the one that suits you, video call or in person.',
-          'I confirm it from my side and you get an email with the date. You can also see your upcoming sessions and your history whenever you like.',
+          'On your dashboard, in the <strong>calendar</strong>, you’ll see the date and time of your already scheduled appointments.',
+          'If you want to <strong>request another appointment or change one</strong>, you can do it right there: pick a free day and time (video call or in person) and I confirm it from my side; you’ll get an email with the date.',
+          'And if you ever need to <strong>cancel</strong>, please remember the 24-hour cancellation policy set out in your service contract.',
         ],
         tip: 'When an appointment is confirmed you can add it to your calendar (Google, Apple…) with one click, so it doesn’t slip by.' },
       { t: 'Joining the video call',
@@ -278,8 +280,9 @@ const DATA = {
         ] },
       { t: 'Bestil og styr dine tider',
         body: [
-          'Fra dit overblik kan du <strong>anmode om en tid</strong>: vælg en dag, se de ledige tidspunkter og book det, der passer dig, video eller fysisk.',
-          'Jeg bekræfter den fra min side, og du får en e-mail med datoen. Du kan også se dine kommende sessioner og din historik, når du vil.',
+          'På dit overblik ser du i <strong>kalenderen</strong> dato og tid for dine allerede planlagte aftaler.',
+          'Vil du <strong>bestille en ny tid eller ændre en</strong>, kan du gøre det samme sted: vælg en ledig dag og tid (video eller fysisk), og jeg bekræfter den fra min side; du får en e-mail med datoen.',
+          'Og hvis du engang får brug for at <strong>aflyse</strong>, så husk 24-timers afbestillingspolitikken, der står i din servicekontrakt.',
         ],
         tip: 'Når en tid bekræftes, kan du tilføje den til din kalender (Google, Apple…) med ét klik, så den ikke glipper.' },
       { t: 'Deltag i videoopkaldet',
@@ -484,20 +487,19 @@ function render(d) {
 </div>
 
 <div class="page">
-  ${rulesPageHtml(d.rules)}
+  ${stepHtml(d.steps[4], 5, d.tipLabel, true)}
+  ${stepHtml(d.steps[5], 6, d.tipLabel, true)}
+  ${stepHtml(d.steps[6], 7, d.tipLabel, false)}
   ${footer(4)}
 </div>
 
 <div class="page">
-  ${stepHtml(d.steps[4], 5, d.tipLabel, true)}
-  ${stepHtml(d.steps[5], 6, d.tipLabel, false)}
+  ${rulesPageHtml(d.rules)}
   ${footer(5)}
 </div>
 
 <div class="page">
-  ${stepHtml(d.steps[6], 7, d.tipLabel, false)}
-  <hr class="divider" style="margin-top:18pt">
-  <div class="eyebrow" style="margin-top:16pt">${e.eyebrow}</div>
+  <div class="eyebrow">${e.eyebrow}</div>
   <h2>${e.title}</h2>
   <p class="lead" style="font-style:normal;color:var(--body)">${e.lead}</p>
   <div class="cta-box">

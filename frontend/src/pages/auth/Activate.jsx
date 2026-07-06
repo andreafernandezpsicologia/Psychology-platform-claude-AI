@@ -48,19 +48,14 @@ export default function Activate() {
   const token = params.get('token');
 
   useEffect(() => {
-    // Carga el documento RGPD/consentimiento de la BD (ruta pública)
-    api.get('/documentos').then((res) => {
-      const doc = res.data.find(
-        (d) => d.tipo === 'consentimiento_informado' || d.tipo === 'rgpd'
-      );
-      if (doc) {
-        // Cargamos el contenido completo
-        api.get(`/documentos/${doc.id}`).then((r) => setRgpdDoc(r.data));
-      }
-    }).catch(() => {
-      // Si falla, usamos el texto por defecto — el flujo no se rompe
-    });
-  }, []);
+    // Carga el consentimiento vigente en el idioma seleccionado (ruta pública).
+    // Se recarga al cambiar de idioma para mostrar el texto correspondiente.
+    api.get(`/documentos/consentimiento?idioma=${i18n.language}`)
+      .then((r) => setRgpdDoc(r.data))
+      .catch(() => {
+        // Si falla, usamos el texto por defecto — el flujo no se rompe
+      });
+  }, [i18n.language]);
 
   if (!token) return (
     <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg)' }}>

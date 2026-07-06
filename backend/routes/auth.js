@@ -79,7 +79,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const { data: userData, error: userError } = await supabase
       .from('users')
-      .select('role, nombre_completo, totp_enabled')
+      .select('role, nombre_completo, totp_enabled, idioma_preferido')
       .eq('id', data.user.id)
       .single();
     if (userError) return res.status(400).json({ error: 'Error obteniendo datos de usuario' });
@@ -104,7 +104,7 @@ router.post('/login', authLimiter, async (req, res) => {
     setSessionCookie(res, token);
     await audit(req, 'login', 'auth', data.user.id, { role: userData.role });
     res.json({
-      user: { id: data.user.id, email, role: userData.role, nombre_completo: userData.nombre_completo },
+      user: { id: data.user.id, email, role: userData.role, nombre_completo: userData.nombre_completo, idioma_preferido: userData.idioma_preferido || 'es' },
     });
   } catch (err) {
     console.error('[login]', err.message);
@@ -122,6 +122,7 @@ router.post('/logout', (req, res) => {
 // ── Admin invita a un paciente ────────────────────────────────────────────────
 router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => {
   const { email, nombre } = req.body;
+  const idioma = ['es', 'en', 'da'].includes(req.body.idioma) ? req.body.idioma : 'es';
   if (!email || !nombre) {
     return res.status(400).json({ error: 'Email y nombre son obligatorios' });
   }
@@ -133,7 +134,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
     if (authError) return res.status(400).json({ error: authError.message });
 
     const { error: userError } = await supabase.from('users').insert({
-      id: data.user.id, email, role: 'paciente', nombre_completo: nombre,
+      id: data.user.id, email, role: 'paciente', nombre_completo: nombre, idioma_preferido: idioma,
     });
     if (userError) return res.status(400).json({ error: userError.message });
 
@@ -145,7 +146,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
       { expiresIn: '48h' }
     );
 
-    await sendWelcomeEmail(email, nombre, activationToken);
+    await sendWelcomeEmail(email, nombre, activationToken, idioma);
     res.json({ message: 'Invitación enviada', email });
   } catch (err) {
     console.error('[invitar-paciente]', err.message);
@@ -199,7 +200,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
   try {
     const { data: userData, error } = await supabase
       .from('users')
-      .select('id, nombre_completo')
+      .select('id, nombre_completo, idioma_preferido')
       .eq('email', email.toLowerCase().trim())
       .single();
 
@@ -214,7 +215,7 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    await sendPasswordResetEmail(email, userData.nombre_completo, resetToken);
+    await sendPasswordResetEmail(email, userData.nombre_completo, resetToken, userData.idioma_preferido);
     res.json({ message: 'Si el email existe, recibirás un enlace en breve.' });
   } catch (err) {
     console.error('[forgot-password]', err.message);
@@ -251,7 +252,7 @@ router.get('/me', verifyToken, async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('users')
-      .select('id, email, role, nombre_completo, telefono, created_at')
+      .select('id, email, role, nombre_completo, telefono, created_at, idioma_preferido')
       .eq('id', req.user.id)
       .single();
     if (error) return res.status(400).json({ error: 'No se pudieron obtener los datos del usuario' });

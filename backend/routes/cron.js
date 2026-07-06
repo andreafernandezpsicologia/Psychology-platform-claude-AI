@@ -44,7 +44,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       .select(`
         id, fecha_hora, tipo, duracion_minutos, enlace_videollamada,
         pacientes (
-          users ( email, nombre_completo )
+          users ( email, nombre_completo, idioma_preferido )
         )
       `)
       .eq('estado', 'programada')
@@ -83,7 +83,7 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       if (!claimed || claimed.length === 0) continue; // ya reclamada por otra ejecución
 
       try {
-        await sendSessionReminder(user.email, user.nombre_completo, sesion);
+        await sendSessionReminder(user.email, user.nombre_completo, sesion, user.idioma_preferido);
         enviados++;
       } catch (emailErr) {
         console.error(`[cron/recordatorios] Error enviando a ${user.email}:`, emailErr.message);

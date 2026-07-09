@@ -2,10 +2,13 @@
 
 **Studio Renacer · Andrea Fernández García**
 
-> Plantilla. Adáptala a cada caso. Puede firmarse en papel o de forma digital.
-> Guarda una copia firmada: es tu prueba del consentimiento (además del que la persona
-> marca en el formulario web `/opinar`). Especialmente recomendable para testimonios de
-> **pacientes de terapia**, por tratarse de datos de salud (art. 9 RGPD).
+> **Opcional.** El consentimiento ya se recoge cuando la persona **marca las casillas** del
+> formulario web `/opinar` antes de enviar: eso es consentimiento explícito válido (RGPD), y el
+> aviso que te llega por email guarda el texto exacto aceptado, la versión y la fecha como prueba.
+>
+> Usa esta plantilla **solo** si además prefieres una firma en papel — por ejemplo, con algún
+> paciente de terapia con quien quieras una capa extra de tranquilidad. Adáptala a cada caso y
+> guarda la copia firmada.
 
 **Responsable del tratamiento:** Andrea Fernández García · NIF 23816407E ·
 Av. Caldes de Montbui, 19, 08100 Mollet del Vallès (Barcelona), España ·

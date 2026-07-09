@@ -133,9 +133,9 @@
       </div>
 
       <label class="consent"><input type="checkbox" id="consent" required />
-        <span data-i18n="consent.data">Doy mi consentimiento para tratar estos datos con esta finalidad (RGPD).</span></label>
+        <span data-i18n="consent.data">He leído la <a href="/privacy" target="_blank">política de privacidad</a> y doy mi <strong>consentimiento explícito</strong> para tratar mi opinión con esta finalidad (RGPD).</span></label>
       <label class="consent"><input type="checkbox" id="publish" required />
-        <span data-i18n="consent.publish">Autorizo a Studio Renacer a publicar mi opinión con la identidad protegida que he elegido, sabiendo que puedo pedir que la retire en cualquier momento.</span></label>
+        <span data-i18n="consent.publish">Autorizo a Studio Renacer a <strong>publicar mi opinión</strong> con la identidad protegida que he elegido. Es <strong>voluntario y no afecta a mi atención</strong>, y puedo pedir que la retire en cualquier momento.</span></label>
 
       <p class="note" data-i18n="note">Esto es una experiencia personal, no una promesa de resultados. Tu privacidad está protegida y tu opinión no se publicará hasta que Andrea la revise.</p>
 
@@ -163,8 +163,8 @@
         'q.display':'¿Cómo quieres aparecer?', 'display.nombre':'Nombre + inicial', 'display.iniciales':'Solo iniciales', 'display.anonimo':'Anónimo',
         'q.name':'Tu nombre', 'hint.name':'Solo lo usaré para mostrarte como elegiste (p. ej. «María G.»).',
         'q.email':'Tu email (opcional)', 'hint.email':'Solo para confirmarte y para que puedas pedir que la retire cuando quieras.',
-        'consent.data':'Doy mi consentimiento para tratar estos datos con esta finalidad (RGPD).',
-        'consent.publish':'Autorizo a Studio Renacer a publicar mi opinión con la identidad protegida que he elegido, sabiendo que puedo pedir que la retire en cualquier momento.',
+        'consent.data':'He leído la <a href="/privacy" target="_blank">política de privacidad</a> y doy mi <strong>consentimiento explícito</strong> para tratar mi opinión con esta finalidad (RGPD).',
+        'consent.publish':'Autorizo a Studio Renacer a <strong>publicar mi opinión</strong> con la identidad protegida que he elegido. Es <strong>voluntario y no afecta a mi atención</strong>, y puedo pedir que la retire en cualquier momento.',
         note:'Esto es una experiencia personal, no una promesa de resultados. Tu privacidad está protegida y tu opinión no se publicará hasta que Andrea la revise.',
         submit:'Enviar mi opinión', 'success.t':'¡Gracias!',
         'success.p':'He recibido tu opinión. La revisaré con cariño antes de publicarla, siempre con la identidad que elegiste.',
@@ -180,8 +180,8 @@
         'q.display':'How do you want to appear?', 'display.nombre':'First name + initial', 'display.iniciales':'Initials only', 'display.anonimo':'Anonymous',
         'q.name':'Your name', 'hint.name':'Only used to show you as you chose (e.g. “María G.”).',
         'q.email':'Your email (optional)', 'hint.email':'Only to confirm and so you can ask me to remove it whenever you want.',
-        'consent.data':'I consent to the processing of this data for this purpose (GDPR).',
-        'consent.publish':'I authorise Studio Renacer to publish my feedback with the protected identity I chose, knowing I can ask to remove it at any time.',
+        'consent.data':'I have read the <a href="/privacy" target="_blank">privacy policy</a> and give my <strong>explicit consent</strong> to process my feedback for this purpose (GDPR).',
+        'consent.publish':'I authorise Studio Renacer to <strong>publish my feedback</strong> with the protected identity I chose. It is <strong>voluntary and does not affect my care</strong>, and I can ask to remove it at any time.',
         note:'This is a personal experience, not a promise of results. Your privacy is protected and your feedback will not be published until Andrea reviews it.',
         submit:'Send my feedback', 'success.t':'Thank you!',
         'success.p':'I\'ve received your feedback. I\'ll review it carefully before publishing, always with the identity you chose.',
@@ -197,8 +197,8 @@
         'q.display':'Hvordan vil du vises?', 'display.nombre':'Fornavn + initial', 'display.iniciales':'Kun initialer', 'display.anonimo':'Anonym',
         'q.name':'Dit navn', 'hint.name':'Bruges kun til at vise dig, som du valgte (f.eks. »María G.«).',
         'q.email':'Din e-mail (valgfrit)', 'hint.email':'Kun for at bekræfte og så du kan bede mig fjerne den, når du vil.',
-        'consent.data':'Jeg giver samtykke til behandling af disse data til dette formål (GDPR).',
-        'consent.publish':'Jeg giver Studio Renacer tilladelse til at udgive min udtalelse med den beskyttede identitet, jeg valgte, velvidende at jeg kan bede om at få den fjernet når som helst.',
+        'consent.data':'Jeg har læst <a href="/privacy" target="_blank">privatlivspolitikken</a> og giver mit <strong>udtrykkelige samtykke</strong> til at behandle min udtalelse til dette formål (GDPR).',
+        'consent.publish':'Jeg giver Studio Renacer tilladelse til at <strong>udgive min udtalelse</strong> med den beskyttede identitet, jeg valgte. Det er <strong>frivilligt og påvirker ikke min behandling</strong>, og jeg kan bede om at få den fjernet når som helst.',
         note:'Dette er en personlig oplevelse, ikke et løfte om resultater. Dit privatliv er beskyttet, og din udtalelse udgives først, når Andrea har gennemgået den.',
         submit:'Send min udtalelse', 'success.t':'Tak!',
         'success.p':'Jeg har modtaget din udtalelse. Jeg gennemgår den omhyggeligt, før jeg udgiver den — altid med den identitet, du valgte.',
@@ -220,7 +220,7 @@
       const dict = T[l] || T.es;
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const k = el.getAttribute('data-i18n');
-        if (dict[k]) el.textContent = dict[k];
+        if (dict[k]) el.innerHTML = dict[k];
       });
       document.documentElement.lang = l;
       document.querySelectorAll('.lang button').forEach(b => b.classList.toggle('active', b.dataset.lang === l));
@@ -255,7 +255,10 @@
         email:   document.getElementById('email').value.trim(),
         consent: document.getElementById('consent').checked,
         publish: document.getElementById('publish').checked,
-        lang
+        lang,
+        // Registro del consentimiento: texto EXACTO que la persona vio y aceptó + versión.
+        consentVersion: 'opinar-2026-07-v1',
+        consentTexts: [...document.querySelectorAll('.consent span')].map(s => s.textContent.trim())
       };
 
       if (data.opinion.length < 10) { msg.className = 'msg error'; msg.textContent = dict.err_short; return; }

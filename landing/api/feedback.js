@@ -33,6 +33,10 @@ export default async function handler(req, res) {
     const lang     = ['es', 'en', 'da'].includes(body.lang) ? body.lang : 'es';
     const consent  = !!body.consent;   // tratamiento de datos
     const publish  = !!body.publish;   // permiso para publicar
+    const consentVersion = (body.consentVersion || '').toString().slice(0, 40);
+    const consentTexts   = Array.isArray(body.consentTexts)
+      ? body.consentTexts.filter(t => typeof t === 'string').slice(0, 5).map(t => t.slice(0, 500))
+      : [];
 
     // Validación en servidor
     if (opinion.length < 10) {
@@ -76,7 +80,13 @@ export default async function handler(req, res) {
         <tr><td style="padding:6px 12px;color:#7e8a9c">Consentimiento datos</td><td style="padding:6px 12px">${consent ? '✓' : '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Permiso publicación</td><td style="padding:6px 12px">${publish ? '✓' : '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Fecha</td><td style="padding:6px 12px">${new Date().toISOString()}</td></tr>
-      </table>`;
+      </table>
+      <h3 style="font-family:sans-serif;font-size:14px;color:#5B4128;margin:18px 0 6px">Registro de consentimiento</h3>
+      <p style="font-family:sans-serif;font-size:12px;color:#7e8a9c;margin:0 0 6px">Versión: ${escapeHtml(consentVersion) || '—'} &middot; ${new Date().toISOString()}</p>
+      <p style="font-family:sans-serif;font-size:12px;color:#7e8a9c;margin:0 0 6px">La persona marcó activamente estas casillas antes de enviar (consentimiento explícito, art. 6.1.a / 9.2.a RGPD):</p>
+      <ul style="font-family:sans-serif;font-size:13px;color:#0f1f33;padding-left:18px;margin:0">
+        ${consentTexts.length ? consentTexts.map(t => `<li style="margin-bottom:4px">&#9745; ${escapeHtml(t)}</li>`).join('') : '<li>&#9745; (consentimiento marcado)</li>'}
+      </ul>`;
 
     try {
       await resendSend(apiKey, {

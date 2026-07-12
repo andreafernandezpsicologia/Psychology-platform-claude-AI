@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CALMA · Aula — Renacer en casa · Studio Renacer</title>
+  <meta name="description" content="Aula del programa CALMA: módulos en vídeo, cuaderno de ejercicios y audios." />
+  <!-- Área privada: no indexar -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --c-bg: #F8F1E3; --c-surface: #ffffff;
+      --c-ink: #5B4128; --c-ink-soft: #6B4F2E; --c-muted: #7A6A53;
+      --c-line: #E7DCC6; --c-brand: #5B4128; --c-brand-2: #6B4F2E;
+      --c-accent: #E3A52A; --c-ocre: #B07A2B; --c-link: #2C3E54;
+      --c-soft: #F3E7CF; --c-success: #3B6D2A; --c-error: #A33B2D;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Spectral', Georgia, serif;
+      --font-sans: 'Jost', 'Segoe UI', sans-serif;
+      --shadow-sm: 0 1px 3px rgba(91,65,40,.06), 0 1px 2px rgba(91,65,40,.05);
+      --shadow-md: 0 10px 25px -10px rgba(91,65,40,.18), 0 4px 10px -4px rgba(91,65,40,.10);
+      --radius: 14px; --radius-sm: 8px; --container: 880px;
+      --transition: .3s cubic-bezier(.2,.7,.2,1);
+    }
+    body { font-family: var(--font-body); color: var(--c-ink); background: var(--c-bg); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+    h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; }
+    h1 { font-size: clamp(1.9rem, 4.5vw, 2.8rem); }
+    p { color: var(--c-ink-soft); }
+    a { color: var(--c-link); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--c-ocre); }
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 1.5rem; }
+
+    .site-header { position: sticky; top: 0; z-index: 100; background: rgba(248,241,227,.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--c-line); }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: .85rem 0; gap: 1rem; }
+    .brand { display: flex; align-items: center; gap: .65rem; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--c-brand); }
+    .brand-mark { height: 40px; display: block; }
+    .back-aula { font-family: var(--font-sans); font-size: .85rem; }
+
+    main { padding: clamp(2rem, 5vw, 3.5rem) 0 4rem; }
+    .state { display: none; } .state.active { display: block; }
+    .loading { text-align: center; padding: 4rem 0; color: var(--c-muted); font-family: var(--font-sans); }
+
+    .intro .eyebrow { display: block; font-family: var(--font-sans); font-size: .8rem; color: var(--c-ocre); letter-spacing: .16em; text-transform: uppercase; margin-bottom: .6rem; }
+    .intro p { margin-top: .8rem; max-width: 42em; }
+
+    /* Barra de progreso */
+    .progress-wrap { margin: 2rem 0 2.5rem; }
+    .progress-label { display: flex; justify-content: space-between; font-family: var(--font-sans); font-size: .82rem; color: var(--c-muted); margin-bottom: .45rem; }
+    .progress-bar { height: 10px; background: var(--c-soft); border: 1px solid var(--c-line); border-radius: 999px; overflow: hidden; }
+    .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--c-accent), var(--c-ocre)); border-radius: 999px; transition: width .6s cubic-bezier(.2,.7,.2,1); }
+
+    /* Módulos */
+    .mod { background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; transition: box-shadow var(--transition); }
+    .mod.done { border-color: rgba(59,109,42,.35); }
+    .mod.locked { background: var(--c-bg); opacity: .78; }
+    .mod-head { display: flex; align-items: center; gap: 1.1rem; padding: 1.35rem 1.6rem; cursor: pointer; user-select: none; width: 100%; background: none; border: none; text-align: left; font: inherit; color: inherit; }
+    .mod.locked .mod-head { cursor: not-allowed; }
+    .mod-letter { flex-shrink: 0; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; background: var(--c-soft); color: var(--c-ocre); border: 1.5px solid rgba(227,165,42,.45); }
+    .mod.done .mod-letter { background: rgba(59,109,42,.1); color: var(--c-success); border-color: rgba(59,109,42,.35); }
+    .mod.locked .mod-letter { background: var(--c-bg); color: var(--c-muted); border-color: var(--c-line); }
+    .mod-titles { flex: 1; min-width: 0; }
+    .mod-paso { font-family: var(--font-sans); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--c-ocre); }
+    .mod.locked .mod-paso { color: var(--c-muted); }
+    .mod-titles h2 { font-size: 1.35rem; }
+    .mod-meta { font-family: var(--font-sans); font-size: .78rem; color: var(--c-muted); margin-top: .1rem; }
+    .mod-state { flex-shrink: 0; font-family: var(--font-sans); font-size: .78rem; color: var(--c-muted); display: flex; align-items: center; gap: .4rem; }
+    .mod-state .badge-done { color: var(--c-success); }
+    .chev { transition: transform var(--transition); }
+    .mod.open .chev { transform: rotate(180deg); }
+
+    .mod-body { display: none; padding: 0 1.6rem 1.7rem; }
+    .mod.open .mod-body { display: block; }
+    .mod-desc { font-size: .96rem; margin-bottom: 1.3rem; max-width: 46em; }
+
+    .video-frame { position: relative; aspect-ratio: 16/9; background: var(--c-ink); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 1.3rem; }
+    .video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .video-placeholder { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: var(--c-bg); padding: 1rem; }
+    .video-placeholder .big { font-size: 2rem; display: block; margin-bottom: .4rem; }
+    .video-placeholder p { color: rgba(248,241,227,.85); font-family: var(--font-sans); font-size: .9rem; }
+
+    .mod-recursos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .8rem; margin-bottom: 1.2rem; }
+    .recurso { display: flex; align-items: flex-start; gap: .7rem; background: var(--c-bg); border: 1px solid var(--c-line); border-radius: var(--radius-sm); padding: .9rem 1rem; font-size: .88rem; }
+    .recurso .ico { flex-shrink: 0; font-size: 1.1rem; }
+    .recurso a { font-weight: 600; }
+    .recurso .pendiente { color: var(--c-muted); font-style: italic; }
+    .recurso small { display: block; color: var(--c-muted); font-family: var(--font-sans); font-size: .76rem; margin-top: .15rem; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: 11px 22px; font-family: var(--font-sans); font-size: .9rem; font-weight: 500; letter-spacing: .03em; border: none; border-radius: 999px; cursor: pointer; transition: all var(--transition); text-decoration: none; }
+    .btn-primary { background: var(--c-brand); color: var(--c-bg); box-shadow: var(--shadow-sm); }
+    .btn-primary:hover { background: var(--c-brand-2); color: var(--c-bg); }
+    .btn-done { background: rgba(59,109,42,.1); color: var(--c-success); border: 1px solid rgba(59,109,42,.35); }
+    .btn-done:hover { background: rgba(59,109,42,.16); }
+
+    .locked-note { font-family: var(--font-sans); font-size: .82rem; color: var(--c-muted); padding: 0 1.6rem 1.3rem; display: flex; align-items: center; gap: .45rem; }
+
+    /* Extras y cierre */
+    .section-title { margin: 3rem 0 1.2rem; }
+    .section-title .eyebrow { display: block; font-family: var(--font-sans); font-size: .8rem; color: var(--c-ocre); letter-spacing: .16em; text-transform: uppercase; margin-bottom: .4rem; }
+    .extras-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .9rem; }
+
+    .claridad { margin-top: 3rem; background: var(--c-surface); border: 1.5px solid rgba(227,165,42,.55); border-radius: var(--radius); padding: 2rem; box-shadow: var(--shadow-md); text-align: center; }
+    .claridad h2 { margin-bottom: .6rem; }
+    .claridad p { max-width: 36em; margin: 0 auto 1.3rem; font-size: .95rem; }
+
+    .disclaimer { max-width: 640px; margin: 3rem auto 0; background: var(--c-soft); border: 1px solid rgba(227,165,42,.4); border-radius: var(--radius); padding: 1.4rem 1.8rem; text-align: center; font-size: .88rem; }
+    .disclaimer strong { color: var(--c-ink); }
+
+    /* Sin acceso */
+    .no-access { max-width: 520px; margin: 3rem auto; text-align: center; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 2.5rem 2rem; box-shadow: var(--shadow-md); }
+    .no-access h1 { margin-bottom: .8rem; }
+    .no-access p { margin-bottom: 1.5rem; }
+
+    footer { border-top: 1px solid var(--c-line); padding: 1.6rem 0 2rem; margin-top: 2rem; }
+    footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .8rem; font-size: .85rem; color: var(--c-muted); font-family: var(--font-sans); }
+
+    @media (max-width: 560px) {
+      .mod-head { padding: 1.1rem 1.1rem; gap: .8rem; }
+      .mod-body { padding: 0 1.1rem 1.4rem; }
+      .mod-letter { width: 44px; height: 44px; font-size: 1.25rem; }
+      .mod-state span.lbl { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/renacer-en-casa" class="brand" aria-label="Renacer en casa — Studio Renacer">
+        <img class="brand-mark" src="/assets/logo-studio-renacer.svg" alt="" />
+        <span>Studio Renacer</span>
+      </a>
+      <a class="back-aula" href="/renacer-en-casa/aula">← Mi aula</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <div id="state-loading" class="state active"><div class="loading">Abriendo CALMA…</div></div>
+
+      <!-- Sin acceso -->
+      <div id="state-out" class="state">
+        <div class="no-access">
+          <h1>Este aula es de las alumnas y alumnos de CALMA.</h1>
+          <p>Si ya lo compraste, entra desde tu enlace personal o pide que te lo reenvíe a tu email.</p>
+          <a class="btn btn-primary" href="/renacer-en-casa/aula">Recuperar mi acceso</a>
+          <p style="margin-top:1.2rem; font-size:.88rem">¿Todavía no tienes CALMA? <a href="/calma">Conócelo aquí</a>.</p>
+        </div>
+      </div>
+
+      <!-- Con acceso -->
+      <div id="state-in" class="state">
+        <div class="intro">
+          <span class="eyebrow">Programa CALMA · Método de 5 pasos</span>
+          <h1 id="titulo-aula">Entiende y calma tu ansiedad.</h1>
+          <p id="intro-texto">
+            Bienvenida/o a tu aula. Cada módulo tiene tres piezas: un <strong>vídeo corto</strong>, tu parte del
+            <strong>cuaderno</strong> y, en la mayoría, un <strong>audio</strong> para practicar.
+            Los pasos se abren en orden — al marcar uno como completado se abre el siguiente.
+            El <strong>Módulo SOS</strong> está disponible desde el primer día, para cuando lo necesites.
+          </p>
+        </div>
+
+        <div class="progress-wrap" id="progress-wrap">
+          <div class="progress-label"><span>Tu camino</span><span id="progress-text"></span></div>
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+        </div>
+
+        <div id="modulos"></div>
+
+        <!-- Recursos extra -->
+        <div id="extras-wrap">
+          <div class="section-title">
+            <span class="eyebrow">Recursos extra</span>
+            <h2>Para descargar y tener a mano.</h2>
+          </div>
+          <div class="extras-grid" id="extras"></div>
+        </div>
+
+        <!-- Sesión de Claridad -->
+        <div class="claridad" id="claridad">
+          <div class="section-title" style="margin:0 0 .6rem">
+            <span class="eyebrow">El último paso es de verdad</span>
+          </div>
+          <h2>Tu Sesión de Claridad.</h2>
+          <p>
+            Al terminar CALMA te espera un ratito 1:1 con Andrea (15–20 min, incluido en tu programa) para
+            valorar tu momento con honestidad: qué has conseguido y cuál es tu siguiente paso — sea cual sea.
+          </p>
+          <a class="btn btn-primary" href="mailto:info@studiorenacer.com?subject=Quiero%20reservar%20mi%20Sesi%C3%B3n%20de%20Claridad%20(CALMA)&body=Hola%20Andrea%2C%20he%20terminado%20CALMA%20y%20me%20gustar%C3%ADa%20reservar%20mi%20Sesi%C3%B3n%20de%20Claridad.%20Mi%20email%20de%20compra%20es%3A%20">
+            Reservar mi Sesión de Claridad
+          </a>
+        </div>
+
+        <div class="disclaimer">
+          <strong>Recuerda:</strong> CALMA es psicoeducación y autotrabajo guiado, no terapia, y no sustituye
+          la atención psicológica individual. Si estás en crisis o tienes pensamientos de hacerte daño,
+          llama al <strong>024</strong> (conducta suicida) o al <strong>112</strong> (emergencias).
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© <span id="year"></span> Studio Renacer · Andrea Fernández · Psicóloga colegiada 27327</span>
+      <span><a href="/privacy">Privacidad</a> · <a href="/terms">Aviso legal</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // =====================================================================
+    // CONFIGURACIÓN DE VÍDEOS Y AUDIOS (rellenar al subirlos)
+    // Vídeos: ID de YouTube (oculto/unlisted). Ej.: 'dQw4w9WgXcQ'.
+    // Audios: ID de YouTube del audio, o null si aún no está grabado.
+    // =====================================================================
+    const VIDEOS = { m0: null, m1: null, m2: null, m3: null, m4: null, m5: null, sos: null };
+    const AUDIOS = {
+      m1: [{ titulo: 'La alarma desajustada', dur: '8 min', id: null }],
+      m2: [{ titulo: 'Respiración guiada', dur: '5 min', id: null }, { titulo: 'Escaneo corporal', dur: '6 min', id: null }],
+      m3: [{ titulo: 'Las hojas en el río', dur: '6 min', id: null }],
+      m4: [{ titulo: 'Antes de dar el paso', dur: '6 min', id: null }],
+      m5: [{ titulo: 'Tu calma, tu plan', dur: '8 min', id: null }],
+      sos: [{ titulo: 'Surfear la ola', dur: '7 min', id: null }, { titulo: 'Surfear la ola (exprés)', dur: '3 min', id: null }]
+    };
+
+    // ---------- Datos de los módulos (del mapa del programa v2.1) ----------
+    const FILE_API = (f) => '/api/aula-file?f=' + encodeURIComponent(f) + '&token=' + encodeURIComponent(token);
+    const MODULOS = [
+      {
+        id: 'm0', letra: '0', paso: 'Módulo 0 · Bienvenida', titulo: 'Bienvenida y cómo usar CALMA', video: '6–8 min',
+        desc: 'Qué es CALMA, los 5 pasos del método y cómo sacarle el máximo (pista: el cambio está en el cuaderno). Aquí haces tu autoevaluación inicial — la repetirás al final para ver tu cambio con números.',
+        cuaderno: { file: 'calma/CALMA-Modulo-0-Bienvenida.pdf', detalle: 'Autoevaluación inicial · mi punto de partida · mi compromiso' }
+      },
+      {
+        id: 'm1', letra: 'C', paso: 'Paso 1 · C — Comprende', titulo: 'Comprende tu ansiedad', video: '10–12 min',
+        desc: 'La ansiedad no es tu enemiga: es una alarma desajustada. El círculo de 4 piezas (situación → pensamiento → cuerpo → conducta), el miedo al miedo y por qué la ansiedad se mantiene.',
+        cuaderno: { file: 'calma/CALMA-Modulo-1-Comprende-tu-ansiedad.pdf', detalle: 'El círculo de mi ansiedad · mapa personal · registro de la semana' }
+      },
+      {
+        id: 'm2', letra: 'A', paso: 'Paso 2 · A — Aquieta', titulo: 'Aquieta tu cuerpo', video: '10–12 min',
+        desc: 'Cuando el cuerpo se calma, la mente escucha. El acelerador y el freno de tu sistema nervioso, la respiración 4-6, el anclaje 5-4-3-2-1 y tu kit corporal de calma.',
+        cuaderno: { file: 'calma/CALMA-Modulo-2-Aquieta-tu-cuerpo.pdf', detalle: 'Termómetro de activación · registro de práctica · mi kit corporal' }
+      },
+      {
+        id: 'm3', letra: 'L', paso: 'Paso 3 · L — Libera', titulo: 'Libera tu mente', video: '12–15 min',
+        desc: 'No eres tus pensamientos. Preocupación útil vs. rumiación (la "pregunta mágica"), las distorsiones típicas, cómo cuestionar sin "pensar en positivo" y la ventana de preocupación.',
+        cuaderno: { file: 'calma/CALMA-Modulo-3-Libera-tu-mente.pdf', detalle: 'Pregunta mágica · distorsiones · reestructuración · mi ventana' }
+      },
+      {
+        id: 'm4', letra: 'M', paso: 'Paso 4 · M — Muévete', titulo: 'Muévete hacia lo que evitas', video: '12–15 min',
+        desc: 'La ansiedad se alimenta de lo que evitas. Soltar la lucha para poder moverte, la escalera de aproximación gradual ("incómodo sí, desbordada/o no") y los 3 pilares: sueño, movimiento y rutinas.',
+        cuaderno: { file: 'calma/CALMA-Modulo-4-Muevete-hacia-lo-que-evitas.pdf', detalle: 'El coste de la lucha · mapa de evitaciones · mi primera escalera · mis 3 pilares' }
+      },
+      {
+        id: 'm5', letra: 'A', paso: 'Paso 5 · A — Afianza', titulo: 'Afianza tu calma', video: '10–12 min',
+        desc: 'La calma se entrena y se mantiene. Resbalón vs. recaída, el semáforo de señales tempranas, vivir hacia tus valores y tu Plan Personal de Calma por escrito. Cierra con la autoevaluación final: compárala con la del Módulo 0.',
+        cuaderno: { file: 'calma/CALMA-Modulo-5-Afianza-tu-calma.pdf', detalle: 'Brújula de valores · Plan Personal de Calma · Plan Anti-Recaídas · autoevaluación final' }
+      },
+      {
+        id: 'sos', letra: 'SOS', paso: 'Bonus · Kit SOS Ansiedad', titulo: 'Cuando la ansiedad se dispara', video: '11–13 min', siempreAbierto: true,
+        desc: 'Para picos y ataques de pánico: muy desagradable, pero no peligroso. Surfear la ola en vez de luchar o huir, y perderle el miedo a las sensaciones. Disponible desde el día 1; recomendado después del paso A (módulo 2). Si el pánico se repite a menudo, este módulo te explica por qué pedir acompañamiento es lo inteligente.',
+        cuaderno: { file: 'calma/CALMA-Modulo-SOS-Cuando-la-ansiedad-se-dispara.pdf', detalle: 'Mi tarjeta de rescate · checklist "¿me conviene acompañamiento?"' }
+      }
+    ];
+
+    const EXTRAS = [
+      { titulo: 'Cuaderno de ejercicios completo', detalle: 'Todos los módulos en un solo PDF, rellenable e imprimible', file: 'calma/CALMA-Cuaderno-de-ejercicios.pdf', req: ['calma'] },
+      { titulo: 'Diario de ansiedad · 30 días', detalle: 'Registro diario imprimible (bonus)', file: 'calma/CALMA-Diario-de-ansiedad-30-dias.pdf', req: ['calma'] },
+      { titulo: 'Tarjeta Kit SOS (tamaño cartera)', detalle: 'Para llevar encima o en el móvil', file: 'calma/CALMA-Tarjeta-Kit-SOS.pdf', req: ['calma', 'sos'] }
+    ];
+
+    // ---------- Acceso ----------
+    const $ = id => document.getElementById(id);
+    function showState(name) {
+      ['loading', 'in', 'out'].forEach(s => $('state-' + s).classList.toggle('active', s === name));
+    }
+    const params = new URLSearchParams(location.search);
+    let token = params.get('token') || localStorage.getItem('aula_token') || '';
+    if (params.get('token')) {
+      localStorage.setItem('aula_token', params.get('token'));
+      history.replaceState(null, '', location.pathname);
+    }
+    let misProductos = [];
+
+    async function init() {
+      if (!token) return showState('out');
+      try {
+        const r = await fetch('/api/aula-verify?token=' + encodeURIComponent(token));
+        if (!r.ok) throw new Error('invalid');
+        const data = await r.json();
+        misProductos = data.productos || [];
+        if (!misProductos.includes('calma') && !misProductos.includes('sos')) return showState('out');
+        render(data);
+        showState('in');
+      } catch {
+        localStorage.removeItem('aula_token');
+        showState('out');
+      }
+    }
+
+    // ---------- Progreso (en este navegador) ----------
+    const PROG_KEY = 'aula_calma_progreso';
+    const getDone = () => { try { return JSON.parse(localStorage.getItem(PROG_KEY)) || []; } catch { return []; } };
+    const setDone = (arr) => localStorage.setItem(PROG_KEY, JSON.stringify(arr));
+
+    function toggleDone(id) {
+      let done = getDone();
+      done = done.includes(id) ? done.filter(x => x !== id) : [...done, id];
+      setDone(done);
+      render({ productos: misProductos });
+      // dejar abierto el módulo siguiente al completar
+      const idx = MODULOS.findIndex(m => m.id === id);
+      if (done.includes(id) && idx >= 0 && idx < MODULOS.length - 1) {
+        const next = document.querySelector('[data-mod="' + MODULOS[idx + 1].id + '"]');
+        if (next && !next.classList.contains('locked')) next.classList.add('open');
+      }
+    }
+
+    function estaDesbloqueado(mod, idx, done) {
+      if (mod.siempreAbierto) return true;
+      if (idx === 0) return true;
+      // secuencial: se abre al completar el módulo anterior (sin contar SOS)
+      const previos = MODULOS.filter((m, i) => i < idx && !m.siempreAbierto);
+      const anterior = previos[previos.length - 1];
+      return !anterior || done.includes(anterior.id);
+    }
+
+    // ---------- Render ----------
+    function render({ nombre, productos }) {
+      const soloSOS = !misProductos.includes('calma');
+      const done = getDone();
+      const visibles = soloSOS ? MODULOS.filter(m => m.id === 'sos') : MODULOS;
+
+      if (soloSOS) {
+        $('titulo-aula').textContent = 'Tu Kit SOS Ansiedad.';
+        $('intro-texto').innerHTML = 'Aquí tienes tu Kit SOS completo: el vídeo, tu tarjeta de rescate y los audios para los momentos difíciles. Cuando quieras ir a la raíz (y no solo apagar fuegos), el programa completo <a href="/calma">CALMA</a> te está esperando.';
+        $('progress-wrap').style.display = 'none';
+      } else {
+        const totales = MODULOS.length;
+        const hechos = done.filter(d => MODULOS.some(m => m.id === d)).length;
+        $('progress-text').textContent = hechos + ' de ' + totales + ' módulos completados';
+        $('progress-fill').style.width = (hechos / totales * 100) + '%';
+      }
+
+      // guardar qué módulos estaban abiertos para no cerrarlos al re-renderizar
+      const abiertos = [...document.querySelectorAll('.mod.open')].map(el => el.dataset.mod);
+
+      $('modulos').innerHTML = visibles.map((mod, idx) => {
+        const abierto = estaDesbloqueado(mod, MODULOS.indexOf(mod), done);
+        const completado = done.includes(mod.id);
+        const audios = AUDIOS[mod.id] || [];
+        if (!abierto) {
+          return `
+          <article class="mod locked" data-mod="${mod.id}">
+            <div class="mod-head" aria-disabled="true">
+              <span class="mod-letter">🔒</span>
+              <div class="mod-titles">
+                <span class="mod-paso">${mod.paso}</span>
+                <h2>${mod.titulo}</h2>
+              </div>
+            </div>
+            <div class="locked-note">Se abre al completar el paso anterior. Sin prisa: el orden es parte del método.</div>
+          </article>`;
+        }
+        return `
+        <article class="mod ${completado ? 'done' : ''}" data-mod="${mod.id}">
+          <button class="mod-head" onclick="this.parentElement.classList.toggle('open')" aria-expanded="false">
+            <span class="mod-letter">${completado ? '✓' : mod.letra}</span>
+            <div class="mod-titles">
+              <span class="mod-paso">${mod.paso}</span>
+              <h2>${mod.titulo}</h2>
+              <span class="mod-meta">Vídeo ${mod.video} · cuaderno${audios.length ? ' · ' + audios.length + ' audio' + (audios.length > 1 ? 's' : '') : ''}</span>
+            </div>
+            <span class="mod-state">
+              ${completado ? '<span class="badge-done">Completado</span>' : '<span class="lbl">Abrir</span>'}
+              <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </span>
+          </button>
+          <div class="mod-body">
+            <p class="mod-desc">${mod.desc}</p>
+            <div class="video-frame">
+              ${VIDEOS[mod.id]
+                ? `<iframe src="https://www.youtube-nocookie.com/embed/${VIDEOS[mod.id]}?rel=0&modestbranding=1" title="${mod.titulo}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`
+                : `<div class="video-placeholder"><div><span class="big">🎬</span><p>El vídeo de este módulo estará aquí muy pronto.<br>Mientras tanto, tu cuaderno ya te espera abajo.</p></div></div>`}
+            </div>
+            <div class="mod-recursos">
+              <div class="recurso">
+                <span class="ico">📓</span>
+                <div>
+                  <a href="${FILE_API(mod.cuaderno.file)}" target="_blank" rel="noopener">Cuaderno del módulo (PDF)</a>
+                  <small>${mod.cuaderno.detalle}</small>
+                </div>
+              </div>
+              ${audios.map(a => `
+              <div class="recurso">
+                <span class="ico">🎧</span>
+                <div>
+                  ${a.id
+                    ? `<a href="https://www.youtube.com/watch?v=${a.id}" target="_blank" rel="noopener">${a.titulo}</a>`
+                    : `<span class="pendiente">${a.titulo}</span>`}
+                  <small>${a.dur}${a.id ? '' : ' · disponible muy pronto'}</small>
+                </div>
+              </div>`).join('')}
+            </div>
+            <button class="btn ${completado ? 'btn-done' : 'btn-primary'}" onclick="toggleDone('${mod.id}')">
+              ${completado ? '✓ Completado — pulsar para desmarcar' : 'Marcar como completado'}
+            </button>
+          </div>
+        </article>`;
+      }).join('');
+
+      // restaurar módulos abiertos
+      abiertos.forEach(id => {
+        const el = document.querySelector('[data-mod="' + id + '"]');
+        if (el && !el.classList.contains('locked')) el.classList.add('open');
+      });
+
+      // extras según producto
+      $('extras').innerHTML = EXTRAS
+        .filter(x => x.req.some(p => misProductos.includes(p)))
+        .map(x => `
+          <div class="recurso">
+            <span class="ico">⬇️</span>
+            <div>
+              <a href="${FILE_API(x.file)}" target="_blank" rel="noopener">${x.titulo}</a>
+              <small>${x.detalle}</small>
+            </div>
+          </div>`).join('');
+      $('extras-wrap').style.display = soloSOS && !EXTRAS.some(x => x.req.includes('sos')) ? 'none' : '';
+      $('claridad').style.display = soloSOS ? 'none' : '';
+    }
+
+    init();
+  </script>
+</body>
+</html>

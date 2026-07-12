@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aula — Renacer en casa · Studio Renacer</title>
+  <meta name="description" content="Aula de los programas de autotrabajo guiado de Renacer en casa." />
+  <!-- Área privada: no indexar -->
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --c-bg: #F8F1E3; --c-surface: #ffffff;
+      --c-ink: #5B4128; --c-ink-soft: #6B4F2E; --c-muted: #7A6A53;
+      --c-line: #E7DCC6; --c-brand: #5B4128; --c-brand-2: #6B4F2E;
+      --c-accent: #E3A52A; --c-ocre: #B07A2B; --c-link: #2C3E54;
+      --c-soft: #F3E7CF; --c-success: #3B6D2A; --c-error: #A33B2D;
+      --font-display: 'Cormorant Garamond', Georgia, serif;
+      --font-body: 'Spectral', Georgia, serif;
+      --font-sans: 'Jost', 'Segoe UI', sans-serif;
+      --shadow-sm: 0 1px 3px rgba(91,65,40,.06), 0 1px 2px rgba(91,65,40,.05);
+      --shadow-md: 0 10px 25px -10px rgba(91,65,40,.18), 0 4px 10px -4px rgba(91,65,40,.10);
+      --radius: 14px; --radius-sm: 8px; --container: 980px;
+      --transition: .3s cubic-bezier(.2,.7,.2,1);
+    }
+    body { font-family: var(--font-body); color: var(--c-ink); background: var(--c-bg); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+    h1, h2 { font-family: var(--font-display); font-weight: 600; line-height: 1.15; }
+    h1 { font-size: clamp(2rem, 4.5vw, 3rem); }
+    p { color: var(--c-ink-soft); }
+    a { color: var(--c-link); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--c-ocre); }
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 1.5rem; }
+
+    .site-header { position: sticky; top: 0; z-index: 100; background: rgba(248,241,227,.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--c-line); }
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: .85rem 0; gap: 1rem; }
+    .brand { display: flex; align-items: center; gap: .65rem; font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; color: var(--c-brand); }
+    .brand-mark { height: 40px; display: block; }
+    .aula-tag { font-family: var(--font-sans); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; background: var(--c-soft); border: 1px solid rgba(227,165,42,.4); color: var(--c-ocre); padding: 4px 12px; border-radius: 999px; }
+
+    main { padding: clamp(2.5rem, 6vw, 4.5rem) 0 4rem; }
+    .intro { max-width: 40em; margin-bottom: 2.5rem; }
+    .intro .eyebrow { display: block; font-family: var(--font-sans); font-size: .8rem; color: var(--c-ocre); letter-spacing: .16em; text-transform: uppercase; margin-bottom: .6rem; }
+    .intro p { margin-top: .8rem; }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; padding: 13px 24px; font-family: var(--font-sans); font-size: .93rem; font-weight: 500; letter-spacing: .03em; border: none; border-radius: 999px; cursor: pointer; transition: all var(--transition); text-decoration: none; }
+    .btn-primary { background: var(--c-brand); color: var(--c-bg); box-shadow: var(--shadow-md); }
+    .btn-primary:hover { background: var(--c-brand-2); color: var(--c-bg); transform: translateY(-1px); }
+    .btn-ghost { background: transparent; color: var(--c-brand); border: 1px solid rgba(91,65,40,.28); }
+    .btn-ghost:hover { border-color: var(--c-accent); background: var(--c-surface); color: var(--c-brand); }
+
+    /* Estados */
+    .state { display: none; }
+    .state.active { display: block; }
+    .loading { text-align: center; padding: 4rem 0; color: var(--c-muted); font-family: var(--font-sans); }
+
+    /* Tarjetas de programa */
+    .prog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .prog-card { position: relative; display: flex; flex-direction: column; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: var(--radius); padding: 2.25rem 2rem 2rem; transition: all var(--transition); }
+    .prog-card.owned { border: 1.5px solid rgba(227,165,42,.55); box-shadow: var(--shadow-md); }
+    .prog-card.dimmed { opacity: .85; background: var(--c-bg); }
+    .prog-status { position: absolute; top: -13px; left: 1.75rem; font-family: var(--font-sans); font-size: .7rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; padding: 5px 14px; border-radius: 999px; box-shadow: var(--shadow-sm); }
+    .prog-status.tuyo { background: var(--c-accent); color: var(--c-brand); }
+    .prog-status.later { background: var(--c-soft); color: var(--c-muted); border: 1px solid var(--c-line); }
+    .prog-theme { font-family: var(--font-sans); font-size: .72rem; color: var(--c-ocre); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .5rem; }
+    .prog-card h3 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; color: var(--c-brand); margin-bottom: .3rem; }
+    .prog-tagline { font-style: italic; color: var(--c-ocre); font-size: .96rem; margin-bottom: 1rem; }
+    .prog-card > p { font-size: .93rem; margin-bottom: 1.4rem; flex: 1; }
+    .prog-cta .btn { width: 100%; }
+
+    /* Formulario de acceso */
+    .form-card { max-width: 520px; background: var(--c-surface); padding: clamp(1.8rem, 4vw, 2.6rem); border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--c-line); }
+    .form-row { margin-bottom: 1.1rem; }
+    .form-row label { display: block; font-family: var(--font-sans); font-size: .85rem; font-weight: 500; margin-bottom: .45rem; }
+    .form-row input { width: 100%; padding: 12px 14px; font-family: var(--font-body); font-size: .96rem; border: 1.5px solid var(--c-line); border-radius: var(--radius-sm); background: var(--c-bg); color: var(--c-ink); transition: all var(--transition); }
+    .form-row input:focus { outline: none; border-color: var(--c-ocre); background: var(--c-surface); box-shadow: 0 0 0 4px rgba(227,165,42,.16); }
+    .form-msg { margin-top: 1rem; padding: 12px 16px; border-radius: var(--radius-sm); font-size: .9rem; display: none; }
+    .form-msg.success { display: block; background: rgba(59,109,42,.08); color: var(--c-success); border: 1px solid rgba(59,109,42,.25); }
+    .form-msg.error { display: block; background: rgba(163,59,45,.08); color: var(--c-error); border: 1px solid rgba(163,59,45,.25); }
+    .hint { font-size: .85rem; color: var(--c-muted); margin-top: 1.2rem; }
+
+    .disclaimer { max-width: 640px; margin: 3.5rem auto 0; background: var(--c-soft); border: 1px solid rgba(227,165,42,.4); border-radius: var(--radius); padding: 1.4rem 1.8rem; text-align: center; font-size: .88rem; }
+    .disclaimer strong { color: var(--c-ink); }
+
+    footer { border-top: 1px solid var(--c-line); padding: 1.6rem 0 2rem; margin-top: 2rem; }
+    footer .container { display: flex; justify-content: space-between; flex-wrap: wrap; gap: .8rem; font-size: .85rem; color: var(--c-muted); font-family: var(--font-sans); }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a href="/renacer-en-casa" class="brand" aria-label="Renacer en casa — Studio Renacer">
+        <img class="brand-mark" src="/assets/logo-studio-renacer.svg" alt="" />
+        <span>Studio Renacer</span>
+      </a>
+      <span class="aula-tag">Renacer en casa · Aula</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <!-- Cargando -->
+      <div id="state-loading" class="state active">
+        <div class="loading">Abriendo tu aula…</div>
+      </div>
+
+      <!-- Con acceso -->
+      <div id="state-in" class="state">
+        <div class="intro">
+          <span class="eyebrow">Tu aula</span>
+          <h1 id="saludo">Hola.</h1>
+          <p>Este es tu espacio. Entra en tu programa y ve a tu ritmo: el acceso es tuyo para siempre. Un paso pequeño cada día vale más que un atracón.</p>
+        </div>
+
+        <div class="prog-grid" id="prog-grid">
+
+          <article class="prog-card" id="card-calma">
+            <span class="prog-status tuyo" id="status-calma" hidden>Tu programa</span>
+            <span class="prog-theme">Ansiedad · Estrés</span>
+            <h3>CALMA</h3>
+            <p class="prog-tagline">Entiende y calma tu ansiedad.</p>
+            <p>El método de 5 pasos: comprende, aquieta, libera, muévete y afianza. Con cuaderno, audios y el Kit SOS.</p>
+            <div class="prog-cta" id="cta-calma"></div>
+          </article>
+
+          <article class="prog-card dimmed">
+            <span class="prog-status later">Próximamente</span>
+            <span class="prog-theme">Relaciones · Comunicación</span>
+            <h3>VÍNCULOS</h3>
+            <p class="prog-tagline">Deja de perderte en tus relaciones.</p>
+            <p>Decir lo que necesitas y poner límites sin culpa — sin dejar de ser tú. En preparación.</p>
+            <div class="prog-cta"><a class="btn btn-ghost" href="/renacer-en-casa#waitlist">Avísame cuando salga</a></div>
+          </article>
+
+          <article class="prog-card dimmed">
+            <span class="prog-status later">Próximamente</span>
+            <span class="prog-theme">Heridas emocionales</span>
+            <h3>RAÍCES</h3>
+            <p class="prog-tagline">Entiende tus heridas.</p>
+            <p>Psicoeducación suave para entender tu historia, sin remover de más. En preparación.</p>
+            <div class="prog-cta"><a class="btn btn-ghost" href="/renacer-en-casa#waitlist">Avísame cuando salga</a></div>
+          </article>
+
+        </div>
+
+        <div class="disclaimer">
+          <strong>Recuerda:</strong> esto es psicoeducación y autotrabajo guiado, no terapia.
+          Si estás en crisis o tienes pensamientos de hacerte daño, llama al <strong>024</strong> (conducta suicida) o al <strong>112</strong> (emergencias).
+        </div>
+      </div>
+
+      <!-- Sin acceso -->
+      <div id="state-out" class="state">
+        <div class="intro">
+          <span class="eyebrow">Aula · Acceso</span>
+          <h1>Entra en tu aula.</h1>
+          <p>Si ya tienes un programa de Renacer en casa, escribe el email con el que compraste y te reenvío tu enlace personal de acceso.</p>
+        </div>
+
+        <div class="form-card">
+          <form id="acceso-form" novalidate>
+            <div class="form-row">
+              <label for="email">Tu email de compra</label>
+              <input type="email" id="email" name="email" autocomplete="email" required />
+            </div>
+            <button type="submit" class="btn btn-primary" id="acceso-btn" style="width:100%">Enviarme mi enlace de acceso</button>
+            <div id="acceso-msg" class="form-msg" role="status" aria-live="polite"></div>
+          </form>
+          <p class="hint">
+            ¿Aún no tienes ningún programa? Conoce <a href="/calma">CALMA</a>, el programa para entender y calmar tu ansiedad.<br />
+            ¿Problemas para entrar? Escríbeme a <a href="mailto:info@studiorenacer.com">info@studiorenacer.com</a>.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <span>© <span id="year"></span> Studio Renacer · Andrea Fernández · Psicóloga colegiada 27327</span>
+      <span><a href="/privacy">Privacidad</a> · <a href="/terms">Aviso legal</a></span>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const $ = id => document.getElementById(id);
+    function showState(name) {
+      ['loading', 'in', 'out'].forEach(s => $('state-' + s).classList.toggle('active', s === name));
+    }
+
+    // ---------- Token: de la URL (magic link) o del navegador ----------
+    const params = new URLSearchParams(location.search);
+    let token = params.get('token') || localStorage.getItem('aula_token') || '';
+    if (params.get('token')) {
+      localStorage.setItem('aula_token', params.get('token'));
+      history.replaceState(null, '', location.pathname); // limpiar la URL
+    }
+
+    async function init() {
+      if (!token) return showState('out');
+      try {
+        const r = await fetch('/api/aula-verify?token=' + encodeURIComponent(token));
+        if (!r.ok) throw new Error('invalid');
+        const data = await r.json();
+        pintarAula(data);
+        showState('in');
+      } catch {
+        localStorage.removeItem('aula_token');
+        token = '';
+        showState('out');
+      }
+    }
+
+    function pintarAula({ nombre, productos }) {
+      $('saludo').textContent = nombre ? ('Hola, ' + nombre + '.') : 'Hola.';
+      const tieneCalma = productos.includes('calma');
+      const tieneSOS = productos.includes('sos');
+      const cta = $('cta-calma');
+      if (tieneCalma || tieneSOS) {
+        $('card-calma').classList.add('owned');
+        $('status-calma').hidden = false;
+        if (!tieneCalma) $('status-calma').textContent = 'Tu Kit SOS';
+        cta.innerHTML = '<a class="btn btn-primary" href="/renacer-en-casa/aula/calma">' +
+          (tieneCalma ? 'Entrar al aula de CALMA' : 'Abrir mi Kit SOS') + '</a>';
+      } else {
+        $('card-calma').classList.add('dimmed');
+        cta.innerHTML = '<a class="btn btn-ghost" href="/calma">Conocer CALMA</a>';
+      }
+    }
+
+    // ---------- Reenvío del magic link ----------
+    $('acceso-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = $('acceso-msg');
+      const btn = $('acceso-btn');
+      msg.className = 'form-msg';
+      const email = $('email').value.trim();
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        msg.textContent = 'Por favor, escribe un email válido.';
+        msg.classList.add('error');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = 'Enviando…';
+      try {
+        const r = await fetch('/api/aula-acceso', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        if (!r.ok) throw new Error();
+        msg.textContent = 'Hecho. Si ese email tiene un programa, tu enlace va de camino (mira también spam).';
+        msg.classList.add('success');
+      } catch {
+        msg.textContent = 'Algo ha fallado. Inténtalo de nuevo o escríbeme a info@studiorenacer.com.';
+        msg.classList.add('error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enviarme mi enlace de acceso';
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

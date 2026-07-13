@@ -46,6 +46,16 @@ export default function Activate() {
   const [rgpdDoc, setRgpdDoc] = useState(null); // { id, titulo, contenido }
 
   const token = params.get('token');
+  // El email de bienvenida incluye &lang=<idioma del paciente>: la pantalla (y el
+  // texto del consentimiento) deben salir en SU idioma, no en el del navegador.
+  const langParam = params.get('lang');
+
+  useEffect(() => {
+    if (['es', 'en', 'da'].includes(langParam) && i18n.language !== langParam) {
+      i18n.changeLanguage(langParam);
+    }
+    // solo al montar: después manda el selector manual de idioma
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     // Carga el consentimiento vigente en el idioma seleccionado (ruta pública).

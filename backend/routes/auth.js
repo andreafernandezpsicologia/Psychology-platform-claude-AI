@@ -123,6 +123,9 @@ router.post('/logout', (req, res) => {
 router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => {
   const { email, nombre } = req.body;
   const idioma = ['es', 'en', 'da'].includes(req.body.idioma) ? req.body.idioma : 'es';
+  // Guía PDF opcional: en altas presenciales Andrea ya lo explica en persona.
+  // Por compatibilidad (peticiones antiguas sin el campo) el valor por defecto es true.
+  const conGuia = req.body.con_guia !== false;
   if (!email || !nombre) {
     return res.status(400).json({ error: 'Email y nombre son obligatorios' });
   }
@@ -146,7 +149,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
       { expiresIn: '48h' }
     );
 
-    await sendWelcomeEmail(email, nombre, activationToken, idioma);
+    await sendWelcomeEmail(email, nombre, activationToken, idioma, conGuia);
     res.json({ message: 'Invitación enviada', email });
   } catch (err) {
     console.error('[invitar-paciente]', err.message);

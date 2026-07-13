@@ -37,7 +37,8 @@
   },
   "layout": {
     "admin": "Admin",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "back": "Volver atrás"
   },
   "admin": {
     "myPatients": "Mis pacientes",
@@ -45,6 +46,7 @@
     "newInvitation": "Nueva invitación",
     "fullName": "Nombre completo",
     "sendInvitation": "Enviar invitación",
+    "attachGuide": "Adjuntar la guía PDF del área privada al email de bienvenida",
     "inviteError": "Error: ",
     "noPatients": "Todavía no tienes pacientes.",
     "noPatientsHint": "Invita a tu primer paciente con el botón de arriba.",
@@ -65,6 +67,7 @@
     "sessions": "sesiones",
     "create": "Crear",
     "noPacks": "Sin packs",
+    "noPacksHint": "Crea un pack para gestionar el pago y el contrato de este paciente.",
     "deletePack": "Eliminar",
     "sessions_title": "Sesiones",
     "upcoming": "Próximas",
@@ -106,6 +109,8 @@
     "contratoDescargarFirmadoPaciente": "Descargar contrato del paciente",
     "contratoSubirFirmado": "Subir contrato firmado (definitivo)",
     "contratoSubirPapel": "Subir contrato firmado en papel",
+    "contratoEnviarPlantilla": "Enviar contrato predeterminado",
+    "contratoEnviadoOk": "Contrato enviado por email al paciente",
     "rgpdAceptacion": "Consentimiento RGPD",
     "rgpdFecha": "Aceptado el",
     "rgpdDescargar": "Descargar documento de aceptación",

@@ -37,7 +37,8 @@
   },
   "layout": {
     "admin": "Admin",
-    "logout": "Sign out"
+    "logout": "Sign out",
+    "back": "Go back"
   },
   "admin": {
     "myPatients": "My patients",
@@ -45,6 +46,7 @@
     "newInvitation": "New invitation",
     "fullName": "Full name",
     "sendInvitation": "Send invitation",
+    "attachGuide": "Attach the private-area PDF guide to the welcome email",
     "inviteError": "Error: ",
     "noPatients": "You have no patients yet.",
     "noPatientsHint": "Invite your first patient using the button above.",
@@ -65,6 +67,7 @@
     "sessions": "sessions",
     "create": "Create",
     "noPacks": "No packs",
+    "noPacksHint": "Create a pack to manage this patient's payment and contract.",
     "deletePack": "Delete",
     "sessions_title": "Sessions",
     "upcoming": "Upcoming",
@@ -106,6 +109,8 @@
     "contratoDescargarFirmadoPaciente": "Download patient contract",
     "contratoSubirFirmado": "Upload signed contract (final)",
     "contratoSubirPapel": "Upload paper-signed contract",
+    "contratoEnviarPlantilla": "Send default contract",
+    "contratoEnviadoOk": "Contract emailed to the patient",
     "rgpdAceptacion": "GDPR Consent",
     "rgpdFecha": "Accepted on",
     "rgpdDescargar": "Download acceptance document",

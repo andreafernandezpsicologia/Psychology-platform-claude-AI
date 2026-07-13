@@ -88,6 +88,7 @@ export default function PacienteDetalle() {
   const [savingPago, setSavingPago] = useState(null);  // packId en curso
   const [uploadingContrato, setUploadingContrato] = useState(null); // packId en curso
   const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
+  const [enviandoContrato, setEnviandoContrato] = useState(false);
 
   const cargar = () => {
     setLoading(true);
@@ -231,6 +232,16 @@ export default function PacienteDetalle() {
     finally { setUploadingContrato(null); setContratoPackRef(null); }
   };
 
+  // Enviar por email el contrato predeterminado (plantilla PDF) al paciente
+  const enviarContratoPredeterminado = async () => {
+    setEnviandoContrato(true);
+    try {
+      await api.post(`/contratos/paciente/${id}/enviar-plantilla`);
+      toast.success(t('patientDetail.contratoEnviadoOk'));
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setEnviandoContrato(false); }
+  };
+
   // ── RGPD ─────────────────────────────────────────────────────────────────
   const verRgpd = async () => {
     try {
@@ -311,6 +322,9 @@ export default function PacienteDetalle() {
             <p className="text-sm" style={{ color: 'var(--text)' }}>{paciente.email}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
+            <Button variant="ghost" size="sm" loading={enviandoContrato} onClick={enviarContratoPredeterminado}>
+              ✉ {t('patientDetail.contratoEnviarPlantilla')}
+            </Button>
             <Button variant="ghost" size="sm" onClick={verRgpd}>
               📄 {t('patientDetail.rgpdDescargar')}
             </Button>
@@ -355,7 +369,10 @@ export default function PacienteDetalle() {
         )}
 
         {packs.length === 0 ? (
-          <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDetail.noPacks')}</p>
+          <div>
+            <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDetail.noPacks')}</p>
+            <p className="text-xs mt-1" style={{ color: 'var(--muted)' }}>{t('patientDetail.noPacksHint')}</p>
+          </div>
         ) : packs.map((pk) => {
           const pagoEstado = pk.estado_pago || 'no_pagado';
           const contratoEstado = pk.contrato_estado || 'sin_contrato';

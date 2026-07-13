@@ -18,7 +18,9 @@
 
 body {
   font-family: 'Jost', system-ui, sans-serif;
-  background-color: var(--bg);
+  /* Degradado muy sutil: da profundidad sin perder la calidez de marca */
+  background: linear-gradient(160deg, #FBF6EB 0%, var(--bg) 45%, #F3E9D4 100%);
+  background-attachment: fixed;
   color: var(--brand);
 }
 
@@ -28,22 +30,86 @@ h1, h2, h3 {
 
 .field-input {
   border: 1.5px solid var(--border);
-  border-radius: 0.5rem;
+  border-radius: 0.65rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
   outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   color: var(--brand);
+  background-color: var(--white);
   width: 100%;
 }
 
 .field-input:focus {
   border-color: var(--ocre);
-  box-shadow: 0 0 0 3px rgba(227, 165, 42, 0.16);
+  box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.14);
 }
 
 .heading-serif {
   font-family: 'Cormorant Garamond', Georgia, serif;
   color: var(--brand);
   font-weight: 700;
+}
+
+/* ── Cabecera con efecto cristal: acompaña al hacer scroll ─────────────────── */
+.header-glass {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── Flecha de volver atrás ────────────────────────────────────────────────── */
+.back-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  color: var(--brand);
+  background: var(--white);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.back-arrow:hover {
+  background: var(--bg);
+  transform: translateX(-2px);
+  box-shadow: 0 2px 10px rgba(91, 65, 40, 0.12);
+}
+
+/* ── Entrada suave del contenido de cada página ────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-enter {
+  animation: pageEnter 0.35s ease-out both;
+}
+
+/* ── Tarjetas: elevación suave al pasar el ratón ───────────────────────────────
+   Las tarjetas del área privada usan .bg-white.rounded-xl; este hover les da
+   vida sin tocar cada componente. */
+main .bg-white.rounded-xl {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+main .bg-white.rounded-xl:hover {
+  box-shadow: 0 6px 24px rgba(91, 65, 40, 0.09);
+  transform: translateY(-1px);
+}
+
+/* Movimiento reducido: respetar la preferencia del sistema */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { animation: none; }
+  main .bg-white.rounded-xl,
+  .back-arrow,
+  .field-input { transition: none; }
 }

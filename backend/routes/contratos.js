@@ -2,6 +2,8 @@ const express = require('express');
 const multer = require('multer');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
+const { sendContratoEmail } = require('../services/emailService');
+const { audit } = require('../services/auditLog');
 
 const router = express.Router();
 
@@ -87,6 +89,26 @@ router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'
   } catch (err) {
     console.error('[subir-paciente]', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── POST admin envía el contrato predeterminado al paciente por email ─────
+router.post('/paciente/:userId/enviar-plantilla', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('email, nombre_completo, idioma_preferido')
+      .eq('id', req.params.userId)
+      .eq('role', 'paciente')
+      .single();
+    if (error || !user) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    await sendContratoEmail(user.email, user.nombre_completo, user.idioma_preferido);
+    audit(req, 'send_contract_template', 'patients', req.params.userId);
+    res.json({ message: 'Contrato enviado', email: user.email });
+  } catch (err) {
+    console.error('[enviar-plantilla]', err.message);
+    res.status(500).json({ error: 'No se pudo enviar el contrato' });
   }
 });
 

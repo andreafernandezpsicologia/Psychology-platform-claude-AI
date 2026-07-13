@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { Toaster } from 'sonner';
@@ -8,15 +8,30 @@ const LANGS = ['ES', 'EN', 'DA'];
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
+  // Flecha de volver: visible en cualquier página que no sea la portada del rol
+  const home = user?.role === 'admin' ? '/admin' : '/paciente';
+  const showBack = location.pathname !== home;
+
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      <header className="bg-white border-b px-6 py-3 flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+      <header className="header-glass px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-3">
+          {showBack && (
+            <button
+              onClick={() => navigate(home)}
+              className="back-arrow"
+              title={t('layout.back')}
+              aria-label={t('layout.back')}
+            >
+              ←
+            </button>
+          )}
           <a
             href="https://www.studiorenacer.com"
             className="flex items-center gap-2.5 transition hover:opacity-80"
@@ -84,7 +99,7 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      <main className="p-6 max-w-5xl mx-auto">{children}</main>
+      <main className="p-6 max-w-5xl mx-auto page-enter">{children}</main>
       <Toaster position="bottom-right" richColors closeButton />
     </div>
   );

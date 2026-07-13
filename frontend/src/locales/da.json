@@ -37,7 +37,8 @@
   },
   "layout": {
     "admin": "Admin",
-    "logout": "Log ud"
+    "logout": "Log ud",
+    "back": "Gå tilbage"
   },
   "admin": {
     "myPatients": "Mine patienter",
@@ -45,6 +46,7 @@
     "newInvitation": "Ny invitation",
     "fullName": "Fulde navn",
     "sendInvitation": "Send invitation",
+    "attachGuide": "Vedhæft PDF-guiden til det private rum i velkomstmailen",
     "inviteError": "Fejl: ",
     "noPatients": "Du har endnu ingen patienter.",
     "noPatientsHint": "Inviter din første patient med knappen ovenfor.",
@@ -65,6 +67,7 @@
     "sessions": "sessioner",
     "create": "Opret",
     "noPacks": "Ingen pakker",
+    "noPacksHint": "Opret en pakke for at håndtere denne patients betaling og kontrakt.",
     "deletePack": "Slet",
     "sessions_title": "Sessioner",
     "upcoming": "Kommende",
@@ -106,6 +109,8 @@
     "contratoDescargarFirmadoPaciente": "Download patientkontrakt",
     "contratoSubirFirmado": "Upload underskrevet kontrakt (endelig)",
     "contratoSubirPapel": "Upload papirunderskrevet kontrakt",
+    "contratoEnviarPlantilla": "Send standardkontrakt",
+    "contratoEnviadoOk": "Kontrakten er sendt til patienten pr. e-mail",
     "rgpdAceptacion": "GDPR-samtykke",
     "rgpdFecha": "Accepteret den",
     "rgpdDescargar": "Download acceptdokument",

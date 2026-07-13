@@ -12,7 +12,7 @@ export default function AdminDashboard() {
   const [pacientes, setPacientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showInvite, setShowInvite] = useState(false);
-  const [invite, setInvite] = useState({ email: '', nombre: '', idioma: 'es' });
+  const [invite, setInvite] = useState({ email: '', nombre: '', idioma: 'es', con_guia: false });
   const [inviting, setInviting] = useState(false);
   const [search, setSearch] = useState('');
   const [showInactivos, setShowInactivos] = useState(false);
@@ -32,7 +32,7 @@ export default function AdminDashboard() {
     try {
       await api.post('/auth/invitar-paciente', invite);
       toast.success(`${t('admin.inviteSent')} ${invite.email}`);
-      setInvite({ email: '', nombre: '', idioma: 'es' });
+      setInvite({ email: '', nombre: '', idioma: 'es', con_guia: false });
       setShowInvite(false);
       const res = await api.get('/pacientes');
       setPacientes(res.data);
@@ -102,6 +102,15 @@ export default function AdminDashboard() {
             <Button type="submit" loading={inviting}>
               {t('admin.sendInvitation')}
             </Button>
+            <label className="flex items-center gap-2 cursor-pointer w-full text-sm" style={{ color: 'var(--text)' }}>
+              <input
+                type="checkbox"
+                checked={invite.con_guia}
+                onChange={(e) => setInvite({ ...invite, con_guia: e.target.checked })}
+                className="w-4 h-4 rounded accent-[var(--brand)]"
+              />
+              {t('admin.attachGuide')}
+            </label>
           </form>
         </div>
       )}

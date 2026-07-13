@@ -144,13 +144,17 @@ export default function PacienteDashboard() {
   );
 
   const info = data?.pacientes;
-  const packActivo = info?.packs?.find((p) => p.estado === 'activo');
+  const packs = info?.packs || [];
+  const packActivo = packs.find((p) => p.estado === 'activo');
+  // El contrato se enseña aunque el pack no esté "activo" todavía: sin esto, un
+  // paciente recién dado de alta no veía el apartado de firma.
+  const packContrato = packActivo || packs[packs.length - 1] || null;
   const sesiones = info?.sesiones || [];
   const proximas = sesiones
     .filter((s) => ['programada', 'solicitada'].includes(s.estado) && parseWall(s.fecha_hora) >= ahoraParedDate())
     .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
   const pct = packActivo ? (packActivo.num_sesiones_usadas / packActivo.num_sesiones_total) * 100 : 0;
-  const contratoEstado = packActivo?.contrato_estado || 'sin_contrato';
+  const contratoEstado = packContrato?.contrato_estado || 'sin_contrato';
 
   return (
     <Layout>
@@ -192,7 +196,7 @@ export default function PacienteDashboard() {
         </div>
 
         {/* ── Contrato de servicios ── */}
-        {packActivo && (
+        {packContrato && (
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
             <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>
               {t('patientDashboard.contratoTitle')}
@@ -210,8 +214,8 @@ export default function PacienteDashboard() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    loading={uploadingContrato === packActivo.id}
-                    onClick={() => { setContratoPackRef(packActivo.id); fileInputRef.current?.click(); }}
+                    loading={uploadingContrato === packContrato.id}
+                    onClick={() => { setContratoPackRef(packContrato.id); fileInputRef.current?.click(); }}
                   >
                     ⬆ {t('patientDashboard.contratoSubirFirmado')}
                   </Button>
@@ -225,8 +229,8 @@ export default function PacienteDashboard() {
                   ✓ {t('patientDashboard.contratoEnviado')}
                 </span>
                 <Button size="sm" variant="ghost"
-                  loading={uploadingContrato === packActivo.id}
-                  onClick={() => { setContratoPackRef(packActivo.id); fileInputRef.current?.click(); }}>
+                  loading={uploadingContrato === packContrato.id}
+                  onClick={() => { setContratoPackRef(packContrato.id); fileInputRef.current?.click(); }}>
                   ↻ {t('patientDashboard.contratoSubirFirmado')}
                 </Button>
               </div>
@@ -237,7 +241,7 @@ export default function PacienteDashboard() {
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#E9F0E1', color: '#3B6D2A' }}>
                   ✓ {t('patientDashboard.contratoFirmadoAmbos')}
                 </span>
-                <Button size="sm" onClick={() => descargarContratoFinal(packActivo.id)}>
+                <Button size="sm" onClick={() => descargarContratoFinal(packContrato.id)}>
                   ⬇ {t('patientDashboard.contratoDescargarFinal')}
                 </Button>
               </div>

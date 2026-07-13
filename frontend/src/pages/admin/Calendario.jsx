@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import {
@@ -37,6 +37,7 @@ export default function Calendario() {
   const [reagendando, setReagendando] = useState(null); // sesión → SessionModal en modo reagendar
   const [showSync, setShowSync] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 640px)').matches);
+  const cargaId = useRef(0); // descarta respuestas tardías de una navegación anterior
 
   // En móvil la vista semanal de 7 columnas no cabe: se fuerza mes compacto
   const vistaActual = isMobile ? 'month' : vista;
@@ -65,12 +66,18 @@ export default function Calendario() {
     // fechas naive (hora de pared, como en BD) — nunca toISOString()
     const desde = format(rango.start, "yyyy-MM-dd'T'00:00:00");
     const hasta = format(rango.end, "yyyy-MM-dd'T'23:59:59");
-    Promise.all([
-      api.get('/sesiones', { params: { desde, hasta } }),
-      // bloques "Ocupado" de los calendarios personales — si falla, no bloquea la vista
-      api.get('/calendarios/ocupado', { params: { desde, hasta } }).catch(() => ({ data: [] })),
-    ])
-      .then(([sesiones, ocupado]) => {
+    // Las sesiones pintan la vista al momento; los bloques "Ocupado" de los
+    // calendarios personales (feeds iCal externos, pueden tardar segundos en
+    // frío) se añaden cuando llegan, sin bloquear el calendario.
+    const id = ++cargaId.current;
+    api.get('/sesiones', { params: { desde, hasta } })
+      .then((sesiones) => { if (id === cargaId.current) setEvents(sesiones.data); })
+      .catch(() => toast.error(t('calendar.loadError')))
+      .finally(() => { if (id === cargaId.current) setLoading(false); });
+
+    api.get('/calendarios/ocupado', { params: { desde, hasta } })
+      .then((ocupado) => {
+        if (id !== cargaId.current) return;
         const bloques = (ocupado.data || []).map((b, i) => ({
           id: `ext-${i}-${b.inicio}`,
           fecha_hora: b.inicio,
@@ -78,10 +85,9 @@ export default function Calendario() {
           estado: 'ocupado',
           titulo: b.titulo,
         }));
-        setEvents([...sesiones.data, ...bloques]);
+        if (bloques.length) setEvents((prev) => [...prev.filter((e) => e.estado !== 'ocupado'), ...bloques]);
       })
-      .catch(() => toast.error(t('calendar.loadError')))
-      .finally(() => setLoading(false));
+      .catch(() => {}); // si falla, la vista sigue con las sesiones
   };
 
   useEffect(() => { cargar(); }, [fecha, vistaActual, i18n.language]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -126,6 +126,13 @@ const T = {
       button: 'Restablecer contraseña',
       expires: 'El enlace caduca en 1 hora. Si no solicitaste esto, ignora este correo.',
     },
+    contrato: {
+      subject: 'Studio Renacer — Tu contrato de servicios',
+      greeting: (n) => `Hola, ${n}`,
+      line1: 'Te adjunto el contrato de servicios de psicología para que lo leas con calma.',
+      line2: 'Cuando lo tengas firmado, puedes subirlo desde tu área privada (apartado "Contrato de servicios") o traerlo a la próxima sesión.',
+      button: 'Ir a mi área privada',
+    },
   },
 
   en: {
@@ -191,6 +198,13 @@ const T = {
       line2: 'Click the button to create a new password:',
       button: 'Reset password',
       expires: 'The link expires in 1 hour. If you didn’t request this, please ignore this email.',
+    },
+    contrato: {
+      subject: 'Studio Renacer — Your service agreement',
+      greeting: (n) => `Hi ${n}`,
+      line1: 'I’m attaching the psychology service agreement so you can read it calmly.',
+      line2: 'Once signed, you can upload it from your private area ("Service agreement" section) or bring it to your next session.',
+      button: 'Go to my private area',
     },
   },
 
@@ -258,6 +272,13 @@ const T = {
       button: 'Nulstil adgangskode',
       expires: 'Linket udløber om 1 time. Har du ikke anmodet om dette, så se bort fra denne e-mail.',
     },
+    contrato: {
+      subject: 'Studio Renacer — Din serviceaftale',
+      greeting: (n) => `Hej ${n}`,
+      line1: 'Jeg vedhæfter aftalen om psykologydelser, så du kan læse den i ro og mag.',
+      line2: 'Når den er underskrevet, kan du uploade den fra dit private rum (afsnittet "Serviceaftale") eller tage den med til din næste session.',
+      button: 'Gå til mit private rum',
+    },
   },
 };
 
@@ -272,9 +293,14 @@ const botonVideollamada = (sesion, t) => {
         </a>`;
 };
 
-const sendWelcomeEmail = async (email, nombre, activationToken, lang) => {
+// conGuia: Andrea decide al crear la cuenta si se adjunta la guía PDF (en altas
+// presenciales ya se lo explica ella y el adjunto sobra).
+const sendWelcomeEmail = async (email, nombre, activationToken, lang, conGuia = true) => {
   const l = lng(lang); const t = T[l].welcome;
-  const activationLink = `${FRONTEND_URL}/activate?token=${activationToken}`;
+  // lang viaja en el enlace para que la pantalla de activación (y el texto del
+  // consentimiento RGPD) salgan en el idioma del paciente, no en el del navegador.
+  const activationLink = `${FRONTEND_URL}/activate?token=${activationToken}&lang=${l}`;
+  const adjuntarGuia = conGuia && guiaAttachments[l];
   await enviarEmail({
     to: email,
     subject: t.subject,
@@ -288,8 +314,8 @@ const sendWelcomeEmail = async (email, nombre, activationToken, lang) => {
           ${t.activate}
         </a>
         <p style="color:#888;font-size:13px;">${t.expires}</p>
-        <p>${t.guideNote}</p>`,
-    ...(guiaAttachments[l] ? { attachments: [guiaAttachments[l]] } : {}),
+        ${adjuntarGuia ? `<p>${t.guideNote}</p>` : ''}`,
+    ...(adjuntarGuia ? { attachments: [guiaAttachments[l]] } : {}),
   });
 };
 
@@ -430,6 +456,38 @@ const sendPasswordResetEmail = async (email, nombre, resetToken, lang) => {
   });
 };
 
+// Contrato de servicios predeterminado (PDF). Se lee una vez al cargar el módulo;
+// si falta el archivo, el endpoint que lo usa devolverá error controlado.
+let contratoAttachment = null;
+try {
+  contratoAttachment = {
+    filename: 'Contrato_de_Servicios_Studio_Renacer.pdf',
+    content: fs.readFileSync(path.join(__dirname, '..', 'assets', 'contrato-servicios.pdf')).toString('base64'),
+  };
+} catch (err) {
+  console.warn('[emailService] Contrato predeterminado no encontrado:', err.message);
+}
+
+// Andrea envía al paciente el contrato predeterminado para firmar.
+const sendContratoEmail = async (email, nombre, lang) => {
+  if (!contratoAttachment) throw new Error('Plantilla del contrato no disponible en el servidor');
+  const t = T[lng(lang)].contrato;
+  await enviarEmail({
+    to: email,
+    subject: t.subject,
+    body: `
+        <h2>${t.greeting(nombre)}</h2>
+        <p>${t.line1}</p>
+        <p>${t.line2}</p>
+        <a href="${FRONTEND_URL}/paciente"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          ${t.button}
+        </a>`,
+    attachments: [contratoAttachment],
+  });
+};
+
 const sendPackLowAlert = async (email, nombre, sesionesRestantes, lang) => {
   const t = T[lng(lang)].packLow;
   await enviarEmail({
@@ -453,4 +511,5 @@ module.exports = {
   sendSessionRequestAck,
   sendSessionRequestToAdmin,
   sendSessionRequestResult,
+  sendContratoEmail,
 };

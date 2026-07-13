@@ -88,7 +88,7 @@ export default function PacienteDetalle() {
   const [savingPago, setSavingPago] = useState(null);  // packId en curso
   const [uploadingContrato, setUploadingContrato] = useState(null); // packId en curso
   const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
-  const [enviandoContrato, setEnviandoContrato] = useState(false);
+  const [enviandoContrato, setEnviandoContrato] = useState(null); // packId en curso
 
   const cargar = () => {
     setLoading(true);
@@ -232,14 +232,16 @@ export default function PacienteDetalle() {
     finally { setUploadingContrato(null); setContratoPackRef(null); }
   };
 
-  // Enviar por email el contrato predeterminado (plantilla PDF) al paciente
-  const enviarContratoPredeterminado = async () => {
-    setEnviandoContrato(true);
+  // Enviar por email el contrato predeterminado (plantilla PDF) al paciente.
+  // Marca el pack como contrato_estado='enviado': el paciente lo verá para firmar.
+  const enviarContratoPredeterminado = async (packId) => {
+    setEnviandoContrato(packId);
     try {
-      await api.post(`/contratos/paciente/${id}/enviar-plantilla`);
+      await api.post(`/contratos/pack/${packId}/enviar-plantilla`);
       toast.success(t('patientDetail.contratoEnviadoOk'));
+      cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
-    finally { setEnviandoContrato(false); }
+    finally { setEnviandoContrato(null); }
   };
 
   // ── RGPD ─────────────────────────────────────────────────────────────────
@@ -322,9 +324,6 @@ export default function PacienteDetalle() {
             <p className="text-sm" style={{ color: 'var(--text)' }}>{paciente.email}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="ghost" size="sm" loading={enviandoContrato} onClick={enviarContratoPredeterminado}>
-              ✉ {t('patientDetail.contratoEnviarPlantilla')}
-            </Button>
             <Button variant="ghost" size="sm" onClick={verRgpd}>
               📄 {t('patientDetail.rgpdDescargar')}
             </Button>
@@ -378,6 +377,7 @@ export default function PacienteDetalle() {
           const contratoEstado = pk.contrato_estado || 'sin_contrato';
           const contratoLabel = {
             sin_contrato:     t('patientDetail.contratoSinContrato'),
+            enviado:          t('patientDetail.contratoEstadoEnviado'),
             firmado_paciente: t('patientDetail.contratoFirmadoPaciente'),
             completado:       t('patientDetail.contratoCompletado'),
           }[contratoEstado] || contratoEstado;
@@ -426,7 +426,7 @@ export default function PacienteDetalle() {
                 <span className="text-xs px-2 py-0.5 rounded-full"
                   style={contratoEstado === 'completado'
                     ? { backgroundColor: '#E9F0E1', color: '#3B6D2A' }
-                    : contratoEstado === 'firmado_paciente'
+                    : (contratoEstado === 'firmado_paciente' || contratoEstado === 'enviado')
                     ? { backgroundColor: '#F8EFD2', color: '#B07A2B' }
                     : { backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
                   {contratoLabel}
@@ -439,18 +439,31 @@ export default function PacienteDetalle() {
                   </Button>
                 )}
 
-                {/* Admin sube el contrato definitivo firmado por ambos,
-                    o el escaneo del contrato firmado en papel (estado sin_contrato) */}
+                {/* Dos caminos mientras no haya firma: subir el contrato firmado en
+                    papel, o enviar el predeterminado (el paciente lo verá en su área).
+                    Con firma en marcha, el botón de subida pasa a "definitivo". */}
                 <Button
                   variant="ghost"
                   size="sm"
                   loading={uploadingContrato === pk.id}
                   onClick={() => { setContratoPackRef(pk.id); fileInputRef.current?.click(); }}
                 >
-                  ⬆ {contratoEstado === 'sin_contrato'
+                  ⬆ {(contratoEstado === 'sin_contrato' || contratoEstado === 'enviado')
                     ? t('patientDetail.contratoSubirPapel')
                     : t('patientDetail.contratoSubirFirmado')}
                 </Button>
+                {(contratoEstado === 'sin_contrato' || contratoEstado === 'enviado') && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    loading={enviandoContrato === pk.id}
+                    onClick={() => enviarContratoPredeterminado(pk.id)}
+                  >
+                    ✉ {contratoEstado === 'enviado'
+                      ? t('patientDetail.contratoReenviarPlantilla')
+                      : t('patientDetail.contratoEnviarPlantilla')}
+                  </Button>
+                )}
               </div>
             </div>
           );

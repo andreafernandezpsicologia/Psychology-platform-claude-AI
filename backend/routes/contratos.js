@@ -93,18 +93,31 @@ router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'
 });
 
 // ── POST admin envía el contrato predeterminado al paciente por email ─────
-router.post('/paciente/:userId/enviar-plantilla', verifyToken, requireAdmin, async (req, res) => {
+// Deja el pack en contrato_estado='enviado': así el paciente ve en su área el
+// predeterminado para firmar SOLO cuando Andrea eligió ese camino (si el
+// contrato se firmó en papel, ella sube el escaneo y nunca pasa por aquí).
+router.post('/pack/:packId/enviar-plantilla', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('email, nombre_completo, idioma_preferido')
-      .eq('id', req.params.userId)
-      .eq('role', 'paciente')
+    const { data: pack, error: packError } = await supabase
+      .from('packs')
+      .select('id, contrato_estado, pacientes ( user_id, users ( email, nombre_completo, idioma_preferido ) )')
+      .eq('id', req.params.packId)
       .single();
-    if (error || !user) return res.status(404).json({ error: 'Paciente no encontrado' });
+    if (packError || !pack) return res.status(404).json({ error: 'Pack no encontrado' });
+
+    const user = pack.pacientes?.users;
+    if (!user?.email) return res.status(404).json({ error: 'Paciente no encontrado' });
 
     await sendContratoEmail(user.email, user.nombre_completo, user.idioma_preferido);
-    audit(req, 'send_contract_template', 'patients', req.params.userId);
+
+    // No degradar un contrato ya firmado: solo sin_contrato → enviado
+    if (!pack.contrato_estado || pack.contrato_estado === 'sin_contrato') {
+      await supabase.from('packs')
+        .update({ contrato_estado: 'enviado', updated_at: new Date().toISOString() })
+        .eq('id', pack.id);
+    }
+
+    audit(req, 'send_contract_template', 'packs', pack.id);
     res.json({ message: 'Contrato enviado', email: user.email });
   } catch (err) {
     console.error('[enviar-plantilla]', err.message);

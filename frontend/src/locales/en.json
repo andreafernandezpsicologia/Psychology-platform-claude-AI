@@ -110,6 +110,8 @@
     "contratoSubirFirmado": "Upload signed contract (final)",
     "contratoSubirPapel": "Upload paper-signed contract",
     "contratoEnviarPlantilla": "Send default contract",
+    "contratoReenviarPlantilla": "Resend default contract",
+    "contratoEstadoEnviado": "Default sent — awaiting signature",
     "contratoEnviadoOk": "Contract emailed to the patient",
     "rgpdAceptacion": "GDPR Consent",
     "rgpdFecha": "Accepted on",

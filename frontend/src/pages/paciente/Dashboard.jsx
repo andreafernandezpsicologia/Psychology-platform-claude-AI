@@ -195,14 +195,18 @@ export default function PacienteDashboard() {
           )}
         </div>
 
-        {/* ── Contrato de servicios ── */}
-        {packContrato && (
+        {/* ── Contrato de servicios ──
+            Solo se muestra cuando Andrea eligió camino: envió el predeterminado
+            (estado 'enviado' → el paciente lo firma aquí) o ya hay firma en
+            marcha/completa. Con 'sin_contrato' no se enseña nada: si se firmó en
+            papel, Andrea subirá el escaneo y pasará directo a 'completado'. */}
+        {packContrato && contratoEstado !== 'sin_contrato' && (
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
             <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>
               {t('patientDashboard.contratoTitle')}
             </h3>
 
-            {contratoEstado === 'sin_contrato' && (
+            {contratoEstado === 'enviado' && (
               <div>
                 <p className="text-sm mb-3" style={{ color: 'var(--text)' }}>
                   {t('patientDashboard.contratoPendiente')}

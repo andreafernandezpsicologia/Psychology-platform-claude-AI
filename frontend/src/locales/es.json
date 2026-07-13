@@ -110,6 +110,8 @@
     "contratoSubirFirmado": "Subir contrato firmado (definitivo)",
     "contratoSubirPapel": "Subir contrato firmado en papel",
     "contratoEnviarPlantilla": "Enviar contrato predeterminado",
+    "contratoReenviarPlantilla": "Reenviar contrato predeterminado",
+    "contratoEstadoEnviado": "Predeterminado enviado — pendiente de firma",
     "contratoEnviadoOk": "Contrato enviado por email al paciente",
     "rgpdAceptacion": "Consentimiento RGPD",
     "rgpdFecha": "Aceptado el",

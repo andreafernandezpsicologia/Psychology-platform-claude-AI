@@ -110,6 +110,8 @@
     "contratoSubirFirmado": "Upload underskrevet kontrakt (endelig)",
     "contratoSubirPapel": "Upload papirunderskrevet kontrakt",
     "contratoEnviarPlantilla": "Send standardkontrakt",
+    "contratoReenviarPlantilla": "Gensend standardkontrakt",
+    "contratoEstadoEnviado": "Standardkontrakt sendt — afventer underskrift",
     "contratoEnviadoOk": "Kontrakten er sendt til patienten pr. e-mail",
     "rgpdAceptacion": "GDPR-samtykke",
     "rgpdFecha": "Accepteret den",

@@ -30,7 +30,7 @@
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": ["ProfessionalService", "MedicalBusiness"],
+        "@type": ["ProfessionalService", "MedicalBusiness", "Psychologist"],
         "@id": "https://www.studiorenacer.com/#organizacion",
         "name": "Studio Renacer",
         "description": "Consulta de psicología online especializada en ansiedad y estrés laboral. Sesiones individuales en español, inglés y danés.",
@@ -39,6 +39,7 @@
         "image": "https://www.studiorenacer.com/assets/andrea.jpg",
         "email": "info@studiorenacer.com",
         "telephone": "+34668541597",
+        "priceRange": "€€",
         "founder": { "@id": "https://www.studiorenacer.com/#andrea" },
         "sameAs": ["https://www.instagram.com/andreapsicologaonline"],
         "availableLanguage": ["es", "en", "da"],
@@ -64,6 +65,68 @@
           "credentialCategory": "Colegiación profesional",
           "identifier": "27327"
         }
+      },
+      {
+        "@type": "FAQPage",
+        "@id": "https://www.studiorenacer.com/#faq",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "¿Qué es Studio Renacer y en qué se diferencia de otras psicólogas online?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Studio Renacer es la consulta online de Andrea Fernández, psicóloga colegiada (nº 27327), especializada en ansiedad y estrés laboral en profesionales exigentes. No es terapia genérica: está pensada para quien no quiere renunciar a su carrera para sentirse bien, sino entender la raíz de su ansiedad y recuperar el equilibrio sin dejarlo todo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Las sesiones son 100% online? ¿Cómo funcionan?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí, todas las sesiones son online, por videollamada, en un entorno privado y seguro. Puedes seguir la terapia estés donde estés, ajustando los horarios a tu ritmo de trabajo."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿En qué idiomas ofreces terapia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "En español, inglés y danés, para que puedas expresarte en el idioma en el que te sientes más cómodo/a, vivas donde vivas."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Es confidencial? ¿Qué pasa con mis datos?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sí. Todo lo que compartas está protegido por el secreto profesional y por el RGPD. Tus datos se tratan con la máxima confidencialidad y nunca se comparten con terceros."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Cómo empiezo? ¿Cuál es el primer paso?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "El primer paso es sencillo: descarga la guía gratuita y ponte en contacto conmigo. Después, tenemos una primera sesión gratuita y sin compromiso, para conocernos, ver cómo puedo ayudarte y que compruebes cómo trabajo. Si te sientes cómodo/a, empezamos el proceso."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Necesito un diagnóstico o que sea \"grave\" para empezar terapia?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. Muchas de las personas que acompaño no tienen ningún diagnóstico, simplemente sienten que el estrés y la ansiedad del trabajo les están pasando factura. No hace falta esperar a estar mal para pedir ayuda."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "¿Es terapia o coaching?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Es terapia psicológica, no coaching. El coaching se centra en objetivos y rendimiento; la terapia trabaja la raíz emocional del malestar (ansiedad, estrés, autoexigencia) para que el cambio sea real y duradero, no solo una estrategia a corto plazo."
+            }
+          }
+        ]
       }
     ]
   }
@@ -449,6 +512,44 @@
       padding: 4px 10px; border-radius: 999px; white-space: nowrap;
     }
 
+    /* ---------- FAQ ---------- */
+    .faq-list { max-width: 760px; margin: 0 auto; }
+    .faq-item {
+      background: var(--c-surface);
+      border: 1px solid var(--c-line);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+    .faq-item:hover { border-color: rgba(227, 165, 42, 0.45); }
+    .faq-item[open] { border-color: rgba(227, 165, 42, 0.45); box-shadow: var(--shadow-sm); }
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 1.35rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 1rem;
+      font-family: var(--font-sans);
+      font-weight: 600;
+      color: var(--c-ink);
+      font-size: 1.02rem;
+    }
+    .faq-item summary::-webkit-details-marker { display: none; }
+    .faq-item summary::after {
+      content: '+';
+      flex-shrink: 0;
+      font-family: var(--font-display);
+      font-size: 1.4rem; line-height: 1;
+      color: var(--c-ocre);
+      transition: transform var(--transition);
+    }
+    .faq-item[open] summary::after { transform: rotate(45deg); }
+    .faq-item .faq-answer {
+      padding: 0 1.5rem 1.5rem;
+      font-size: 0.98rem;
+    }
+
     /* ---------- Form ---------- */
     .waitlist {
       background: linear-gradient(180deg, var(--c-soft) 0%, var(--c-bg) 100%);
@@ -625,6 +726,7 @@
       <nav class="nav-links" aria-label="Secciones">
         <a href="#about" data-i18n="nav.about">Sobre mí</a>
         <a href="#servicios" data-i18n="nav.services">Servicios</a>
+        <a href="#faq" data-i18n="nav.faq">Preguntas</a>
         <!-- ACTIVAR EN EL LANZAMIENTO DE RENACER EN CASA (descomentar):
         <a href="/renacer-en-casa">Renacer en casa</a>
         -->
@@ -811,6 +913,46 @@
       </div>
     </section>
 
+    <!-- ============== FAQ ============== -->
+    <section class="block" id="faq">
+      <div class="container">
+        <div class="section-intro reveal">
+          <span class="section-eyebrow" data-i18n="faq.eyebrow">Preguntas frecuentes</span>
+          <h2 data-i18n="faq.title">Dudas antes de empezar.</h2>
+        </div>
+        <div class="faq-list reveal">
+          <details class="faq-item">
+            <summary data-i18n="faq.1.q">¿Qué es Studio Renacer y en qué se diferencia de otras psicólogas online?</summary>
+            <p class="faq-answer" data-i18n="faq.1.a">Studio Renacer es la consulta online de Andrea Fernández, psicóloga colegiada (nº 27327), especializada en ansiedad y estrés laboral en profesionales exigentes. No es terapia genérica: está pensada para quien no quiere renunciar a su carrera para sentirse bien, sino entender la raíz de su ansiedad y recuperar el equilibrio sin dejarlo todo.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.2.q">¿Las sesiones son 100% online? ¿Cómo funcionan?</summary>
+            <p class="faq-answer" data-i18n="faq.2.a">Sí, todas las sesiones son online, por videollamada, en un entorno privado y seguro. Puedes seguir la terapia estés donde estés, ajustando los horarios a tu ritmo de trabajo.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.3.q">¿En qué idiomas ofreces terapia?</summary>
+            <p class="faq-answer" data-i18n="faq.3.a">En español, inglés y danés, para que puedas expresarte en el idioma en el que te sientes más cómodo/a, vivas donde vivas.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.4.q">¿Es confidencial? ¿Qué pasa con mis datos?</summary>
+            <p class="faq-answer" data-i18n="faq.4.a">Sí. Todo lo que compartas está protegido por el secreto profesional y por el RGPD. Tus datos se tratan con la máxima confidencialidad y nunca se comparten con terceros.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.5.q">¿Cómo empiezo? ¿Cuál es el primer paso?</summary>
+            <p class="faq-answer" data-i18n="faq.5.a">El primer paso es sencillo: descarga la guía gratuita y ponte en contacto conmigo. Después, tenemos una primera sesión gratuita y sin compromiso, para conocernos, ver cómo puedo ayudarte y que compruebes cómo trabajo. Si te sientes cómodo/a, empezamos el proceso.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.6.q">¿Necesito un diagnóstico o que sea "grave" para empezar terapia?</summary>
+            <p class="faq-answer" data-i18n="faq.6.a">No. Muchas de las personas que acompaño no tienen ningún diagnóstico, simplemente sienten que el estrés y la ansiedad del trabajo les están pasando factura. No hace falta esperar a estar mal para pedir ayuda.</p>
+          </details>
+          <details class="faq-item">
+            <summary data-i18n="faq.7.q">¿Es terapia o coaching?</summary>
+            <p class="faq-answer" data-i18n="faq.7.a">Es terapia psicológica, no coaching. El coaching se centra en objetivos y rendimiento; la terapia trabaja la raíz emocional del malestar (ansiedad, estrés, autoexigencia) para que el cambio sea real y duradero, no solo una estrategia a corto plazo.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- ============== TESTIMONIALS ============== -->
     <section class="block" id="opiniones" style="display:none;">
       <div class="container">
@@ -827,7 +969,7 @@
     <section class="block waitlist" id="waitlist">
       <div class="container">
         <div class="form-card reveal">
-          <span class="section-eyebrow" style="text-align:center; display:block;" data-i18n="form.eyebrow">Lista de espera</span>
+          <span class="section-eyebrow" style="text-align:center; display:block;" data-i18n="form.eyebrow">Guía gratis</span>
           <h2 data-i18n="form.title">¿Tu ansiedad es del trabajo? Descúbrelo hoy.</h2>
           <p data-i18n="form.sub">Déjame tu email y te envío gratis la guía «5 señales de que tu ansiedad es laboral — y qué hacer». Te llega al instante, y te contactaré personalmente para ver cómo puedo ayudarte.</p>
 
@@ -961,7 +1103,7 @@
     // ============== I18N ==============
     const translations = {
       es: {
-        'nav.about': 'Sobre mí', 'nav.services': 'Servicios', 'nav.guide': 'Guía gratis',
+        'nav.about': 'Sobre mí', 'nav.services': 'Servicios', 'nav.faq': 'Preguntas', 'nav.guide': 'Guía gratis',
         'hero.badge': 'Acepto nuevas pacientes',
         'hero.title': 'Un espacio para <em>renacer</em>, a tu ritmo.',
         'hero.sub': 'Studio Renacer es la consulta online de Andrea Fernández, psicóloga colegiada. Un acompañamiento empático, profesional y a tu medida para profesionales exigentes que quieren salir de la ansiedad y el estrés del trabajo, sin renunciar a su carrera.',
@@ -989,7 +1131,22 @@
         'testi.eyebrow': 'Opiniones', 'testi.title': 'Lo que cuentan quienes ya dieron el paso.',
         'testi.p': 'Experiencias reales, compartidas con su permiso y con la identidad protegida.',
         'testi.tag.terapia': 'Proceso de terapia', 'testi.tag.formacion': 'Sobre la guía',
-        'form.eyebrow': 'Lista de espera', 'form.title': '¿Tu ansiedad es del trabajo? Descúbrelo hoy.',
+        'faq.eyebrow': 'Preguntas frecuentes', 'faq.title': 'Dudas antes de empezar.',
+        'faq.1.q': '¿Qué es Studio Renacer y en qué se diferencia de otras psicólogas online?',
+        'faq.1.a': 'Studio Renacer es la consulta online de Andrea Fernández, psicóloga colegiada (nº 27327), especializada en ansiedad y estrés laboral en profesionales exigentes. No es terapia genérica: está pensada para quien no quiere renunciar a su carrera para sentirse bien, sino entender la raíz de su ansiedad y recuperar el equilibrio sin dejarlo todo.',
+        'faq.2.q': '¿Las sesiones son 100% online? ¿Cómo funcionan?',
+        'faq.2.a': 'Sí, todas las sesiones son online, por videollamada, en un entorno privado y seguro. Puedes seguir la terapia estés donde estés, ajustando los horarios a tu ritmo de trabajo.',
+        'faq.3.q': '¿En qué idiomas ofreces terapia?',
+        'faq.3.a': 'En español, inglés y danés, para que puedas expresarte en el idioma en el que te sientes más cómodo/a, vivas donde vivas.',
+        'faq.4.q': '¿Es confidencial? ¿Qué pasa con mis datos?',
+        'faq.4.a': 'Sí. Todo lo que compartas está protegido por el secreto profesional y por el RGPD. Tus datos se tratan con la máxima confidencialidad y nunca se comparten con terceros.',
+        'faq.5.q': '¿Cómo empiezo? ¿Cuál es el primer paso?',
+        'faq.5.a': 'El primer paso es sencillo: descarga la guía gratuita y ponte en contacto conmigo. Después, tenemos una primera sesión gratuita y sin compromiso, para conocernos, ver cómo puedo ayudarte y que compruebes cómo trabajo. Si te sientes cómodo/a, empezamos el proceso.',
+        'faq.6.q': '¿Necesito un diagnóstico o que sea "grave" para empezar terapia?',
+        'faq.6.a': 'No. Muchas de las personas que acompaño no tienen ningún diagnóstico, simplemente sienten que el estrés y la ansiedad del trabajo les están pasando factura. No hace falta esperar a estar mal para pedir ayuda.',
+        'faq.7.q': '¿Es terapia o coaching?',
+        'faq.7.a': 'Es terapia psicológica, no coaching. El coaching se centra en objetivos y rendimiento; la terapia trabaja la raíz emocional del malestar (ansiedad, estrés, autoexigencia) para que el cambio sea real y duradero, no solo una estrategia a corto plazo.',
+        'form.eyebrow': 'Guía gratis', 'form.title': '¿Tu ansiedad es del trabajo? Descúbrelo hoy.',
         'form.sub': 'Déjame tu email y te envío gratis la guía «5 señales de que tu ansiedad es laboral — y qué hacer». Te llega al instante, y te contactaré personalmente para ver cómo puedo ayudarte.',
         'form.name': 'Nombre', 'form.email': 'Email <span class="req">*</span>', 'form.phone': 'Teléfono (opcional)',
         'form.privacy': 'He leído y acepto la <a href="/privacy">política de privacidad</a>. Usaré tu email para enviarte la guía y avisarte del lanzamiento (RGPD).',
@@ -1004,7 +1161,7 @@
         'login': 'Iniciar sesión'
       },
       en: {
-        'nav.about': 'About me', 'nav.services': 'Services', 'nav.guide': 'Free guide',
+        'nav.about': 'About me', 'nav.services': 'Services', 'nav.faq': 'FAQ', 'nav.guide': 'Free guide',
         'hero.badge': 'Now accepting new patients',
         'hero.title': 'A space to <em>begin again</em>, at your pace.',
         'hero.sub': "Studio Renacer is the online practice of Andrea Fernández, licensed psychologist. Empathetic, professional and personal support for demanding professionals who want to leave the anxiety and stress of work behind, without giving up their career.",
@@ -1032,7 +1189,22 @@
         'testi.eyebrow': 'Testimonials', 'testi.title': 'What those who took the step say.',
         'testi.p': 'Real experiences, shared with permission and with protected identity.',
         'testi.tag.terapia': 'Therapy process', 'testi.tag.formacion': 'About the guide',
-        'form.eyebrow': 'Waitlist', 'form.title': 'Is your anxiety coming from work? Find out today.',
+        'faq.eyebrow': 'Frequently asked questions', 'faq.title': 'Questions before you start.',
+        'faq.1.q': 'What is Studio Renacer and how is it different from other online psychologists?',
+        'faq.1.a': "Studio Renacer is the online practice of Andrea Fernández, licensed psychologist (reg. no. 27327), specialised in work-related anxiety and stress in high-performing professionals. It's not generic therapy: it's designed for those who don't want to give up their career to feel better, but want to understand the root of their anxiety and regain balance without dropping everything.",
+        'faq.2.q': 'Are sessions fully online? How do they work?',
+        'faq.2.a': 'Yes, all sessions are online, by video call, in a private and secure setting. You can continue therapy wherever you are, fitting sessions around your work schedule.',
+        'faq.3.q': 'What languages do you offer therapy in?',
+        'faq.3.a': 'In Spanish, English and Danish, so you can express yourself in the language you feel most comfortable in, wherever you live.',
+        'faq.4.q': 'Is it confidential? What happens with my data?',
+        'faq.4.a': 'Yes. Everything you share is protected by professional confidentiality and GDPR. Your data is treated with the utmost confidentiality and is never shared with third parties.',
+        'faq.5.q': 'How do I start? What\'s the first step?',
+        'faq.5.a': 'The first step is simple: download the free guide and get in touch with me. Then we have a free, no-obligation first session to get to know each other, so I can see how I can help and you can see how I work. If you feel comfortable, we begin the process.',
+        'faq.6.q': 'Do I need a diagnosis or to be "bad enough" to start therapy?',
+        'faq.6.a': "No. Many of the people I work with have no diagnosis at all — they simply feel that work stress and anxiety are taking a toll. You don't need to wait until things get bad to ask for help.",
+        'faq.7.q': 'Is it therapy or coaching?',
+        'faq.7.a': "It's psychological therapy, not coaching. Coaching focuses on goals and performance; therapy works on the emotional root of the discomfort (anxiety, stress, self-demand) so the change is real and lasting, not just a short-term strategy.",
+        'form.eyebrow': 'Free guide', 'form.title': 'Is your anxiety coming from work? Find out today.',
         'form.sub': 'Leave me your email and I\'ll send you the free guide “5 signs your anxiety is work-related — and what to do.” It arrives instantly, and I\'ll personally reach out to see how I can help.',
         'form.name': 'Name', 'form.email': 'Email <span class="req">*</span>', 'form.phone': 'Phone (optional)',
         'form.privacy': "I have read and accept the <a href=\"/privacy\">privacy policy</a>. I'll use your email to send you the guide and to let you know about the launch (GDPR).",
@@ -1047,7 +1219,7 @@
         'login': 'Log in'
       },
       da: {
-        'nav.about': 'Om mig', 'nav.services': 'Ydelser', 'nav.guide': 'Gratis guide',
+        'nav.about': 'Om mig', 'nav.services': 'Ydelser', 'nav.faq': 'Spørgsmål', 'nav.guide': 'Gratis guide',
         'hero.badge': 'Tager imod nye klienter',
         'hero.title': 'Et rum til at <em>begynde igen</em>, i dit eget tempo.',
         'hero.sub': 'Studio Renacer er onlinepraksis fra Andrea Fernández, autoriseret psykolog. Empatisk, professionel og personlig støtte til krævende fagfolk, der vil slippe arbejdets angst og stress uden at opgive deres karriere.',
@@ -1075,7 +1247,22 @@
         'testi.eyebrow': 'Udtalelser', 'testi.title': 'Hvad de, der tog skridtet, fortæller.',
         'testi.p': 'Virkelige oplevelser, delt med tilladelse og med beskyttet identitet.',
         'testi.tag.terapia': 'Terapiforløb', 'testi.tag.formacion': 'Om guiden',
-        'form.eyebrow': 'Venteliste', 'form.title': 'Kommer din angst fra arbejdet? Find ud af det i dag.',
+        'faq.eyebrow': 'Ofte stillede spørgsmål', 'faq.title': 'Spørgsmål, inden du starter.',
+        'faq.1.q': 'Hvad er Studio Renacer, og hvordan adskiller det sig fra andre onlinepsykologer?',
+        'faq.1.a': 'Studio Renacer er onlinepraksis fra Andrea Fernández, autoriseret psykolog (reg. nr. 27327), specialiseret i arbejdsrelateret angst og stress hos fagfolk, der præsterer højt. Det er ikke generel terapi: det er skabt til dem, der ikke vil opgive deres karriere for at have det bedre, men som vil forstå roden til deres angst og genvinde balancen uden at droppe alt.',
+        'faq.2.q': 'Er sessionerne 100% online? Hvordan fungerer det?',
+        'faq.2.a': 'Ja, alle sessioner foregår online, via videoopkald, i private og trygge rammer. Du kan fortsætte terapien, uanset hvor du er, og tilpasse tiderne til dit arbejdsliv.',
+        'faq.3.q': 'Hvilke sprog tilbyder du terapi på?',
+        'faq.3.a': 'På spansk, engelsk og dansk, så du kan udtrykke dig på det sprog, du er mest tryg ved, uanset hvor du bor.',
+        'faq.4.q': 'Er det fortroligt? Hvad sker der med mine data?',
+        'faq.4.a': 'Ja. Alt, hvad du deler, er beskyttet af tavshedspligt og GDPR. Dine data behandles med største fortrolighed og deles aldrig med tredjeparter.',
+        'faq.5.q': 'Hvordan kommer jeg i gang? Hvad er det første skridt?',
+        'faq.5.a': 'Det første skridt er enkelt: download den gratis guide, og kontakt mig. Derefter har vi en gratis og uforpligtende første session, hvor vi lærer hinanden at kende, jeg ser hvordan jeg kan hjælpe, og du oplever hvordan jeg arbejder. Hvis du føler dig tryg, går vi i gang.',
+        'faq.6.q': 'Skal jeg have en diagnose eller have det "slemt nok" for at starte i terapi?',
+        'faq.6.a': 'Nej. Mange af dem, jeg følger, har slet ingen diagnose — de mærker bare, at arbejdsstress og angst tager på dem. Du behøver ikke vente, til det går galt, for at bede om hjælp.',
+        'faq.7.q': 'Er det terapi eller coaching?',
+        'faq.7.a': 'Det er psykologisk terapi, ikke coaching. Coaching fokuserer på mål og præstation; terapi arbejder med den følelsesmæssige rod til ubehaget (angst, stress, selvkrav), så forandringen bliver reel og varig — ikke bare en kortsigtet strategi.',
+        'form.eyebrow': 'Gratis guide', 'form.title': 'Kommer din angst fra arbejdet? Find ud af det i dag.',
         'form.sub': 'Skriv din e-mail, så sender jeg dig gratis guiden »5 tegn på, at din angst er arbejdsrelateret — og hvad du kan gøre«. Den kommer med det samme, og jeg kontakter dig personligt for at se, hvordan jeg kan hjælpe.',
         'form.name': 'Navn', 'form.email': 'E-mail <span class="req">*</span>', 'form.phone': 'Telefon (valgfrit)',
         'form.privacy': 'Jeg har læst og accepterer <a href="/privacy">privatlivspolitikken</a>. Jeg bruger din e-mail til at sende dig guiden og til at give dig besked om lanceringen (GDPR).',

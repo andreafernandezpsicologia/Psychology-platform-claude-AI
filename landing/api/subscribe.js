@@ -179,7 +179,7 @@ function userEmailTemplates(lang, name, guideUrl) {
       intro:   '¡Aquí tienes tu guía! Gracias por dejarme tu correo.',
       body:    'Te he preparado «5 señales de que tu ansiedad es laboral — y qué hacer». Es psicoeducación para entenderte mejor (no un diagnóstico): léela con calma y quédate con el primer paso que más te encaje.',
       cta:     'Descargar la guía (PDF)',
-      ps:      'Serás también de las primeras en saberlo cuando Studio Renacer abra sus puertas (verano de 2026). Si te apetece, responde a este correo y me cuentas cómo estás.',
+      ps:      'Studio Renacer ya está abierto y estoy aceptando nuevas pacientes. Si quieres, responde a este correo y reservamos una primera sesión gratuita, sin compromiso.',
       linkhint:'Si el botón no funciona, copia este enlace en tu navegador:',
       sign:    'Con cariño,<br>Andrea Fernández<br><i>Psicóloga colegiada · Studio Renacer</i>',
       footer:  'Si no fuiste tú quien se inscribió, simplemente ignora este correo.'
@@ -189,7 +189,7 @@ function userEmailTemplates(lang, name, guideUrl) {
       intro:   "Here's your guide! Thank you for leaving me your email.",
       body:    "I've put together “5 signs your anxiety is work-related — and what to do.” It's psychoeducation to help you understand yourself better (not a diagnosis): read it calmly and keep the first step that fits you best.",
       cta:     'Download the guide (PDF)',
-      ps:      "You'll also be among the first to know when Studio Renacer opens (summer 2026). If you feel like it, just reply to this email and tell me how you are.",
+      ps:      "Studio Renacer is now open and I'm accepting new patients. If you'd like, just reply to this email and we'll book a free first session, no strings attached.",
       linkhint:"If the button doesn't work, copy this link into your browser:",
       sign:    'Warmly,<br>Andrea Fernández<br><i>Licensed psychologist · Studio Renacer</i>',
       footer:  "If you didn't sign up, simply ignore this email."
@@ -199,7 +199,7 @@ function userEmailTemplates(lang, name, guideUrl) {
       intro:   'Her er din guide! Tak fordi du efterlod din e-mail.',
       body:    'Jeg har lavet »5 tegn på, at din angst er arbejdsrelateret — og hvad du kan gøre«. Det er psykoedukation, der hjælper dig med at forstå dig selv bedre (ikke en diagnose): læs den i ro og behold det første skridt, der passer dig bedst.',
       cta:     'Download guiden (PDF)',
-      ps:      'Du er også blandt de første til at vide det, når Studio Renacer åbner (sommeren 2026). Har du lyst, så svar bare på denne e-mail og fortæl, hvordan du har det.',
+      ps:      'Studio Renacer er nu åben, og jeg tager imod nye klienter. Har du lyst, så svar bare på denne e-mail, og vi aftaler en gratis og uforpligtende første session.',
       linkhint:'Hvis knappen ikke virker, så kopiér dette link ind i din browser:',
       sign:    'Med venlig hilsen,<br>Andrea Fernández<br><i>Autoriseret psykolog · Studio Renacer</i>',
       footer:  'Hvis du ikke har tilmeldt dig, kan du blot ignorere denne e-mail.'
@@ -217,4 +217,15 @@ function userEmailTemplates(lang, name, guideUrl) {
       <p>${t.intro}</p>
       <p>${t.body}</p>
       <div style="text-align:center;margin:28px 0">
-        <a href="${href}" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decora
+        <a href="${href}" style="display:inline-block;background:#1e3a5f;color:#ffffff;text-decoration:none;padding:13px 28px;border-radius:999px;font-weight:600;font-size:15px">${t.cta}</a>
+      </div>
+      <p style="font-size:12px;color:#7e8a9c;margin-bottom:24px">${t.linkhint}<br>
+        <a href="${href}" style="color:#2c5282;word-break:break-all">${href}</a></p>
+      <p>${t.ps}</p>
+      <p style="margin-top:24px">${t.sign}</p>
+      <hr style="border:none;border-top:1px solid #e6ebf2;margin:24px 0">
+      <p style="font-size:12px;color:#7e8a9c">${t.footer}</p>
+    </div>
+  `;
+  return { subject: t.subject, html };
+}

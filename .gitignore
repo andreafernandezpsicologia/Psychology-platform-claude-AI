@@ -9,3 +9,12 @@ dist/
 # firmadas de los DPA. Contiene PII/firmas y NO debe subirse al repo público.
 cumplimiento/
 DPA/
+
+# Configuración local de Claude Code por máquina (rutas locales, allowlists).
+# NO debe vivir en el repo público.
+.claude/settings.local.json
+
+# PDFs del producto de pago (formaciones): viven en el bucket privado
+# `formaciones` de Supabase Storage con URL firmada. El repo es público —
+# subirlos regalaría el producto (ver formaciones/CLAUDE.md).
+formaciones/*/material-descargable/

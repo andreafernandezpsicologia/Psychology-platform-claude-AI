@@ -153,10 +153,21 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
       .select('id, nombre, tipo, created_at')
       .eq('paciente_id', paciente.id),
     supabase.from('aceptaciones_documentos')
-      .select('fecha_aceptacion, documentos_legales(titulo, tipo, version)')
+      .select('fecha_aceptacion, titulo_aceptado, version_aceptada, documentos_legales(titulo, tipo, version)')
       .eq('paciente_id', paciente.id)
       .order('fecha_aceptacion', { ascending: false }),
   ]);
+
+  // Preferir el snapshot tomado al aceptar (RGPD Art. 7); las aceptaciones
+  // anteriores a jul-2026 no tienen snapshot y muestran el documento vigente.
+  const consentimientos = (aceptaciones || []).map(({ titulo_aceptado, version_aceptada, ...a }) => ({
+    ...a,
+    documentos_legales: a.documentos_legales && {
+      ...a.documentos_legales,
+      titulo: titulo_aceptado || a.documentos_legales.titulo,
+      version: version_aceptada ?? a.documentos_legales.version,
+    },
+  }));
 
   const datos = {
     exportado_en: new Date().toISOString(),
@@ -168,7 +179,7 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
     sesiones: sesiones || [],
     packs: packs || [],
     documentos: documentos || [],
-    consentimientos: aceptaciones || [],
+    consentimientos,
   };
   return { datos };
 }
@@ -217,7 +228,7 @@ router.get('/:userId/rgpd', verifyToken, requireAdmin, async (req, res) => {
     // (.in sobre relaciones embebidas no funciona en PostgREST)
     const { data: aceptaciones, error } = await supabase
       .from('aceptaciones_documentos')
-      .select('fecha_aceptacion, documentos_legales(titulo, tipo, version, contenido)')
+      .select('fecha_aceptacion, titulo_aceptado, version_aceptada, contenido_aceptado, documentos_legales(titulo, tipo, version, contenido)')
       .eq('paciente_id', paciente.id)
       .order('fecha_aceptacion', { ascending: false });
 
@@ -227,7 +238,24 @@ router.get('/:userId/rgpd', verifyToken, requireAdmin, async (req, res) => {
     const aceptacion = aceptaciones?.find(a => tiposRgpd.includes(a.documentos_legales?.tipo));
 
     if (!aceptacion) return res.status(404).json({ error: 'No se encontró aceptación RGPD para este paciente' });
-    res.json(aceptacion);
+
+    // Preferir el snapshot tomado al aceptar (RGPD Art. 7): es el texto exacto
+    // que el paciente vio. Sin snapshot (aceptaciones pre jul-2026) se devuelve
+    // el documento vigente y se indica que la evidencia primaria es la firma
+    // en papel.
+    const { titulo_aceptado, version_aceptada, contenido_aceptado, ...resto } = aceptacion;
+    res.json({
+      ...resto,
+      documentos_legales: {
+        ...aceptacion.documentos_legales,
+        titulo: titulo_aceptado || aceptacion.documentos_legales.titulo,
+        version: version_aceptada ?? aceptacion.documentos_legales.version,
+        contenido: contenido_aceptado || aceptacion.documentos_legales.contenido,
+      },
+      evidencia: contenido_aceptado
+        ? 'snapshot_en_aceptacion'
+        : 'documento_vigente_sin_snapshot (aceptación anterior a jul-2026; evidencia primaria: firma en papel)',
+    });
   } catch (err) {
     console.error('[pacientes]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }

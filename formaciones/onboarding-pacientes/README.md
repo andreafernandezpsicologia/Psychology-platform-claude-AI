@@ -39,15 +39,19 @@ formulario del panel. Se guarda en `users.idioma_preferido` y determina:
 - El **consentimiento** que firma al activar (documentos ES/EN/DA en `documentos_legales`, columna `idioma`).
 - El **idioma en que abre la app** al iniciar sesión (después puede cambiarlo a mano).
 
-⚠️ **Consentimiento EN/DA pendiente de validación legal de Andrea.** Las traducciones del consentimiento
-a inglés y danés están cargadas en `documentos_legales` (versión borrador); **revisar y aprobar el texto
-antes de invitar a un paciente en EN/DA**. Emails de admin (aviso de solicitud a Andrea) van siempre en español.
+✅ **Consentimiento ES/EN/DA — revisión legal aplicada y visto bueno de Andrea (16-jul-2026).** Los tres
+idiomas están corregidos, alineados (9 secciones, v1.1) y **publicados en la app** (verificado: el contenido
+de `documentos_legales` coincide con `consentimiento-traducciones/PARA-VALIDAR-{ES,EN,DA}.txt`); ver
+`REVISION-LEGAL-DA-EN.md`. Para republicarlos tras un cambio: `node backend/seeds/seed_consentimiento_multilang.js`
+(sube los tres por `tipo,idioma`; valida secciones 1-9 y aborta ante cualquier fallo). Pendiente solo: confirmar
+con jurista danés la base de conservación. Emails de admin (aviso de solicitud a Andrea) van siempre en español.
 
 ## Runbook: por cada paciente que ya viene trabajando
 
 1. **Verificación previa de consentimiento (GDPR).** Antes de invitar, confirmar que el texto del
-   consentimiento que muestra la app (documento en Supabase `documentos_legales`, tipos
-   `consentimiento_informado`/`rgpd`; sembrado en `backend/seeds/rgpd_consentimiento.sql`) coincide con
+   consentimiento que muestra la app (documento en Supabase `documentos_legales`, tipo
+   `consentimiento_informado` por idioma; sembrado con `backend/seeds/seed_consentimiento_multilang.js`
+   desde `consentimiento-traducciones/PARA-VALIDAR-{ES,EN,DA}.txt`) coincide con
    lo que el paciente firmó en papel (`Consentimiento_Informado.docx.pdf`, `Politica_de_Privacidad.docx.pdf`).
    Si difiere en algo sustancial, actualizar el documento en `documentos_legales` **antes** de invitar.
 2. **Invitar.** En el panel admin (`/admin`), formulario de invitar paciente: nombre + email + **idioma**.

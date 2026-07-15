@@ -46,13 +46,22 @@ router.get('/mis-aceptaciones', verifyToken, async (req, res) => {
     const { data, error } = await supabase
       .from('aceptaciones_documentos')
       .select(`
-        documento_id, aceptado, fecha_aceptacion,
+        documento_id, aceptado, fecha_aceptacion, titulo_aceptado, version_aceptada,
         documentos_legales ( titulo, tipo, version )
       `)
       .eq('paciente_id', paciente.id);
 
     if (error) return res.status(400).json({ error: error.message });
-    res.json(data);
+    // Preferir el snapshot tomado al aceptar (RGPD Art. 7); las filas antiguas
+    // sin snapshot mantienen el documento vigente como hasta ahora.
+    res.json((data || []).map(({ titulo_aceptado, version_aceptada, ...a }) => ({
+      ...a,
+      documentos_legales: a.documentos_legales && {
+        ...a.documentos_legales,
+        titulo: titulo_aceptado || a.documentos_legales.titulo,
+        version: version_aceptada ?? a.documentos_legales.version,
+      },
+    })));
   } catch (err) {
     console.error('[documentos]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
   }
@@ -157,6 +166,16 @@ router.post('/aceptar', verifyToken, async (req, res) => {
 
     if (pError) return res.status(404).json({ error: 'Perfil de paciente no encontrado' });
 
+    // Snapshot RGPD Art. 7: guardar el texto exacto que el paciente acepta.
+    // documentos_legales se actualiza en la misma fila al republicar, así que
+    // sin esta copia la "prueba de aceptación" mostraría un texto posterior.
+    const { data: doc, error: dError } = await supabase
+      .from('documentos_legales')
+      .select('titulo, version, contenido')
+      .eq('id', documento_id)
+      .single();
+    if (dError || !doc) return res.status(404).json({ error: 'Documento no encontrado' });
+
     const { data, error } = await supabase
       .from('aceptaciones_documentos')
       .upsert({
@@ -164,6 +183,9 @@ router.post('/aceptar', verifyToken, async (req, res) => {
         documento_id,
         aceptado: true,
         fecha_aceptacion: new Date().toISOString(),
+        titulo_aceptado: doc.titulo,
+        version_aceptada: doc.version,
+        contenido_aceptado: doc.contenido,
       }, { onConflict: 'paciente_id,documento_id' })
       .select()
       .single();
@@ -184,9 +206,21 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
   }
 
   try {
+    // Si no se pasa version, conservar la existente (defaultear a 1 degradaría
+    // en silencio un documento ya publicado con versión superior).
+    let nuevaVersion = version;
+    if (!nuevaVersion) {
+      const { data: existente } = await supabase
+        .from('documentos_legales')
+        .select('version')
+        .eq('tipo', tipo).eq('idioma', idioma)
+        .maybeSingle();
+      nuevaVersion = existente?.version || 1;
+    }
+
     const { data, error } = await supabase
       .from('documentos_legales')
-      .upsert({ titulo, contenido, tipo, idioma, version: version || 1 }, { onConflict: 'tipo,idioma' })
+      .upsert({ titulo, contenido, tipo, idioma, version: nuevaVersion }, { onConflict: 'tipo,idioma' })
       .select()
       .single();
 

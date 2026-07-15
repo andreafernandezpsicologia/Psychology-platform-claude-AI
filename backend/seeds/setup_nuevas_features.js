@@ -76,7 +76,8 @@ async function setup() {
   console.log('\n📄 Insertando plantilla de contrato...');
   const { data: contrato, error: contratoError } = await supabase
     .from('documentos_legales')
-    .upsert({ titulo: 'Contrato de servicios psicológicos', tipo: 'contrato_servicios', version: 1, contenido: plantillaContrato }, { onConflict: 'tipo' })
+    // El índice único de documentos_legales es (tipo, idioma) — 'tipo' a secas ya no existe.
+    .upsert({ titulo: 'Contrato de servicios psicológicos', tipo: 'contrato_servicios', idioma: 'es', version: 1, contenido: plantillaContrato }, { onConflict: 'tipo,idioma' })
     .select().single();
   if (contratoError) {
     console.log('  ❌ Error:', contratoError.message);

@@ -142,6 +142,8 @@
     "contratoDescargarFinal": "Download final contract",
     "contratoPendiente": "Pending signature",
     "contratoEnviado": "Sent, pending review",
+    "contratoIntro": "Here you can download the service contract and upload it once signed. If you already signed it on paper, there is nothing you need to do.",
+    "contratoDescargarMio": "Download my contract",
     "gdprTitle": "My personal data",
     "gdprDesc": "Download a copy of all your data (GDPR Art. 20).",
     "gdprDownload": "Download my data",

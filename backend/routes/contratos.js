@@ -155,13 +155,20 @@ router.post('/pack/:packId/subir-admin', verifyToken, requireAdmin, upload.singl
   }
 });
 
-// ── GET admin descarga contrato firmado por paciente ──────────────────────
-router.get('/pack/:packId/firmado-paciente', verifyToken, requireAdmin, async (req, res) => {
+// ── GET descarga contrato firmado por paciente (admin o el propio paciente) ─
+router.get('/pack/:packId/firmado-paciente', verifyToken, async (req, res) => {
   try {
-    const { data: pack } = await supabase
-      .from('packs').select('contrato_path_paciente').eq('id', req.params.packId).single();
+    const { data: paciente } = await supabase
+      .from('pacientes').select('id').eq('user_id', req.user.id).single();
 
-    if (!pack?.contrato_path_paciente) return res.status(404).json({ error: 'Contrato del paciente no encontrado' });
+    const { data: pack } = await supabase
+      .from('packs').select('contrato_path_paciente, paciente_id').eq('id', req.params.packId).single();
+
+    if (!pack) return res.status(404).json({ error: 'Pack no encontrado' });
+    if (req.user.role !== 'admin' && pack.paciente_id !== paciente?.id) {
+      return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    if (!pack.contrato_path_paciente) return res.status(404).json({ error: 'Contrato del paciente no encontrado' });
 
     const url = await getSignedUrl(pack.contrato_path_paciente);
     if (!url) return res.status(500).json({ error: 'Error generando URL de descarga' });

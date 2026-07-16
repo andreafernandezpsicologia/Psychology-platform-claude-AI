@@ -142,6 +142,8 @@
     "contratoDescargarFinal": "Download endelig kontrakt",
     "contratoPendiente": "Afventer underskrift",
     "contratoEnviado": "Sendt, afventer gennemgang",
+    "contratoIntro": "Her kan du downloade servicekontrakten og uploade den, når den er underskrevet. Hvis du allerede har underskrevet på papir, behøver du ikke gøre noget.",
+    "contratoDescargarMio": "Download min kontrakt",
     "gdprTitle": "Mine personlige data",
     "gdprDesc": "Download en kopi af alle dine data (GDPR Art. 20).",
     "gdprDownload": "Download mine data",

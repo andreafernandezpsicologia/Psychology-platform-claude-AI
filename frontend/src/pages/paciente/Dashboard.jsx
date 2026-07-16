@@ -133,6 +133,15 @@ export default function PacienteDashboard() {
     }
   };
 
+  const descargarMiContrato = async (packId) => {
+    try {
+      const res = await api.get(`/contratos/pack/${packId}/firmado-paciente`);
+      window.open(res.data.url, '_blank');
+    } catch (err) {
+      toast.error('Error: ' + (err.response?.data?.error || ''));
+    }
+  };
+
   if (loading) return (
     <Layout>
       <div className="space-y-4">
@@ -196,20 +205,22 @@ export default function PacienteDashboard() {
         </div>
 
         {/* ── Contrato de servicios ──
-            Solo se muestra cuando Andrea eligió camino: envió el predeterminado
-            (estado 'enviado' → el paciente lo firma aquí) o ya hay firma en
-            marcha/completa. Con 'sin_contrato' no se enseña nada: si se firmó en
-            papel, Andrea subirá el escaneo y pasará directo a 'completado'. */}
-        {packContrato && contratoEstado !== 'sin_contrato' && (
+            Visible desde el alta con cualquier pack. En 'sin_contrato' se
+            enseña un texto neutro con plantilla + subida: al paciente de papel
+            no le estorba (lo ignora y pasará a 'completado' cuando Andrea suba
+            el escaneo) y el digital puede adelantarse sin esperar el email. */}
+        {packContrato && (
           <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
             <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>
               {t('patientDashboard.contratoTitle')}
             </h3>
 
-            {contratoEstado === 'enviado' && (
+            {(contratoEstado === 'sin_contrato' || contratoEstado === 'enviado') && (
               <div>
                 <p className="text-sm mb-3" style={{ color: 'var(--text)' }}>
-                  {t('patientDashboard.contratoPendiente')}
+                  {contratoEstado === 'enviado'
+                    ? t('patientDashboard.contratoPendiente')
+                    : t('patientDashboard.contratoIntro')}
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   <Button size="sm" onClick={descargarPlantilla}>
@@ -228,10 +239,13 @@ export default function PacienteDashboard() {
             )}
 
             {contratoEstado === 'firmado_paciente' && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F8EFD2', color: '#B07A2B' }}>
                   ✓ {t('patientDashboard.contratoEnviado')}
                 </span>
+                <Button size="sm" onClick={() => descargarMiContrato(packContrato.id)}>
+                  ⬇ {t('patientDashboard.contratoDescargarMio')}
+                </Button>
                 <Button size="sm" variant="ghost"
                   loading={uploadingContrato === packContrato.id}
                   onClick={() => { setContratoPackRef(packContrato.id); fileInputRef.current?.click(); }}>

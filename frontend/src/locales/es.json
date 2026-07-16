@@ -142,6 +142,8 @@
     "contratoDescargarFinal": "Descargar contrato definitivo",
     "contratoPendiente": "Pendiente de firma",
     "contratoEnviado": "Enviado, pendiente de revisión",
+    "contratoIntro": "Aquí puedes descargar el contrato de servicios y, cuando lo tengas firmado, subirlo. Si ya lo firmaste en papel, no necesitas hacer nada.",
+    "contratoDescargarMio": "Descargar mi contrato",
     "gdprTitle": "Mis datos personales",
     "gdprDesc": "Descarga una copia de todos tus datos (RGPD Art. 20).",
     "gdprDownload": "Descargar mis datos",

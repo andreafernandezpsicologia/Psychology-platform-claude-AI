@@ -377,7 +377,9 @@ router.post('/:id/generar-meet', verifyToken, requireAdmin, async (req, res) => 
     }
 
     const resultado = await meet.crearEventoMeet(sesion.fecha_hora, sesion.duracion_minutos);
-    if (!resultado) return res.status(409).json({ error: 'google_no_conectado' });
+    if (!resultado) {
+      return res.status(409).json({ error: 'Google no está conectado o la conexión ha caducado. En el calendario, abre "Sincronizar" y pulsa "Conectar con Google".' });
+    }
 
     const { data, error } = await supabase
       .from('sesiones')

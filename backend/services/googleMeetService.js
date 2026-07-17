@@ -87,7 +87,16 @@ async function getAccessToken() {
 
   if (!res.ok) {
     const body = await res.text();
-    // invalid_grant = Andrea revocó el acceso desde su cuenta de Google
+    // invalid_grant = el refresh token ya no vale: Andrea revocó el acceso o
+    // caducó (Google los caduca a los 7 días si la app OAuth está en modo
+    // "Prueba"). Se borra la conexión muerta para que la app vuelva al estado
+    // "no conectada" y el modal de sincronización vuelva a ofrecer conectar.
+    if (res.status === 400 && body.includes('invalid_grant')) {
+      console.error('[googleMeet] refresh token caducado o revocado: se desconecta la cuenta para pedir reconexión');
+      await supabase.from('google_oauth').delete().eq('id', 1);
+      tokenCache = { accessToken: null, expiraMs: 0 };
+      return null;
+    }
     throw new Error(`token refresh ${res.status}: ${body.slice(0, 200)}`);
   }
 

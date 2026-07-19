@@ -6,6 +6,7 @@ import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import { SkeletonCard } from '../../components/common/Skeleton';
 import MonthGrid from '../../components/calendar/MonthGrid';
+import FeedbackSliders from '../../components/FeedbackSliders';
 import api from '../../utils/api';
 import { format, addMonths, addDays } from 'date-fns';
 import { es, enUS, da } from 'date-fns/locale';
@@ -32,11 +33,18 @@ export default function PacienteDashboard() {
 
   const [pagando, setPagando] = useState(null); // 'pack:<id>' | 'sesion:<id>'
 
+  const [feedbackPendiente, setFeedbackPendiente] = useState(null); // { srs_pendiente, ors_pendiente }
+  const [srsResuelto, setSrsResuelto] = useState(false); // enviado o saltado (solo en esta visita)
+  const [orsResuelto, setOrsResuelto] = useState(false);
+
   const cargar = () => {
     api.get('/pacientes/me/perfil').then((res) => setData(res.data)).finally(() => setLoading(false));
   };
 
-  useEffect(() => { cargar(); }, []);
+  useEffect(() => {
+    cargar();
+    api.get('/feedback/pendiente').then((res) => setFeedbackPendiente(res.data)).catch(() => {});
+  }, []);
 
   // Aviso al volver de Stripe (?pago=ok|cancelado) y limpieza del parámetro.
   useEffect(() => {
@@ -213,6 +221,27 @@ export default function PacienteDashboard() {
       </h2>
 
       <div className="space-y-4">
+        {/* ── Feedback ORS/SRS: prioridad clínica, va antes que cobertura/pagos ── */}
+        {(() => {
+          const srs = feedbackPendiente?.srs_pendiente;
+          const ors = feedbackPendiente?.ors_pendiente;
+          if (srs && !srsResuelto) {
+            return (
+              <div className="bg-white rounded-xl p-5" style={{ border: '1.5px solid var(--gold, #E3A52A)' }}>
+                <FeedbackSliders tipo="srs" sesionId={srs.id} onDone={() => setSrsResuelto(true)} />
+              </div>
+            );
+          }
+          if (ors && !orsResuelto) {
+            return (
+              <div className="bg-white rounded-xl p-5" style={{ border: '1.5px solid var(--gold, #E3A52A)' }}>
+                <FeedbackSliders tipo="ors" sesionId={ors.id} onDone={() => setOrsResuelto(true)} />
+              </div>
+            );
+          }
+          return null;
+        })()}
+
         {/* ── Cobertura ── */}
         <div className="bg-white rounded-xl p-5" style={{ border: '1px solid var(--border)' }}>
           <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--brand)' }}>{t('patientDashboard.coverage')}</h3>

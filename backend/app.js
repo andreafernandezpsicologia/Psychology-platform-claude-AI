@@ -66,6 +66,7 @@ app.use('/api/google', require('./routes/google'));
 app.use('/api/config', require('./routes/config'));
 app.use('/api/packs', require('./routes/packs'));
 app.use('/api/pagos', require('./routes/pagos'));
+app.use('/api/feedback', require('./routes/feedback'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/contratos', require('./routes/contratos'));
 app.use('/api/cron', require('./routes/cron'));

@@ -14,9 +14,9 @@ router.get('/me/perfil', verifyToken, async (req, res) => {
       .select(`
         id, email, nombre_completo, telefono,
         pacientes (
-          id, estado,
-          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, contrato_estado, contrato_path_paciente, contrato_path_admin ),
-          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada )
+          id, estado, pago_online_habilitado,
+          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, contrato_estado, contrato_path_paciente, contrato_path_admin ),
+          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada, pack_id, estado_pago, precio_cents )
         )
       `)
       .eq('id', req.user.id)
@@ -81,9 +81,9 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
       .select(`
         id, email, nombre_completo, telefono, created_at,
         pacientes (
-          id, estado, notas_admin,
-          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, contrato_estado, contrato_path_paciente, contrato_path_admin ),
-          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada )
+          id, estado, notas_admin, pago_online_habilitado,
+          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, fecha_pago, contrato_estado, contrato_path_paciente, contrato_path_admin ),
+          sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada, pack_id, estado_pago, precio_cents, fecha_pago )
         )
       `)
       .eq('id', req.params.id)
@@ -100,12 +100,13 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
 
 // Admin: actualizar notas o estado de un paciente
 router.put('/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
-  const { notas_admin, estado } = req.body;
+  const { notas_admin, estado, pago_online_habilitado } = req.body;
 
   try {
     const updates = {};
     if (notas_admin !== undefined) updates.notas_admin = notas_admin;
     if (estado !== undefined) updates.estado = estado;
+    if (pago_online_habilitado !== undefined) updates.pago_online_habilitado = !!pago_online_habilitado;
     updates.updated_at = new Date().toISOString();
 
     const { data, error } = await supabase
@@ -143,11 +144,11 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
 
   const [{ data: sesiones }, { data: packs }, { data: documentos }, { data: aceptaciones }] = await Promise.all([
     supabase.from('sesiones')
-      .select('id, fecha_hora, tipo, estado, duracion_minutos, created_at')
+      .select('id, fecha_hora, tipo, estado, duracion_minutos, estado_pago, precio_cents, fecha_pago, created_at')
       .eq('paciente_id', paciente.id)
       .order('fecha_hora', { ascending: true }),
     supabase.from('packs')
-      .select('id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, created_at')
+      .select('id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, fecha_pago, created_at')
       .eq('paciente_id', paciente.id),
     supabase.from('documentos')
       .select('id, nombre, tipo, created_at')

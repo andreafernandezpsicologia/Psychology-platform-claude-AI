@@ -70,13 +70,13 @@ export default function PacienteDetalle() {
   const [loading, setLoading] = useState(true);
   const [showSesion, setShowSesion] = useState(false);
   const [showPack, setShowPack] = useState(false);
-  const [sesionForm, setSesionForm] = useState({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '' });
+  const [sesionForm, setSesionForm] = useState({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '', precio: '' });
   const [editandoEnlaceId, setEditandoEnlaceId] = useState(null);
   const [enlaceInput, setEnlaceInput] = useState('');
   const [savingEnlace, setSavingEnlace] = useState(false);
   const [googleOk, setGoogleOk] = useState(false);
   const [generandoMeetId, setGenerandoMeetId] = useState(null);
-  const [packForm, setPackForm] = useState({ num_sesiones_total: 10 });
+  const [packForm, setPackForm] = useState({ num_sesiones_total: 10, precio: '' });
   const [savingSesion, setSavingSesion] = useState(false);
   const [savingPack, setSavingPack] = useState(false);
   const [reagendando, setReagendando] = useState(null);
@@ -86,6 +86,9 @@ export default function PacienteDetalle() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [savingEstado, setSavingEstado] = useState(false);
   const [savingPago, setSavingPago] = useState(null);  // packId en curso
+  const [savingPagoSesion, setSavingPagoSesion] = useState(null);  // sesionId en curso
+  const [savingPagoOnline, setSavingPagoOnline] = useState(false);
+  const [enlacePagoId, setEnlacePagoId] = useState(null);  // pack/sesion en curso
   const [uploadingContrato, setUploadingContrato] = useState(null); // packId en curso
   const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
   const [enviandoContrato, setEnviandoContrato] = useState(null); // packId en curso
@@ -106,11 +109,14 @@ export default function PacienteDetalle() {
     setSavingSesion(true);
     const pacienteId = paciente.pacientes?.id;
     const packActivo = paciente.pacientes?.packs?.find((p) => p.estado === 'activo');
+    const { precio, ...restoSesion } = sesionForm;
+    // Solo las sueltas (sin pack activo) llevan precio; el del bono se cobra aparte.
+    const precio_cents = !packActivo && precio !== '' ? Math.round(parseFloat(precio) * 100) : undefined;
     try {
-      await api.post('/sesiones', { paciente_id: pacienteId, pack_id: packActivo?.id || null, ...sesionForm });
+      await api.post('/sesiones', { paciente_id: pacienteId, pack_id: packActivo?.id || null, ...restoSesion, ...(precio_cents != null ? { precio_cents } : {}) });
       toast.success(t('patientDetail.sessionCreated', 'Sesión creada'));
       setShowSesion(false);
-      setSesionForm({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '' });
+      setSesionForm({ fecha_hora: '', tipo: 'videollamada', enlace_videollamada: '', precio: '' });
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
     finally { setSavingSesion(false); }
@@ -141,10 +147,16 @@ export default function PacienteDetalle() {
     e.preventDefault();
     setSavingPack(true);
     const pacienteId = paciente.pacientes?.id;
+    const precio_cents = packForm.precio !== '' ? Math.round(parseFloat(packForm.precio) * 100) : undefined;
     try {
-      await api.post('/packs', { paciente_id: pacienteId, ...packForm });
+      await api.post('/packs', {
+        paciente_id: pacienteId,
+        num_sesiones_total: packForm.num_sesiones_total,
+        ...(precio_cents != null ? { precio_cents } : {}),
+      });
       toast.success(t('patientDetail.packCreated', 'Pack creado'));
       setShowPack(false);
+      setPackForm({ num_sesiones_total: 10, precio: '' });
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
     finally { setSavingPack(false); }
@@ -207,6 +219,45 @@ export default function PacienteDetalle() {
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
     finally { setSavingPago(null); }
+  };
+
+  // Pago de una sesión suelta (sin pack). Alterna no_pagado / pagado.
+  const cambiarPagoSesion = async (sesionId, estado_pago) => {
+    setSavingPagoSesion(sesionId);
+    try {
+      await api.put(`/sesiones/${sesionId}/pago`, { estado_pago });
+      toast.success(t(`patientDetail.${estado_pago}`));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingPagoSesion(null); }
+  };
+
+  // Activar/desactivar el cobro online (Stripe/Bizum) para este paciente.
+  const togglePagoOnline = async () => {
+    setSavingPagoOnline(true);
+    const pacienteId = paciente?.pacientes?.id;
+    const nuevo = !paciente?.pacientes?.pago_online_habilitado;
+    try {
+      await api.put(`/pacientes/${pacienteId}`, { pago_online_habilitado: nuevo });
+      toast.success(nuevo
+        ? t('patientDetail.pagoOnlineOn', 'Cobro online activado')
+        : t('patientDetail.pagoOnlineOff', 'Cobro online desactivado'));
+      cargar();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setSavingPagoOnline(false); }
+  };
+
+  // Generar un enlace de pago (Stripe Checkout) y copiarlo al portapapeles para
+  // enviárselo al paciente. `ids` = { sesion_id } o { pack_id }.
+  const copiarEnlacePago = async (tipo, ids) => {
+    const key = ids.sesion_id || ids.pack_id;
+    setEnlacePagoId(key);
+    try {
+      const res = await api.post('/pagos/enlace', { tipo, ...ids });
+      await navigator.clipboard.writeText(res.data.url);
+      toast.success(t('patientDetail.enlacePagoCopiado', 'Enlace de pago copiado al portapapeles'));
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setEnlacePagoId(null); }
   };
 
   // ── Contratos ─────────────────────────────────────────────────────────────
@@ -272,7 +323,9 @@ export default function PacienteDetalle() {
 
   const info = paciente.pacientes;
   const packs = info?.packs || [];
+  const packActivo = packs.find((p) => p.estado === 'activo');
   const todasSesiones = info?.sesiones || [];
+  const eur = (cents) => (cents == null ? null : (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }));
   const ahora = ahoraParedDate();
   const proximas = todasSesiones.filter((s) => s.estado === 'programada' && parseWall(s.fecha_hora) >= ahora)
     .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
@@ -346,6 +399,37 @@ export default function PacienteDetalle() {
             ⚠ {t('patientDetail.inactiveWarning')}
           </div>
         )}
+
+        {/* Cobro online (Stripe/Bizum): opt-in por paciente */}
+        <div className="mt-3 pt-3 flex items-center justify-between gap-3 flex-wrap" style={{ borderTop: '1px solid var(--border)' }}>
+          <div>
+            <p className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>
+              {t('patientDetail.pagoOnlineTitle', 'Cobro online (tarjeta / Bizum)')}
+            </p>
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>
+              {info?.pago_online_habilitado
+                ? t('patientDetail.pagoOnlineOnDesc', 'Este paciente puede pagar sesiones y bonos desde su área.')
+                : t('patientDetail.pagoOnlineOffDesc', 'Cobro manual. Actívalo para que pueda pagar online.')}
+            </p>
+          </div>
+          <button
+            onClick={togglePagoOnline}
+            disabled={savingPagoOnline}
+            role="switch"
+            aria-checked={!!info?.pago_online_habilitado}
+            className="relative rounded-full transition shrink-0"
+            style={{
+              width: 44, height: 24,
+              backgroundColor: info?.pago_online_habilitado ? '#3B6D2A' : 'var(--border)',
+              opacity: savingPagoOnline ? 0.6 : 1,
+            }}
+          >
+            <span className="absolute rounded-full bg-white transition-all" style={{
+              width: 18, height: 18, top: 3,
+              left: info?.pago_online_habilitado ? 23 : 3,
+            }} />
+          </button>
+        </div>
       </div>
 
       {/* ── Packs ── */}
@@ -358,11 +442,18 @@ export default function PacienteDetalle() {
         </div>
 
         {showPack && (
-          <form onSubmit={crearPack} className="flex gap-3 mb-4 items-center">
+          <form onSubmit={crearPack} className="flex gap-3 mb-4 items-center flex-wrap">
             <input type="number" min="1" max="50" value={packForm.num_sesiones_total}
-              onChange={(e) => setPackForm({ num_sesiones_total: parseInt(e.target.value) })}
+              onChange={(e) => setPackForm({ ...packForm, num_sesiones_total: parseInt(e.target.value) })}
               className="field-input w-24" />
             <span className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDetail.sessions')}</span>
+            <div className="flex items-center gap-1">
+              <input type="number" min="0" step="0.01" placeholder={t('patientDetail.priceOptional', 'Precio')}
+                value={packForm.precio}
+                onChange={(e) => setPackForm({ ...packForm, precio: e.target.value })}
+                className="field-input w-28" title={t('patientDetail.priceHint', 'Precio del bono (editable para precios especiales)')} />
+              <span className="text-sm" style={{ color: 'var(--text)' }}>€</span>
+            </div>
             <Button type="submit" size="sm" loading={savingPack}>{t('patientDetail.create')}</Button>
           </form>
         )}
@@ -388,6 +479,9 @@ export default function PacienteDetalle() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium" style={{ color: 'var(--brand)' }}>
                   {pk.num_sesiones_usadas}/{pk.num_sesiones_total} {t('patientDetail.sessions')}
+                  {pk.precio_cents != null && (
+                    <span style={{ color: 'var(--muted)', fontWeight: 400 }}> · {eur(pk.precio_cents)}</span>
+                  )}
                 </span>
                 <div className="flex items-center gap-2">
                   <Badge estado={pk.estado} label={pk.estado} />
@@ -416,6 +510,16 @@ export default function PacienteDetalle() {
                     {t(`patientDetail.${op}`)}
                   </button>
                 ))}
+                {info?.pago_online_habilitado && pagoEstado !== 'pagado' && pk.precio_cents != null && (
+                  <button
+                    disabled={enlacePagoId === pk.id}
+                    onClick={() => copiarEnlacePago('pack', { pack_id: pk.id })}
+                    className="text-xs font-medium px-2.5 py-1 rounded-full transition hover:opacity-80"
+                    style={{ backgroundColor: 'var(--bg)', color: 'var(--brand)', border: '1.5px solid var(--border)' }}
+                  >
+                    🔗 {enlacePagoId === pk.id ? t('patientDetail.generando', 'Generando…') : t('patientDetail.copiarEnlacePago', 'Copiar enlace de pago')}
+                  </button>
+                )}
               </div>
 
               {/* Fila contrato */}
@@ -510,8 +614,24 @@ export default function PacienteDetalle() {
                 onChange={(e) => setSesionForm({ ...sesionForm, enlace_videollamada: e.target.value })}
                 className="field-input w-auto" style={{ minWidth: '220px' }} />
             )}
+            {!packActivo && (
+              <div className="flex items-center gap-1">
+                <input type="number" min="0" step="0.01"
+                  placeholder={t('patientDetail.priceOptional', 'Precio')}
+                  value={sesionForm.precio}
+                  onChange={(e) => setSesionForm({ ...sesionForm, precio: e.target.value })}
+                  className="field-input w-28"
+                  title={t('patientDetail.priceSessionHint', 'Precio de la sesión suelta (editable)')} />
+                <span className="text-sm" style={{ color: 'var(--text)' }}>€</span>
+              </div>
+            )}
             <Button type="submit" size="sm" loading={savingSesion}>{t('patientDetail.create')}</Button>
           </form>
+        )}
+        {showSesion && packActivo && (
+          <p className="text-xs mb-3 -mt-1" style={{ color: 'var(--muted)' }}>
+            {t('patientDetail.sessionGoesToPack', 'Esta sesión se descontará del bono activo.')}
+          </p>
         )}
 
         {sesionesTab.length === 0 ? (
@@ -570,6 +690,39 @@ export default function PacienteDetalle() {
                         + {t('calendar.videoLinkAdd')}
                       </button>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Sesión suelta (sin pack): estado de pago + marcar pagada */}
+              {!s.pack_id && s.estado_pago && s.estado !== 'cancelada' && (
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                    {t('patientDetail.payment')}{s.precio_cents != null ? ` · ${eur(s.precio_cents)}` : ''}:
+                  </span>
+                  {['pagado', 'no_pagado'].map((op) => (
+                    <button
+                      key={op}
+                      disabled={savingPagoSesion === s.id}
+                      onClick={() => cambiarPagoSesion(s.id, op)}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full transition"
+                      style={s.estado_pago === op
+                        ? { ...pagoStyles[op], border: `1.5px solid ${pagoStyles[op].color}` }
+                        : { backgroundColor: 'var(--bg)', color: 'var(--text)', border: '1.5px solid var(--border)' }
+                      }
+                    >
+                      {t(`patientDetail.${op}`)}
+                    </button>
+                  ))}
+                  {info?.pago_online_habilitado && s.estado_pago !== 'pagado' && s.precio_cents != null && (
+                    <button
+                      disabled={enlacePagoId === s.id}
+                      onClick={() => copiarEnlacePago('sesion', { sesion_id: s.id })}
+                      className="text-xs font-medium px-2.5 py-1 rounded-full transition hover:opacity-80"
+                      style={{ backgroundColor: 'var(--bg)', color: 'var(--brand)', border: '1.5px solid var(--border)' }}
+                    >
+                      🔗 {enlacePagoId === s.id ? t('patientDetail.generando', 'Generando…') : t('patientDetail.copiarEnlacePago', 'Copiar enlace de pago')}
+                    </button>
                   )}
                 </div>
               )}

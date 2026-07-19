@@ -20,6 +20,18 @@ function enlaceValido(url) {
   }
 }
 
+// Precio (en céntimos) de una tarifa activa por código, o null si no existe.
+// Se usa para prefijar el precio de una sesión suelta al crearla.
+async function tarifaPrecio(codigo) {
+  const { data } = await supabase
+    .from('tarifas')
+    .select('precio_cents')
+    .eq('codigo', codigo)
+    .eq('activa', true)
+    .limit(1);
+  return data?.[0]?.precio_cents ?? null;
+}
+
 // Genera enlaces de Meet para las sesiones de videollamada que no traen enlace
 // manual y actualiza las filas (muta cada sesión in situ para que la respuesta
 // y los emails ya salgan con el enlace). Best-effort: si Google falla o la
@@ -122,6 +134,14 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       msToNaive(naiveToMs(fecha_hora) + k * intervaloDias * 86400000)
     );
 
+    // Sesión suelta (sin pack): nace 'no_pagado' con su precio, para poder
+    // registrar el cobro. El precio llega del formulario o se prefija de tarifa.
+    const sinPack = !pack_id;
+    const precioBody = parseInt(req.body.precio_cents);
+    const precioSuelta = sinPack
+      ? (Number.isFinite(precioBody) ? precioBody : await tarifaPrecio('sesion_individual'))
+      : null;
+
     if (!force) {
       const conflictos = [];
       for (const f of fechas) {
@@ -141,6 +161,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
       duracion_minutos: duracion,
       estado: 'programada',
       enlace_videollamada: tipo === 'videollamada' ? (enlace_videollamada || null) : null,
+      ...(sinPack ? { estado_pago: 'no_pagado', precio_cents: precioSuelta } : {}),
     }));
 
     const { data, error } = await supabase.from('sesiones').insert(filas).select();
@@ -277,16 +298,23 @@ router.post('/solicitar', verifyToken, async (req, res) => {
 
     const packActivo = (paciente.packs || []).find((p) => p.estado === 'activo');
 
+    // Sin pack activo, la sesión es suelta: nace 'no_pagado' con precio de tarifa.
+    const insertSesion = {
+      paciente_id: paciente.id,
+      pack_id: packActivo?.id || null,
+      fecha_hora,
+      tipo,
+      duracion_minutos: 50,
+      estado: 'solicitada',
+    };
+    if (!packActivo) {
+      insertSesion.estado_pago = 'no_pagado';
+      insertSesion.precio_cents = await tarifaPrecio('sesion_individual');
+    }
+
     const { data, error } = await supabase
       .from('sesiones')
-      .insert({
-        paciente_id: paciente.id,
-        pack_id: packActivo?.id || null,
-        fecha_hora,
-        tipo,
-        duracion_minutos: 50,
-        estado: 'solicitada',
-      })
+      .insert(insertSesion)
       .select()
       .single();
     if (error) {
@@ -513,6 +541,43 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+// Admin: marcar el pago de una sesión SUELTA (pack_id NULL). Las sesiones de un
+// pack se cobran a nivel de pack (packs.estado_pago), no aquí.
+router.put('/:id/pago', verifyToken, requireAdmin, async (req, res) => {
+  const { estado_pago } = req.body;
+  if (!['no_pagado', 'pagado'].includes(estado_pago)) {
+    return res.status(400).json({ error: 'estado_pago inválido' });
+  }
+  try {
+    const { data: current, error: fetchError } = await supabase
+      .from('sesiones')
+      .select('pack_id')
+      .eq('id', req.params.id)
+      .single();
+    if (fetchError) return res.status(404).json({ error: 'Sesión no encontrada' });
+    if (current.pack_id) {
+      return res.status(400).json({ error: 'Esta sesión va con un pack; el pago se gestiona en el pack' });
+    }
+
+    const { data, error } = await supabase
+      .from('sesiones')
+      .update({
+        estado_pago,
+        fecha_pago: estado_pago === 'pagado' ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) return res.status(400).json({ error: error.message });
+
+    audit(req, 'update_session_payment', 'sessions', req.params.id, { estado_pago });
+    res.json(data);
+  } catch (err) {
+    console.error('[sesiones]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Admin: reagendar sesión (nueva fecha, misma sesión)
 router.put('/:id/reagendar', verifyToken, requireAdmin, async (req, res) => {
   const { fecha_hora, force } = req.body;
@@ -591,7 +656,7 @@ router.get('/mis-sesiones', verifyToken, async (req, res) => {
 
     const { data, error } = await supabase
       .from('sesiones')
-      .select('id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada')
+      .select('id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada, pack_id, estado_pago, precio_cents')
       .eq('paciente_id', paciente.id)
       .order('fecha_hora', { ascending: false });
 

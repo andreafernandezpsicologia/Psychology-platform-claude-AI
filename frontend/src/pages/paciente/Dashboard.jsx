@@ -30,11 +30,35 @@ export default function PacienteDashboard() {
   const fileInputRef = useRef(null);
   const [contratoPackRef, setContratoPackRef] = useState(null);
 
+  const [pagando, setPagando] = useState(null); // 'pack:<id>' | 'sesion:<id>'
+
   const cargar = () => {
     api.get('/pacientes/me/perfil').then((res) => setData(res.data)).finally(() => setLoading(false));
   };
 
   useEffect(() => { cargar(); }, []);
+
+  // Aviso al volver de Stripe (?pago=ok|cancelado) y limpieza del parámetro.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pago = params.get('pago');
+    if (pago === 'ok') toast.success(t('patientDashboard.pagoOk', '¡Pago recibido! Gracias.'));
+    else if (pago === 'cancelado') toast.info(t('patientDashboard.pagoCancelado', 'Pago cancelado. Puedes intentarlo de nuevo cuando quieras.'));
+    if (pago) window.history.replaceState({}, '', window.location.pathname);
+  }, []);
+
+  // Iniciar el pago de una sesión suelta o un bono: pide el enlace de Checkout
+  // al backend y redirige a Stripe. `ids` = { sesion_id } o { pack_id }.
+  const pagar = async (tipo, ids) => {
+    setPagando(`${tipo}:${ids.sesion_id || ids.pack_id}`);
+    try {
+      const res = await api.post('/pagos/checkout', { tipo, ...ids });
+      window.location.href = res.data.url;
+    } catch (err) {
+      toast.error(t('patientDashboard.pagoError', 'No se pudo iniciar el pago: ') + (err.response?.data?.error || ''));
+      setPagando(null);
+    }
+  };
 
   const exportarMisDatos = async () => {
     setExportando(true);
@@ -164,6 +188,8 @@ export default function PacienteDashboard() {
     .sort((a, b) => parseWall(a.fecha_hora) - parseWall(b.fecha_hora));
   const pct = packActivo ? (packActivo.num_sesiones_usadas / packActivo.num_sesiones_total) * 100 : 0;
   const contratoEstado = packContrato?.contrato_estado || 'sin_contrato';
+  const pagoOnline = !!info?.pago_online_habilitado;
+  const eur = (cents) => (cents == null ? null : (cents / 100).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' }));
 
   return (
     <Layout>
@@ -198,6 +224,16 @@ export default function PacienteDashboard() {
               <p className="text-xs mt-1.5" style={{ color: 'var(--text)' }}>
                 {t('patientDashboard.sessionsUsed', { used: packActivo.num_sesiones_usadas, total: packActivo.num_sesiones_total })}
               </p>
+              {pagoOnline && packActivo.estado_pago !== 'pagado' && packActivo.precio_cents != null && (
+                <div className="mt-3 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
+                    {t('patientDashboard.pendientePago', 'Pendiente de pago')}
+                  </span>
+                  <Button size="sm" loading={pagando === `pack:${packActivo.id}`} onClick={() => pagar('pack', { pack_id: packActivo.id })}>
+                    💳 {t('patientDashboard.pagar', 'Pagar')} {eur(packActivo.precio_cents)}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDashboard.noPack')}</p>
@@ -312,6 +348,16 @@ export default function PacienteDashboard() {
                   >
                     📅 {t('calendar.addToCalendar')}
                   </button>
+                </div>
+              )}
+              {pagoOnline && !s.pack_id && s.estado_pago === 'no_pagado' && s.precio_cents != null && (
+                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                  <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
+                    {t('patientDashboard.pendientePago', 'Pendiente de pago')}
+                  </span>
+                  <Button size="sm" loading={pagando === `sesion:${s.id}`} onClick={() => pagar('sesion', { sesion_id: s.id })}>
+                    💳 {t('patientDashboard.pagar', 'Pagar')} {eur(s.precio_cents)}
+                  </Button>
                 </div>
               )}
             </div>

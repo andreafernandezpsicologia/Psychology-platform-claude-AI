@@ -12,6 +12,11 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
   }
 
   try {
+    // Precio del bono: llega del formulario (editable para precios especiales);
+    // si no viene, queda null y Andrea lo fija luego.
+    const precioBody = parseInt(req.body.precio_cents);
+    const precio_cents = Number.isFinite(precioBody) ? precioBody : null;
+
     const { data, error } = await supabase
       .from('packs')
       .insert({
@@ -19,6 +24,7 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
         num_sesiones_total,
         num_sesiones_usadas: 0,
         estado: 'activo',
+        precio_cents,
       })
       .select()
       .single();
@@ -102,9 +108,15 @@ router.put('/:id/pago', verifyToken, requireAdmin, async (req, res) => {
     return res.status(400).json({ error: 'estado_pago inválido' });
   }
   try {
+    // fecha_pago marca cuándo se cobró (alimenta las métricas de ingresos):
+    // se fija al pasar a 'pagado' y se limpia si vuelve a no pagado / parcial.
     const { data, error } = await supabase
       .from('packs')
-      .update({ estado_pago, updated_at: new Date().toISOString() })
+      .update({
+        estado_pago,
+        fecha_pago: estado_pago === 'pagado' ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', req.params.id)
       .select().single();
     if (error) return res.status(400).json({ error: error.message });

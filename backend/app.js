@@ -36,7 +36,13 @@ app.use(cors({
   credentials: true,
 }));
 
-app.use(express.json({ limit: '1mb' }));
+// verify guarda el cuerpo crudo (req.rawBody) sin desactivar el parseo JSON:
+// el webhook de Stripe (/api/pagos/stripe/webhook) lo necesita para validar la
+// firma HMAC, que se calcula sobre los bytes exactos recibidos.
+app.use(express.json({
+  limit: '1mb',
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
 app.use(cookieParser());
 
 // ── Rate limiting global ──────────────────────────────────────────────────────
@@ -59,6 +65,7 @@ app.use('/api/calendarios', require('./routes/calendarios'));
 app.use('/api/google', require('./routes/google'));
 app.use('/api/config', require('./routes/config'));
 app.use('/api/packs', require('./routes/packs'));
+app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/contratos', require('./routes/contratos'));
 app.use('/api/cron', require('./routes/cron'));

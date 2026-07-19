@@ -8,6 +8,7 @@ const { bloquesOcupados } = require('../services/externalCalendarService');
 const { FECHA_NAIVE_RE, naiveToMs, msToNaive, ahoraParedMs, diaSemana } = require('../services/fechaPared');
 const { HORA_INICIO, HORA_FIN, DIAS_LABORALES, ANTELACION_MINIMA_HORAS } = require('../config/horario');
 const meet = require('../services/googleMeetService');
+const { generarEnlacePagoSesionSuelta } = require('./pagos');
 
 const router = express.Router();
 
@@ -186,18 +187,23 @@ router.post('/', verifyToken, requireAdmin, async (req, res) => {
     // videollamada recibe su propio Meet antes de responder y de enviar el email.
     await generarEnlacesMeet(data || []);
 
-    // Confirmación inmediata al paciente, con el .ics (fire-and-forget)
+    // Confirmación inmediata al paciente, con el .ics (fire-and-forget). Si es
+    // una cita suelta sin pagar de un paciente con cobro online, se incluye el
+    // enlace de pago (solo para citas sueltas, nunca para series).
     supabase
       .from('pacientes')
-      .select('users ( email, nombre_completo, idioma_preferido )')
+      .select('pago_online_habilitado, users ( email, nombre_completo, idioma_preferido )')
       .eq('id', paciente_id)
       .single()
-      .then(({ data: p }) => {
+      .then(async ({ data: p }) => {
         const u = p?.users;
-        if (u?.email) {
-          sendSessionConfirmation(u.email, u.nombre_completo, data, u.idioma_preferido)
-            .catch((e) => console.error('[create] email confirmación:', e.message));
-        }
+        if (!u?.email) return;
+        const sesionSuelta = repeticiones === 1 && sinPack ? data[0] : null;
+        const enlacePago = (sesionSuelta && p.pago_online_habilitado)
+          ? await generarEnlacePagoSesionSuelta(sesionSuelta.id)
+          : null;
+        sendSessionConfirmation(u.email, u.nombre_completo, data, u.idioma_preferido, enlacePago)
+          .catch((e) => console.error('[create] email confirmación:', e.message));
       }, () => {});
 
     res.status(201).json(repeticiones === 1 ? data[0] : data);
@@ -462,7 +468,7 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { data: current, error: fetchError } = await supabase
       .from('sesiones')
-      .select('estado, pack_id, tipo, google_event_id, pacientes ( users ( email, nombre_completo, idioma_preferido ) )')
+      .select('estado, pack_id, tipo, google_event_id, pacientes ( pago_online_habilitado, users ( email, nombre_completo, idioma_preferido ) )')
       .eq('id', req.params.id)
       .single();
 
@@ -494,12 +500,20 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
         .catch((e) => console.error('[estado] borrar evento Meet:', e.message));
     }
 
-    // Si era una solicitud del paciente, avisarle del resultado (fire-and-forget)
+    // Si era una solicitud del paciente, avisarle del resultado (fire-and-forget).
+    // Si se confirma, es suelta y sin pagar, y el paciente tiene cobro online,
+    // el email incluye el enlace de pago.
     if (current.estado === 'solicitada' && (estado === 'programada' || estado === 'cancelada')) {
       const user = current.pacientes?.users;
       if (user?.email) {
-        sendSessionRequestResult(user.email, user.nombre_completo, data, estado === 'programada', user.idioma_preferido)
-          .catch((e) => console.error('[estado] email resultado solicitud:', e.message));
+        const confirmada = estado === 'programada';
+        (confirmada && !data.pack_id && data.estado_pago === 'no_pagado' && current.pacientes?.pago_online_habilitado
+          ? generarEnlacePagoSesionSuelta(data.id)
+          : Promise.resolve(null)
+        ).then((enlacePago) => {
+          sendSessionRequestResult(user.email, user.nombre_completo, data, confirmada, user.idioma_preferido, enlacePago)
+            .catch((e) => console.error('[estado] email resultado solicitud:', e.message));
+        });
       }
     }
 

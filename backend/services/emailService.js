@@ -66,6 +66,7 @@ const T = {
     modalidad: (tipo) => (tipo === 'videollamada' ? 'Videollamada' : 'Presencial'),
     joinButton: 'Unirse a la videollamada',
     joinLink: 'unirse',
+    payButton: 'Pagar ahora',
     welcome: {
       subject: 'Bienvenido/a a Studio Renacer — Activa tu cuenta',
       greeting: (n) => `Hola, ${n}`,
@@ -147,6 +148,7 @@ const T = {
     modalidad: (tipo) => (tipo === 'videollamada' ? 'Video call' : 'In person'),
     joinButton: 'Join the video call',
     joinLink: 'join',
+    payButton: 'Pay now',
     welcome: {
       subject: 'Welcome to Studio Renacer — Activate your account',
       greeting: (n) => `Hi ${n}`,
@@ -228,6 +230,7 @@ const T = {
     modalidad: (tipo) => (tipo === 'videollamada' ? 'Videoopkald' : 'Fysisk'),
     joinButton: 'Deltag i videoopkaldet',
     joinLink: 'deltag',
+    payButton: 'Betal nu',
     welcome: {
       subject: 'Velkommen til Studio Renacer — Aktivér din konto',
       greeting: (n) => `Hej ${n}`,
@@ -317,6 +320,18 @@ const botonVideollamada = (sesion, t) => {
         </a>`;
 };
 
+// Botón "Pagar ahora": solo si se pasó un enlace de Checkout ya generado
+// (lo genera quien llama, aquí no se decide si procede cobrar).
+const botonPago = (enlacePago, t) => {
+  if (!enlacePago) return '';
+  return `
+        <a href="${enlacePago}"
+           style="display:inline-block;background:#B07A2B;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:12px 0;">
+          ${t.payButton}
+        </a>`;
+};
+
 // conGuia: Andrea decide al crear la cuenta si se adjunta la guía PDF (en altas
 // presenciales ya se lo explica ella y el adjunto sobra).
 const sendWelcomeEmail = async (email, nombre, activationToken, lang, conGuia = true) => {
@@ -361,7 +376,9 @@ const sendSessionReminder = async (email, nombre, sesion, lang) => {
 };
 
 // Confirmación inmediata al paciente cuando Andrea crea una cita (1 o serie).
-const sendSessionConfirmation = async (email, nombre, sesiones, lang) => {
+// `enlacePago` (opcional): solo se pasa para una cita SUELTA sin pagar de un
+// paciente con cobro online; no aplica a series (varias citas a la vez).
+const sendSessionConfirmation = async (email, nombre, sesiones, lang, enlacePago) => {
   const l = lng(lang); const t = T[l]; const c = t.confirmation;
   const lista = [...sesiones].sort((a, b) => String(a.fecha_hora).localeCompare(String(b.fecha_hora)));
   const varias = lista.length > 1;
@@ -386,6 +403,7 @@ const sendSessionConfirmation = async (email, nombre, sesiones, lang) => {
         <p>${varias ? c.introMany : c.introOne}</p>
         <ul>${filas}</ul>
         ${!varias ? botonVideollamada(lista[0], t) : ''}
+        ${!varias ? botonPago(enlacePago, t) : ''}
         <p>${varias ? c.attachMany : c.attachOne}</p>
         <p>${c.reminderNote}</p>`,
     attachments: [icsAdjunto(varias ? 'citas-studio-renacer.ics' : 'cita-studio-renacer.ics', ics)],
@@ -441,7 +459,9 @@ const sendSessionRequestToAdmin = async (adminEmail, pacienteNombre, sesion) => 
   });
 };
 
-const sendSessionRequestResult = async (email, nombre, sesion, confirmada, lang) => {
+// `enlacePago` (opcional): solo si se confirma, la sesión es suelta y sin
+// pagar, y el paciente tiene el cobro online activado.
+const sendSessionRequestResult = async (email, nombre, sesion, confirmada, lang, enlacePago) => {
   const l = lng(lang); const t = T[l]; const r = t.requestResult;
   const fecha = formatFechaPared(sesion.fecha_hora, l);
   await enviarEmail({
@@ -454,6 +474,7 @@ const sendSessionRequestResult = async (email, nombre, sesion, confirmada, lang)
              <p><strong>${r.dateLabel}:</strong> ${fecha}</p>
              <p><strong>${r.modeLabel}:</strong> ${t.modalidad(sesion.tipo)}</p>
              ${botonVideollamada(sesion, t)}
+             ${botonPago(enlacePago, t)}
              <p>${r.confirmedAttach}</p>`
           : `<p>${r.rejectedLine(fecha)}</p>
              <p>${r.rejectedNote}</p>`}`,

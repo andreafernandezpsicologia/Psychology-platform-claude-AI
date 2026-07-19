@@ -310,4 +310,29 @@ router.get('/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) 
   }
 });
 
+// Genera el enlace de pago de una sesión suelta para incrustarlo en un email
+// (confirmación de cita o resultado de solicitud). Uso "silencioso": ante
+// cualquier fallo o si no procede cobrar (ya pagada, sin precio…) devuelve
+// null en vez de lanzar, para no romper el envío del email por esto.
+async function generarEnlacePagoSesionSuelta(sesionId) {
+  try {
+    const prep = await prepararCobro('sesion', { sesion_id: sesionId });
+    if (prep.error) return null;
+    const base = frontendUrl();
+    const sesionStripe = await crearCheckoutSession({
+      importeCents: prep.importe,
+      concepto: prep.concepto,
+      metadata: prep.metadata,
+      successUrl: `${base}/paciente?pago=ok`,
+      cancelUrl: `${base}/paciente?pago=cancelado`,
+      customerEmail: prep.email,
+    });
+    return sesionStripe.url;
+  } catch (err) {
+    console.error('[pagos] generarEnlacePagoSesionSuelta:', err.message);
+    return null;
+  }
+}
+
 module.exports = router;
+module.exports.generarEnlacePagoSesionSuelta = generarEnlacePagoSesionSuelta;

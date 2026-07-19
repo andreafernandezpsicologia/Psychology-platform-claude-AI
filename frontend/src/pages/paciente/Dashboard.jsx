@@ -179,6 +179,11 @@ export default function PacienteDashboard() {
   const info = data?.pacientes;
   const packs = info?.packs || [];
   const packActivo = packs.find((p) => p.estado === 'activo');
+  // Puede haber más de un pack 'activo' a la vez (p. ej. uno antiguo ya pagado
+  // y uno nuevo recién creado): el de cobertura (packActivo, el primero) no
+  // tiene por qué ser el que está pendiente de pago, así que se busca aparte
+  // entre TODOS los packs activos, no solo en packActivo.
+  const packPendientePago = packs.find((p) => p.estado === 'activo' && p.estado_pago && p.estado_pago !== 'pagado' && p.precio_cents != null);
   // El contrato se enseña aunque el pack no esté "activo" todavía: sin esto, un
   // paciente recién dado de alta no veía el apartado de firma.
   const packContrato = packActivo || packs[packs.length - 1] || null;
@@ -224,19 +229,19 @@ export default function PacienteDashboard() {
               <p className="text-xs mt-1.5" style={{ color: 'var(--text)' }}>
                 {t('patientDashboard.sessionsUsed', { used: packActivo.num_sesiones_usadas, total: packActivo.num_sesiones_total })}
               </p>
-              {pagoOnline && packActivo.estado_pago !== 'pagado' && packActivo.precio_cents != null && (
-                <div className="mt-3 flex items-center gap-2 flex-wrap">
-                  <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
-                    {t('patientDashboard.pendientePago', 'Pendiente de pago')}
-                  </span>
-                  <Button size="sm" loading={pagando === `pack:${packActivo.id}`} onClick={() => pagar('pack', { pack_id: packActivo.id })}>
-                    💳 {t('patientDashboard.pagar', 'Pagar')} {eur(packActivo.precio_cents)}
-                  </Button>
-                </div>
-              )}
             </div>
           ) : (
             <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDashboard.noPack')}</p>
+          )}
+          {pagoOnline && packPendientePago && (
+            <div className="mt-3 pt-3 flex items-center gap-2 flex-wrap" style={{ borderTop: packActivo ? '1px solid var(--border)' : 'none' }}>
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
+                {t('patientDashboard.pendientePago', 'Pendiente de pago')}
+              </span>
+              <Button size="sm" loading={pagando === `pack:${packPendientePago.id}`} onClick={() => pagar('pack', { pack_id: packPendientePago.id })}>
+                💳 {t('patientDashboard.pagar', 'Pagar')} {eur(packPendientePago.precio_cents)}
+              </Button>
+            </div>
           )}
         </div>
 

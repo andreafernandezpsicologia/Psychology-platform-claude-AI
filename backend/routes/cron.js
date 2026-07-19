@@ -1,7 +1,12 @@
 const express = require('express');
 const supabase = require('../services/supabaseClient');
-const { sendSessionReminder } = require('../services/emailService');
+const { sendSessionReminder, sendCuotaReminder } = require('../services/emailService');
 const { aParedMadrid } = require('../services/fechaPared');
+const { crearCheckoutSession } = require('../services/stripeService');
+
+function frontendUrl() {
+  return process.env.FRONTEND_URL || 'https://app.studiorenacer.com';
+}
 
 const router = express.Router();
 
@@ -100,8 +105,74 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       }
     }
 
-    console.log(`[cron/recordatorios] ${enviados} enviados, ${errores} errores — ${new Date().toISOString()}`);
-    res.json({ ok: true, enviados, errores, ventana: { desde, hasta } });
+    // ── 2ª cuota de bonos fraccionados: recordatorio único cuando quedan ≤5 días
+    // para la fecha límite. Idempotente por el mismo patrón CAS de arriba
+    // (recordatorio_enviado false→true reclama el envío una sola vez).
+    const hoyStr = aParedMadrid(ahora).slice(0, 10);
+    const limiteStr = aParedMadrid(new Date(ahora.getTime() + 5 * 86400000)).slice(0, 10);
+
+    const { data: cuotas, error: cuotasErr } = await supabase
+      .from('cuotas_pack')
+      .select(`
+        id, importe_cents, fecha_limite, pack_id,
+        packs ( paciente_id, pacientes ( users ( email, nombre_completo, idioma_preferido ) ) )
+      `)
+      .eq('numero', 2)
+      .eq('estado_pago', 'no_pagado')
+      .eq('recordatorio_enviado', false)
+      .gte('fecha_limite', hoyStr)
+      .lte('fecha_limite', limiteStr);
+
+    let cuotasEnviadas = 0;
+    let cuotasErrores = 0;
+
+    if (cuotasErr) {
+      console.error('[cron/recordatorios] Error consultando cuotas:', cuotasErr.message);
+    } else {
+      for (const cuota of cuotas || []) {
+        const user = cuota.packs?.pacientes?.users;
+        if (!user?.email) continue;
+
+        const { data: claimed, error: claimErr } = await supabase
+          .from('cuotas_pack')
+          .update({ recordatorio_enviado: true })
+          .eq('id', cuota.id)
+          .eq('recordatorio_enviado', false)
+          .select('id');
+
+        if (claimErr) { console.error(`[cron/recordatorios] Error reclamando cuota ${cuota.id}:`, claimErr.message); cuotasErrores++; continue; }
+        if (!claimed || claimed.length === 0) continue;
+
+        try {
+          const base = frontendUrl();
+          const sesionStripe = await crearCheckoutSession({
+            importeCents: cuota.importe_cents,
+            concepto: 'Bono de sesiones — Studio Renacer — cuota 2/2',
+            metadata: { origen: 'terapia', tipo: 'cuota', cuota_id: cuota.id, pack_id: cuota.pack_id, paciente_id: cuota.packs?.paciente_id },
+            successUrl: `${base}/paciente?pago=ok`,
+            cancelUrl: `${base}/paciente?pago=cancelado`,
+            customerEmail: user.email,
+          });
+          await sendCuotaReminder(user.email, user.nombre_completo, {
+            importeCents: cuota.importe_cents,
+            fechaLimite: cuota.fecha_limite,
+            enlacePago: sesionStripe.url,
+          }, user.idioma_preferido);
+          cuotasEnviadas++;
+        } catch (emailErr) {
+          console.error(`[cron/recordatorios] Error recordatorio cuota a ${user.email}:`, emailErr.message);
+          cuotasErrores++;
+          try {
+            await supabase.from('cuotas_pack').update({ recordatorio_enviado: false }).eq('id', cuota.id);
+          } catch (revertErr) {
+            console.error(`[cron/recordatorios] No se pudo revertir el claim de cuota ${cuota.id}:`, revertErr.message);
+          }
+        }
+      }
+    }
+
+    console.log(`[cron/recordatorios] ${enviados} sesiones, ${cuotasEnviadas} cuotas, ${errores + cuotasErrores} errores — ${new Date().toISOString()}`);
+    res.json({ ok: true, enviados, errores, cuotasEnviadas, cuotasErrores, ventana: { desde, hasta } });
   } catch (err) {
     console.error('[cron/recordatorios] Error inesperado:', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });

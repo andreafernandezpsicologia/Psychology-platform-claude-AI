@@ -15,7 +15,8 @@ router.get('/me/perfil', verifyToken, async (req, res) => {
         id, email, nombre_completo, telefono,
         pacientes (
           id, estado, pago_online_habilitado,
-          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, contrato_estado, contrato_path_paciente, contrato_path_admin ),
+          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, num_cuotas, contrato_estado, contrato_path_paciente, contrato_path_admin,
+            cuotas_pack ( id, numero, importe_cents, fecha_limite, estado_pago ) ),
           sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada, pack_id, estado_pago, precio_cents )
         )
       `)
@@ -82,7 +83,8 @@ router.get('/:id', verifyToken, requireAdmin, async (req, res) => {
         id, email, nombre_completo, telefono, created_at,
         pacientes (
           id, estado, notas_admin, pago_online_habilitado,
-          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, fecha_pago, contrato_estado, contrato_path_paciente, contrato_path_admin ),
+          packs ( id, num_sesiones_total, num_sesiones_usadas, estado, estado_pago, precio_cents, fecha_pago, num_cuotas, contrato_estado, contrato_path_paciente, contrato_path_admin,
+            cuotas_pack ( id, numero, importe_cents, fecha_limite, estado_pago, fecha_pago ) ),
           sesiones ( id, fecha_hora, tipo, estado, duracion_minutos, enlace_videollamada, pack_id, estado_pago, precio_cents, fecha_pago )
         )
       `)

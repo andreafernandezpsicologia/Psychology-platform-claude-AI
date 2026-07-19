@@ -250,7 +250,7 @@ export default function PacienteDetalle() {
   // Generar un enlace de pago (Stripe Checkout) y copiarlo al portapapeles para
   // enviárselo al paciente. `ids` = { sesion_id } o { pack_id }.
   const copiarEnlacePago = async (tipo, ids) => {
-    const key = ids.sesion_id || ids.pack_id;
+    const key = ids.sesion_id || ids.cuota_id || ids.pack_id;
     setEnlacePagoId(key);
     try {
       const res = await api.post('/pagos/enlace', { tipo, ...ids });
@@ -521,6 +521,36 @@ export default function PacienteDetalle() {
                   </button>
                 )}
               </div>
+
+              {/* Fila cuotas: solo si el paciente eligió pago fraccionado (2 cuotas) */}
+              {pk.num_cuotas === 2 && (pk.cuotas_pack || []).length > 0 && (
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-medium" style={{ color: 'var(--text)' }}>
+                    {t('patientDetail.cuotas', 'Cuotas')}:
+                  </span>
+                  {[...pk.cuotas_pack].sort((a, b) => a.numero - b.numero).map((c) => (
+                    <span key={c.id} className="text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5"
+                      style={c.estado_pago === 'pagado'
+                        ? { ...pagoStyles.pagado, border: `1.5px solid ${pagoStyles.pagado.color}` }
+                        : { backgroundColor: 'var(--bg)', color: 'var(--text)', border: '1.5px solid var(--border)' }}>
+                      {c.numero}/2 · {eur(c.importe_cents)}
+                      {c.estado_pago === 'pagado'
+                        ? ' ✓'
+                        : c.fecha_limite ? ` · vence ${c.fecha_limite}` : ''}
+                      {c.estado_pago !== 'pagado' && info?.pago_online_habilitado && (
+                        <button
+                          disabled={enlacePagoId === c.id}
+                          onClick={() => copiarEnlacePago('cuota', { cuota_id: c.id })}
+                          className="hover:opacity-70"
+                          title={t('patientDetail.copiarEnlacePago', 'Copiar enlace de pago')}
+                        >
+                          🔗
+                        </button>
+                      )}
+                    </span>
+                  ))}
+                </div>
+              )}
 
               {/* Fila contrato */}
               <div className="flex items-center gap-2 flex-wrap">

@@ -47,10 +47,11 @@ export default function PacienteDashboard() {
     if (pago) window.history.replaceState({}, '', window.location.pathname);
   }, []);
 
-  // Iniciar el pago de una sesión suelta o un bono: pide el enlace de Checkout
-  // al backend y redirige a Stripe. `ids` = { sesion_id } o { pack_id }.
+  // Iniciar el pago de una sesión suelta, un bono (único o fraccionado) o una
+  // cuota: pide el enlace de Checkout al backend y redirige a Stripe.
+  // `ids` = { sesion_id } | { pack_id } | { pack_id, plan: 'fraccionado' } | { cuota_id }.
   const pagar = async (tipo, ids) => {
-    setPagando(`${tipo}:${ids.sesion_id || ids.pack_id}`);
+    setPagando(`${tipo}:${ids.sesion_id || ids.cuota_id || ids.pack_id}`);
     try {
       const res = await api.post('/pagos/checkout', { tipo, ...ids });
       window.location.href = res.data.url;
@@ -233,16 +234,40 @@ export default function PacienteDashboard() {
           ) : (
             <p className="text-sm" style={{ color: 'var(--text)' }}>{t('patientDashboard.noPack')}</p>
           )}
-          {pagoOnline && packPendientePago && (
-            <div className="mt-3 pt-3 flex items-center gap-2 flex-wrap" style={{ borderTop: packActivo ? '1px solid var(--border)' : 'none' }}>
-              <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
-                {t('patientDashboard.pendientePago', 'Pendiente de pago')}
-              </span>
-              <Button size="sm" loading={pagando === `pack:${packPendientePago.id}`} onClick={() => pagar('pack', { pack_id: packPendientePago.id })}>
-                💳 {t('patientDashboard.pagar', 'Pagar')} {eur(packPendientePago.precio_cents)}
-              </Button>
-            </div>
-          )}
+          {pagoOnline && packPendientePago && packPendientePago.estado_pago === 'no_pagado' && (() => {
+            const mitad = Math.round(packPendientePago.precio_cents / 2);
+            const resto = packPendientePago.precio_cents - mitad;
+            return (
+              <div className="mt-3 pt-3" style={{ borderTop: packActivo ? '1px solid var(--border)' : 'none' }}>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F6E3DD', color: '#A33B2D' }}>
+                  {t('patientDashboard.pendientePago', 'Pendiente de pago')}
+                </span>
+                <div className="flex items-center gap-2 flex-wrap mt-2">
+                  <Button size="sm" loading={pagando === `pack:${packPendientePago.id}`} onClick={() => pagar('pack', { pack_id: packPendientePago.id })}>
+                    💳 {t('patientDashboard.pagoUnico', 'Pago único')} {eur(packPendientePago.precio_cents)}
+                  </Button>
+                  <Button size="sm" variant="ghost" loading={pagando === `pack:${packPendientePago.id}`} onClick={() => pagar('pack', { pack_id: packPendientePago.id, plan: 'fraccionado' })}>
+                    {t('patientDashboard.enDosPagos', 'En 2 pagos')}: {eur(mitad)} + {eur(resto)}
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
+          {pagoOnline && packPendientePago && packPendientePago.estado_pago === 'pago_parcial' && (() => {
+            const cuota2 = (packPendientePago.cuotas_pack || []).find((c) => c.numero === 2 && c.estado_pago !== 'pagado');
+            if (!cuota2) return null;
+            const fechaLimite = format(new Date(`${cuota2.fecha_limite}T00:00:00`), "d 'de' MMMM", { locale });
+            return (
+              <div className="mt-3 pt-3 flex items-center gap-2 flex-wrap" style={{ borderTop: packActivo ? '1px solid var(--border)' : 'none' }}>
+                <span className="text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: '#F8EFD2', color: '#B07A2B' }}>
+                  {t('patientDashboard.segundaCuotaPendiente', '2ª cuota pendiente — vence el')} {fechaLimite}
+                </span>
+                <Button size="sm" loading={pagando === `cuota:${cuota2.id}`} onClick={() => pagar('cuota', { cuota_id: cuota2.id })}>
+                  💳 {t('patientDashboard.pagar', 'Pagar')} {eur(cuota2.importe_cents)}
+                </Button>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── Contrato de servicios ──

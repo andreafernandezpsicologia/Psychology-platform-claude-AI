@@ -118,6 +118,14 @@ const T = {
       big: (n) => (n === 1 ? 'Solo te queda 1 sesión disponible.' : `Solo te quedan ${n} sesiones disponibles.`),
       note: 'Si quieres continuar con tu proceso, habla con Andrea para renovar tu pack.',
     },
+    cuotaReminder: {
+      subject: (fecha) => `Recordatorio: 2ª cuota de tu bono antes del ${fecha}`,
+      greeting: (n) => `Hola, ${n}`,
+      line: (fecha) => `Te recordamos que la 2ª cuota de tu bono vence el <strong>${fecha}</strong>.`,
+      big: (importe) => `Importe pendiente: ${importe}`,
+      cta: 'Pagar ahora',
+      note: 'Si ya la has pagado, puedes ignorar este email.',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Restablecer contraseña',
       greeting: (n) => `Hola, ${n}`,
@@ -191,6 +199,14 @@ const T = {
       big: (n) => (n === 1 ? 'You only have 1 session left.' : `You only have ${n} sessions left.`),
       note: 'If you’d like to continue your process, talk to Andrea to renew your pack.',
     },
+    cuotaReminder: {
+      subject: (fecha) => `Reminder: 2nd instalment of your pack due ${fecha}`,
+      greeting: (n) => `Hi ${n}`,
+      line: (fecha) => `Just a reminder that the 2nd instalment of your pack is due on <strong>${fecha}</strong>.`,
+      big: (importe) => `Amount due: ${importe}`,
+      cta: 'Pay now',
+      note: 'If you’ve already paid, you can ignore this email.',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Reset your password',
       greeting: (n) => `Hi ${n}`,
@@ -263,6 +279,14 @@ const T = {
       line: 'Vi gør dig opmærksom på, at din nuværende pakke næsten er brugt op:',
       big: (n) => (n === 1 ? 'Du har kun 1 session tilbage.' : `Du har kun ${n} sessioner tilbage.`),
       note: 'Vil du fortsætte dit forløb, så tal med Andrea om at forny din pakke.',
+    },
+    cuotaReminder: {
+      subject: (fecha) => `Påmindelse: 2. rate af din pakke forfalder ${fecha}`,
+      greeting: (n) => `Hej ${n}`,
+      line: (fecha) => `Vi minder dig om, at 2. rate af din pakke forfalder den <strong>${fecha}</strong>.`,
+      big: (importe) => `Udestående beløb: ${importe}`,
+      cta: 'Betal nu',
+      note: 'Hvis du allerede har betalt, kan du ignorere denne e-mail.',
     },
     passwordReset: {
       subject: 'Studio Renacer — Nulstil din adgangskode',
@@ -501,11 +525,34 @@ const sendPackLowAlert = async (email, nombre, sesionesRestantes, lang) => {
   });
 };
 
+// Recordatorio de la 2ª cuota de un bono fraccionado, con enlace de pago ya
+// generado (Stripe Checkout) por quien llama (el cron), no aquí.
+const sendCuotaReminder = async (email, nombre, { importeCents, fechaLimite, enlacePago }, lang) => {
+  const t = T[lng(lang)].cuotaReminder;
+  const fecha = new Date(`${fechaLimite}T00:00:00`).toLocaleDateString(LOCALE[lng(lang)], { day: 'numeric', month: 'long', year: 'numeric' });
+  const importe = (importeCents / 100).toLocaleString(LOCALE[lng(lang)], { style: 'currency', currency: 'EUR' });
+  await enviarEmail({
+    to: email,
+    subject: t.subject(fecha),
+    body: `
+        <h2>${t.greeting(nombre)}</h2>
+        <p>${t.line(fecha)}</p>
+        <p style="font-size: 1.2rem; font-weight: bold; color: #1a2d4a;">${t.big(importe)}</p>
+        <a href="${enlacePago}"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          ${t.cta}
+        </a>
+        <p>${t.note}</p>`,
+  });
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendSessionReminder,
   sendPasswordResetEmail,
   sendPackLowAlert,
+  sendCuotaReminder,
   sendSessionConfirmation,
   sendSessionRescheduled,
   sendSessionRequestAck,

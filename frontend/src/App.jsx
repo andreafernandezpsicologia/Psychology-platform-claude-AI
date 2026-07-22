@@ -11,6 +11,7 @@ import PacienteDetalle from './pages/admin/Paciente';
 import Calendario from './pages/admin/Calendario';
 import Seguridad from './pages/admin/Seguridad';
 import PacienteDashboard from './pages/paciente/Dashboard';
+import CuestionarioFinal from './pages/CuestionarioFinal';
 
 export default function App() {
   return (
@@ -21,6 +22,8 @@ export default function App() {
           <Route path="/activate" element={<Activate />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          {/* Cuestionario de cierre: público con token, fuera de auth y ConsentGate */}
+          <Route path="/cuestionario/:token" element={<CuestionarioFinal />} />
 
           <Route path="/admin" element={
             <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>

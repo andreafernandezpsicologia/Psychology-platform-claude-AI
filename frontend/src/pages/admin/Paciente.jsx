@@ -94,6 +94,8 @@ export default function PacienteDetalle() {
   const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
   const [enviandoContrato, setEnviandoContrato] = useState(null); // packId en curso
   const [feedbackSerie, setFeedbackSerie] = useState(null);
+  const [cierres, setCierres] = useState(null); // cuestionarios de fin de terapia
+  const [enviandoCierre, setEnviandoCierre] = useState(false);
 
   const cargar = () => {
     setLoading(true);
@@ -102,9 +104,22 @@ export default function PacienteDetalle() {
       .catch(() => toast.error('Error al cargar el paciente'))
       .finally(() => setLoading(false));
   };
+  const cargarCierres = () => api.get(`/feedback/final/paciente/${id}`).then((res) => setCierres(res.data)).catch(() => setCierres([]));
   useEffect(() => { cargar(); }, [id]);
   useEffect(() => { estadoGoogle().then((g) => setGoogleOk(g.conectado)); }, []);
   useEffect(() => { api.get(`/feedback/paciente/${id}`).then((res) => setFeedbackSerie(res.data)).catch(() => setFeedbackSerie([])); }, [id]);
+  useEffect(() => { cargarCierres(); }, [id]);
+
+  const enviarCierre = async () => {
+    const pacienteId = paciente?.pacientes?.id;
+    setEnviandoCierre(true);
+    try {
+      await api.post(`/feedback/final/enviar/${pacienteId}`);
+      toast.success(t('patientDetail.cierreEnviado', 'Cuestionario de cierre enviado'));
+      cargarCierres();
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setEnviandoCierre(false); }
+  };
 
   // ── Sesiones ──────────────────────────────────────────────────────────────
   const crearSesion = async (e) => {
@@ -802,6 +817,45 @@ export default function PacienteDetalle() {
           <GraficaFeedback serie={feedbackSerie} />
         </div>
       )}
+
+      {/* ── Cierre de terapia ── */}
+      <div className="bg-white rounded-xl p-5 mt-4" style={{ border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-1">
+          <h3 className="font-semibold text-sm" style={{ color: 'var(--brand)' }}>
+            {t('patientDetail.cierreTitulo', 'Cierre de terapia')}
+          </h3>
+          <Button variant="ghost" size="sm" loading={enviandoCierre} onClick={enviarCierre}>
+            ✉ {t('patientDetail.enviarCierre', 'Enviar cuestionario de cierre')}
+          </Button>
+        </div>
+        <p className="text-xs mb-3" style={{ color: 'var(--muted)' }}>
+          {t('patientDetail.cierreHint', 'Al cerrar el proceso, envíale por email el cuestionario. Su respuesta te llegará aquí, con su nombre.')}
+        </p>
+
+        {cierres && cierres.length > 0 && cierres.map((c) => (
+          <div key={c.id} className="py-3" style={{ borderTop: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>
+                {t('patientDetail.cierreEnviadoEl', 'Enviado')}: {format(new Date(c.enviado_en), 'd MMM yyyy', { locale })}
+              </span>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                style={c.respondido_en
+                  ? { backgroundColor: '#E9F0E1', color: '#3B6D2A' }
+                  : { backgroundColor: '#F8EFD2', color: '#B07A2B' }}>
+                {c.respondido_en ? t('patientDetail.cierreRespondido', 'Respondido') : t('patientDetail.cierrePendiente', 'Pendiente')}
+              </span>
+            </div>
+            {c.respondido_en && (
+              <div className="text-sm mt-2 space-y-1.5" style={{ color: 'var(--text)' }}>
+                <p><strong>{t('patientDetail.cierreSatisfaccion', 'Satisfacción')}:</strong> {c.satisfaccion}/10 · <strong>{t('patientDetail.cierreRecomendaria', 'Recomendaría')}:</strong> {c.recomendaria}/10</p>
+                {c.que_ayudo && <p><strong>Lo que más le ayudó:</strong> {c.que_ayudo}</p>}
+                {c.que_mejorar && <p><strong>Qué mejoraría:</strong> {c.que_mejorar}</p>}
+                {c.como_te_vas && <p><strong>Cómo se va:</strong> {c.como_te_vas}</p>}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </Layout>
   );
 }

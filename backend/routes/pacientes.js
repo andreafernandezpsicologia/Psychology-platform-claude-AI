@@ -144,7 +144,7 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
     .single();
   if (pError) return { status: 404, error: 'Paciente no encontrado' };
 
-  const [{ data: sesiones }, { data: packs }, { data: documentos }, { data: aceptaciones }, { data: feedback }] = await Promise.all([
+  const [{ data: sesiones }, { data: packs }, { data: documentos }, { data: aceptaciones }, { data: feedback }, { data: feedbackFinal }] = await Promise.all([
     supabase.from('sesiones')
       .select('id, fecha_hora, tipo, estado, duracion_minutos, estado_pago, precio_cents, fecha_pago, created_at')
       .eq('paciente_id', paciente.id)
@@ -163,6 +163,10 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
       .select('id, sesion_id, tipo, respuestas, creado_en')
       .eq('paciente_id', paciente.id)
       .order('creado_en', { ascending: true }),
+    supabase.from('feedback_final')
+      .select('enviado_en, respondido_en, satisfaccion, recomendaria, que_ayudo, que_mejorar, como_te_vas')
+      .eq('paciente_id', paciente.id)
+      .order('enviado_en', { ascending: true }),
   ]);
 
   // Preferir el snapshot tomado al aceptar (RGPD Art. 7); las aceptaciones
@@ -188,6 +192,7 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
     documentos: documentos || [],
     consentimientos,
     feedback_sesiones: feedback || [],
+    feedback_final: feedbackFinal || [],
   };
   return { datos };
 }

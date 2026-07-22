@@ -127,6 +127,13 @@ const T = {
       cta: 'Pagar ahora',
       note: 'Si ya la has pagado, puedes ignorar este email.',
     },
+    finalFeedback: {
+      subject: 'Un último paso: cuéntanos cómo ha sido tu proceso',
+      greeting: (n) => `Hola, ${n}`,
+      line: 'Has cerrado tu proceso de terapia. Me ayudaría mucho conocer tu experiencia para seguir mejorando. Son unas pocas preguntas y te llevará un par de minutos.',
+      cta: 'Responder el cuestionario',
+      note: 'Es totalmente voluntario. Tu respuesta la leo solo yo. — Andrea',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Restablecer contraseña',
       greeting: (n) => `Hola, ${n}`,
@@ -209,6 +216,13 @@ const T = {
       cta: 'Pay now',
       note: 'If you’ve already paid, you can ignore this email.',
     },
+    finalFeedback: {
+      subject: 'One last step: tell us how your process went',
+      greeting: (n) => `Hi ${n}`,
+      line: 'You have finished your therapy process. It would really help me to hear about your experience so I can keep improving. It’s just a few questions and takes a couple of minutes.',
+      cta: 'Answer the questionnaire',
+      note: 'It’s completely voluntary. Only I read your answer. — Andrea',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Reset your password',
       greeting: (n) => `Hi ${n}`,
@@ -290,6 +304,13 @@ const T = {
       big: (importe) => `Udestående beløb: ${importe}`,
       cta: 'Betal nu',
       note: 'Hvis du allerede har betalt, kan du ignorere denne e-mail.',
+    },
+    finalFeedback: {
+      subject: 'Et sidste skridt: fortæl os, hvordan dit forløb gik',
+      greeting: (n) => `Hej ${n}`,
+      line: 'Du har afsluttet dit terapiforløb. Det ville hjælpe mig meget at høre om din oplevelse, så jeg kan blive ved med at forbedre mig. Det er blot få spørgsmål og tager et par minutter.',
+      cta: 'Besvar spørgeskemaet',
+      note: 'Det er helt frivilligt. Kun jeg læser dit svar. — Andrea',
     },
     passwordReset: {
       subject: 'Studio Renacer — Nulstil din adgangskode',
@@ -568,12 +589,32 @@ const sendCuotaReminder = async (email, nombre, { importeCents, fechaLimite, enl
   });
 };
 
+// Cuestionario de fin de terapia. `enlace` = URL pública tokenizada
+// (/cuestionario/:token), generada por quien llama.
+const sendFinalFeedbackEmail = async (email, nombre, enlace, lang) => {
+  const t = T[lng(lang)].finalFeedback;
+  await enviarEmail({
+    to: email,
+    subject: t.subject,
+    body: `
+        <h2>${t.greeting(nombre)}</h2>
+        <p>${t.line}</p>
+        <a href="${enlace}"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          ${t.cta}
+        </a>
+        <p style="color:#888;font-size:0.9rem;">${t.note}</p>`,
+  });
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendSessionReminder,
   sendPasswordResetEmail,
   sendPackLowAlert,
   sendCuotaReminder,
+  sendFinalFeedbackEmail,
   sendSessionConfirmation,
   sendSessionRescheduled,
   sendSessionRequestAck,

@@ -1,11 +1,17 @@
+const crypto = require('node:crypto');
 const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 const { aParedMadrid } = require('../services/fechaPared');
 const { validarRespuestas } = require('../config/feedbackPreguntas');
+const { sendFinalFeedbackEmail } = require('../services/emailService');
 
 const router = express.Router();
+
+function frontendUrl() {
+  return process.env.FRONTEND_URL || 'https://app.studiorenacer.com';
+}
 
 // Ventana de "reciente" para ofrecer feedback: una sesión completada sigue
 // pidiendo SRS hasta 7 días después; una próxima sesión pide ORS desde ya.
@@ -108,6 +114,110 @@ router.get('/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) 
     if (error) return res.status(400).json({ error: error.message });
 
     audit(req, 'view_feedback', 'feedback', req.params.pacienteId);
+    res.json(data);
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ═══ Cuestionario de fin de terapia ═════════════════════════════════════════
+
+// ── Admin: enviar el cuestionario de cierre a un paciente ───────────────────
+router.post('/final/enviar/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data: paciente, error: pErr } = await supabase
+      .from('pacientes')
+      .select('id, users ( email, nombre_completo, idioma_preferido )')
+      .eq('id', req.params.pacienteId).single();
+    if (pErr || !paciente) return res.status(404).json({ error: 'Paciente no encontrado' });
+    const user = paciente.users;
+    if (!user?.email) return res.status(400).json({ error: 'El paciente no tiene email' });
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const { data, error } = await supabase.from('feedback_final')
+      .insert({ paciente_id: paciente.id, token })
+      .select('id, enviado_en').single();
+    if (error) return res.status(400).json({ error: error.message });
+
+    const enlace = `${frontendUrl()}/cuestionario/${token}`;
+    try {
+      await sendFinalFeedbackEmail(user.email, user.nombre_completo, enlace, user.idioma_preferido);
+    } catch (mailErr) {
+      console.error('[feedback final] email:', mailErr.message);
+      return res.status(502).json({ error: 'No se pudo enviar el email' });
+    }
+
+    audit(req, 'send_final_feedback', 'feedback', paciente.id);
+    res.status(201).json({ ok: true, enviado_en: data.enviado_en });
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Público (token): estado del cuestionario, para pintar el formulario ─────
+router.get('/final/:token', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('feedback_final')
+      .select('respondido_en, pacientes ( users ( nombre_completo ) )')
+      .eq('token', req.params.token).single();
+    // 404 genérico: no revelar si el token existe o no cuando falta/está mal.
+    if (error || !data) return res.status(404).json({ error: 'Cuestionario no encontrado' });
+    res.json({
+      respondido: !!data.respondido_en,
+      nombre: data.pacientes?.users?.nombre_completo?.split(' ')[0] || null,
+    });
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Público (token): enviar las respuestas (una sola vez) ───────────────────
+router.post('/final/:token', async (req, res) => {
+  const { satisfaccion, recomendaria, que_ayudo, que_mejorar, como_te_vas } = req.body;
+  const escala = (v) => (v === undefined || v === null ? null : (Number.isInteger(v) && v >= 0 && v <= 10 ? v : NaN));
+  const s = escala(satisfaccion);
+  const r = escala(recomendaria);
+  if (Number.isNaN(s) || Number.isNaN(r)) return res.status(400).json({ error: 'valores de escala inválidos' });
+
+  try {
+    const { data: fila, error: fErr } = await supabase
+      .from('feedback_final').select('id, respondido_en').eq('token', req.params.token).single();
+    if (fErr || !fila) return res.status(404).json({ error: 'Cuestionario no encontrado' });
+    if (fila.respondido_en) return res.status(409).json({ error: 'Este cuestionario ya fue respondido' });
+
+    // Guardado idempotente: solo la actualización que pasa respondido_en de NULL
+    // a ahora tiene efecto (evita doble envío por doble clic).
+    const { data, error } = await supabase.from('feedback_final')
+      .update({
+        satisfaccion: s, recomendaria: r,
+        que_ayudo: (que_ayudo || '').slice(0, 4000) || null,
+        que_mejorar: (que_mejorar || '').slice(0, 4000) || null,
+        como_te_vas: (como_te_vas || '').slice(0, 4000) || null,
+        respondido_en: new Date().toISOString(),
+      })
+      .eq('token', req.params.token)
+      .is('respondido_en', null)
+      .select('id');
+    if (error) return res.status(400).json({ error: error.message });
+    if (!data || data.length === 0) return res.status(409).json({ error: 'Este cuestionario ya fue respondido' });
+
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Admin: cuestionarios de cierre de un paciente (enviados y respondidos) ──
+router.get('/final/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('feedback_final')
+      .select('id, enviado_en, respondido_en, satisfaccion, recomendaria, que_ayudo, que_mejorar, como_te_vas')
+      .eq('paciente_id', req.params.pacienteId)
+      .order('enviado_en', { ascending: false });
+    if (error) return res.status(400).json({ error: error.message });
+    audit(req, 'view_final_feedback', 'feedback', req.params.pacienteId);
     res.json(data);
   } catch (err) {
     console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });

@@ -9,6 +9,7 @@ import Button from '../../components/common/Button';
 import Badge from '../../components/common/Badge';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import { SkeletonCard } from '../../components/common/Skeleton';
+import GraficaFeedback from '../../components/GraficaFeedback';
 import api from '../../utils/api';
 import { estadoGoogle } from '../../utils/googleMeet';
 import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
@@ -92,6 +93,7 @@ export default function PacienteDetalle() {
   const [uploadingContrato, setUploadingContrato] = useState(null); // packId en curso
   const [contratoPackRef, setContratoPackRef] = useState(null); // packId para el file input admin
   const [enviandoContrato, setEnviandoContrato] = useState(null); // packId en curso
+  const [feedbackSerie, setFeedbackSerie] = useState(null);
 
   const cargar = () => {
     setLoading(true);
@@ -102,6 +104,7 @@ export default function PacienteDetalle() {
   };
   useEffect(() => { cargar(); }, [id]);
   useEffect(() => { estadoGoogle().then((g) => setGoogleOk(g.conectado)); }, []);
+  useEffect(() => { api.get(`/feedback/paciente/${id}`).then((res) => setFeedbackSerie(res.data)).catch(() => setFeedbackSerie([])); }, [id]);
 
   // ── Sesiones ──────────────────────────────────────────────────────────────
   const crearSesion = async (e) => {
@@ -789,6 +792,16 @@ export default function PacienteDetalle() {
           );
         })}
       </div>
+
+      {/* ── Evolución del feedback (ORS/SRS) ── */}
+      {feedbackSerie && feedbackSerie.length > 0 && (
+        <div className="bg-white rounded-xl p-5 mt-4" style={{ border: '1px solid var(--border)' }}>
+          <h3 className="font-semibold text-sm mb-4" style={{ color: 'var(--brand)' }}>
+            {t('patientDetail.feedbackTitulo', 'Evolución del feedback')}
+          </h3>
+          <GraficaFeedback serie={feedbackSerie} />
+        </div>
+      )}
     </Layout>
   );
 }

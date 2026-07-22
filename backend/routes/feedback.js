@@ -3,6 +3,7 @@ const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 const { aParedMadrid } = require('../services/fechaPared');
+const { validarRespuestas } = require('../config/feedbackPreguntas');
 
 const router = express.Router();
 
@@ -62,12 +63,11 @@ router.get('/pendiente', verifyToken, async (req, res) => {
 // ── Paciente: enviar su feedback (ORS o SRS) de una sesión propia ───────────
 router.post('/', verifyToken, async (req, res) => {
   if (req.user.role !== 'paciente') return res.status(403).json({ error: 'Solo para pacientes' });
-  const { sesion_id, tipo, valores } = req.body;
+  const { sesion_id, tipo, respuestas } = req.body;
 
   if (!['ors', 'srs'].includes(tipo)) return res.status(400).json({ error: 'tipo inválido' });
-  if (!Array.isArray(valores) || valores.length !== 4 || valores.some((v) => typeof v !== 'number' || v < 0 || v > 10)) {
-    return res.status(400).json({ error: 'valores debe ser un array de 4 números entre 0 y 10' });
-  }
+  const val = validarRespuestas(tipo, respuestas);
+  if (!val.ok) return res.status(400).json({ error: val.error });
 
   try {
     const pacienteId = await pacienteIdDe(req.user.id);
@@ -78,15 +78,11 @@ router.post('/', verifyToken, async (req, res) => {
     if (sErr || !sesion) return res.status(404).json({ error: 'Sesión no encontrada' });
     if (sesion.paciente_id !== pacienteId) return res.status(403).json({ error: 'No autorizado' });
 
-    const redondeados = valores.map((v) => Math.round(v * 10) / 10);
-    const total = Math.round(redondeados.reduce((a, b) => a + b, 0) * 10) / 10;
-
     const { data, error } = await supabase.from('feedback_sesiones').insert({
       paciente_id: pacienteId,
       sesion_id,
       tipo,
-      p1: redondeados[0], p2: redondeados[1], p3: redondeados[2], p4: redondeados[3],
-      total,
+      respuestas: val.limpio,
     }).select().single();
 
     if (error) {
@@ -106,7 +102,7 @@ router.get('/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) 
   try {
     const { data, error } = await supabase
       .from('feedback_sesiones')
-      .select('id, tipo, p1, p2, p3, p4, total, creado_en, sesiones ( fecha_hora )')
+      .select('id, tipo, respuestas, creado_en, sesiones ( fecha_hora )')
       .eq('paciente_id', req.params.pacienteId)
       .order('creado_en', { ascending: true });
     if (error) return res.status(400).json({ error: error.message });

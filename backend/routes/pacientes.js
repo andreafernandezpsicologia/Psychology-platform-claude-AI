@@ -160,7 +160,7 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
       .eq('paciente_id', paciente.id)
       .order('fecha_aceptacion', { ascending: false }),
     supabase.from('feedback_sesiones')
-      .select('id, sesion_id, tipo, p1, p2, p3, p4, total, creado_en')
+      .select('id, sesion_id, tipo, respuestas, creado_en')
       .eq('paciente_id', paciente.id)
       .order('creado_en', { ascending: true }),
   ]);

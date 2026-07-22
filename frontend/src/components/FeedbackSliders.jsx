@@ -3,45 +3,29 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import Button from './common/Button';
 import api from '../utils/api';
+import { preguntasDe, tituloDe, labelDe, opcionesDe } from '../config/feedbackPreguntas';
 
 // Escalas ORS ("¿cómo estás esta semana?", antes de sesión) y SRS ("¿cómo ha
-// ido la sesión?", al terminar). 4 deslizadores 0-10 cada una, digitalizando
-// lo que Andrea ya pregunta de palabra. Siempre saltable con "Ahora no".
-const ETIQUETAS = {
-  ors: [
-    'feedback.ors.p1', 'feedback.ors.p2', 'feedback.ors.p3', 'feedback.ors.p4',
-  ],
-  srs: [
-    'feedback.srs.p1', 'feedback.srs.p2', 'feedback.srs.p3', 'feedback.srs.p4',
-  ],
-};
-
-const FALLBACK = {
-  ors: [
-    'Cómo me siento a nivel personal',
-    'Cómo van mis relaciones cercanas (familia, pareja)',
-    'Cómo van mis relaciones sociales (amigos, trabajo)',
-    'En general, cómo estoy esta semana',
-  ],
-  srs: [
-    'Me sentí escuchada/o y entendida/o',
-    'Trabajamos en lo que a mí me importa',
-    'El enfoque de hoy me ha encajado',
-    'En general, cómo ha ido la sesión',
-  ],
-};
-
+// ido la sesión?", al terminar). Preguntas y escalas definidas en el catálogo
+// (config/feedbackPreguntas.js). Cada pregunta es un deslizador 0-10 o una
+// escala de frecuencia con opciones. Siempre saltable con "Ahora no".
 export default function FeedbackSliders({ tipo, sesionId, onDone }) {
-  const { t } = useTranslation();
-  const [valores, setValores] = useState([5, 5, 5, 5]);
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language;
+  const preguntas = preguntasDe(tipo);
+
+  // Valor inicial: mitad para deslizadores (5), primera opción para frecuencia (0).
+  const [respuestas, setRespuestas] = useState(() =>
+    Object.fromEntries(preguntas.map((p) => [p.id, p.tipo === 'escala' ? 5 : 0]))
+  );
   const [enviando, setEnviando] = useState(false);
 
-  const cambiar = (i, v) => setValores((prev) => prev.map((x, idx) => (idx === i ? Number(v) : x)));
+  const set = (id, v) => setRespuestas((prev) => ({ ...prev, [id]: Number(v) }));
 
   const enviar = async () => {
     setEnviando(true);
     try {
-      await api.post('/feedback', { sesion_id: sesionId, tipo, valores });
+      await api.post('/feedback', { sesion_id: sesionId, tipo, respuestas });
       toast.success(t('feedback.gracias', '¡Gracias por tu feedback!'));
       onDone?.();
     } catch (err) {
@@ -51,31 +35,46 @@ export default function FeedbackSliders({ tipo, sesionId, onDone }) {
     }
   };
 
-  const titulo = tipo === 'ors'
-    ? t('feedback.tituloOrs', '¿Cómo estás esta semana?')
-    : t('feedback.tituloSrs', '¿Cómo ha ido la sesión?');
-
   return (
     <div>
-      <p className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>{titulo}</p>
+      <p className="text-sm font-semibold mb-1" style={{ color: 'var(--brand)' }}>{tituloDe(tipo, lang)}</p>
       <p className="text-xs mb-4" style={{ color: 'var(--muted)' }}>
-        {t('feedback.subtitulo', '4 preguntas rápidas · 30 segundos · puedes dejarlo para luego')}
+        {t('feedback.subtitulo', 'Unas preguntas rápidas · 30 segundos · puedes dejarlo para luego')}
       </p>
 
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="mb-4">
-          <div className="flex items-center justify-between mb-1">
-            <label className="text-xs" style={{ color: 'var(--text)' }}>
-              {t(ETIQUETAS[tipo][i], FALLBACK[tipo][i])}
-            </label>
-            <span className="text-xs font-semibold" style={{ color: 'var(--brand)' }}>{valores[i]}</span>
-          </div>
-          <input
-            type="range" min="0" max="10" step="1"
-            value={valores[i]}
-            onChange={(e) => cambiar(i, e.target.value)}
-            className="w-full accent-[var(--brand)]"
-          />
+      {preguntas.map((p) => (
+        <div key={p.id} className="mb-4">
+          <label className="text-xs block mb-1.5" style={{ color: 'var(--text)' }}>
+            {labelDe(p, lang)}
+          </label>
+
+          {p.tipo === 'escala' ? (
+            <div className="flex items-center gap-3">
+              <input
+                type="range" min="0" max="10" step="1"
+                value={respuestas[p.id]}
+                onChange={(e) => set(p.id, e.target.value)}
+                className="w-full accent-[var(--brand)]"
+              />
+              <span className="text-xs font-semibold w-5 text-right" style={{ color: 'var(--brand)' }}>{respuestas[p.id]}</span>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-1.5">
+              {opcionesDe(p, lang).map((op, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => set(p.id, idx)}
+                  className="text-xs font-medium px-2.5 py-1.5 rounded-lg transition"
+                  style={respuestas[p.id] === idx
+                    ? { backgroundColor: 'var(--brand)', color: 'white' }
+                    : { backgroundColor: 'var(--bg)', color: 'var(--text)', border: '1px solid var(--border)' }}
+                >
+                  {op}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       ))}
 

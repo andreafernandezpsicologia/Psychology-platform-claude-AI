@@ -462,6 +462,13 @@
       border-radius: var(--radius);
       background: var(--c-bg);
       border: 1px solid var(--c-line);
+      display: flex; flex-direction: column;
+      transition: all var(--transition);
+    }
+    .service-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      border-color: rgba(227, 165, 42, 0.45);
     }
     .service-tag {
       display: inline-block;
@@ -472,6 +479,15 @@
       margin-bottom: 1rem; letter-spacing: 0.1em; text-transform: uppercase;
     }
     .service-card h3 { margin-bottom: 0.65rem; }
+    .service-cta {
+      margin-top: auto; padding-top: 1.5rem;
+      display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem;
+    }
+    .service-note {
+      font-family: var(--font-sans); font-size: 0.82rem; font-weight: 600;
+      color: var(--c-ocre); letter-spacing: 0.02em;
+    }
+    .service-cta .btn { padding: 11px 20px; font-size: 0.9rem; }
 
     /* ---------- Testimonials ---------- */
     .testimonials-grid {
@@ -900,6 +916,13 @@
               Consulta psicológica online, 1:1, centrada en tu ansiedad y tu momento vital,
               en un entorno privado, cómodo y seguro.
             </p>
+            <div class="service-cta">
+              <span class="service-note" data-i18n="serv.1.note">Primera sesión gratuita y sin compromiso</span>
+              <a id="serv-wa-cta" href="https://wa.me/34668541597" target="_blank" rel="noopener" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.64.07-.3-.15-1.26-.46-2.4-1.47-.88-.79-1.48-1.76-1.65-2.06-.17-.3-.02-.46.13-.6.13-.14.3-.35.44-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.8.37-.27.3-1.04 1.02-1.04 2.5 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.2 5.08 4.49.71.3 1.26.49 1.7.63.71.22 1.36.19 1.87.12.57-.09 1.76-.72 2.01-1.42.25-.7.25-1.29.17-1.42-.07-.12-.27-.2-.57-.35M12.05 21.79h-.01a9.86 9.86 0 0 1-5.03-1.38l-.36-.21-3.74.98 1-3.65-.24-.37a9.82 9.82 0 0 1-1.51-5.25c0-5.44 4.43-9.87 9.89-9.87 2.64 0 5.12 1.03 6.98 2.9a9.8 9.8 0 0 1 2.89 6.98c0 5.45-4.43 9.87-9.87 9.87m8.4-18.27A11.8 11.8 0 0 0 12.04 0C5.5 0 .16 5.33.16 11.9c0 2.1.55 4.14 1.59 5.94L.06 24l6.3-1.65a11.9 11.9 0 0 0 5.68 1.45h.01c6.55 0 11.89-5.33 11.89-11.9 0-3.18-1.24-6.16-3.49-8.41"/></svg>
+                <span data-i18n="serv.1.cta">Escríbeme por WhatsApp</span>
+              </a>
+            </div>
           </div>
           <div class="service-card reveal">
             <span class="service-tag" data-i18n="serv.2.tag">Formación</span>
@@ -908,6 +931,13 @@
               Talleres y programas sobre ansiedad, estrés laboral y herramientas para sostener
               tu bienestar en el día a día.
             </p>
+            <div class="service-cta">
+              <span class="service-note" data-i18n="serv.2.note">Programa de autotrabajo guiado</span>
+              <a href="/renacer-en-casa" class="btn btn-ghost">
+                <span data-i18n="serv.2.cta">Descubrir Renacer en casa</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -1126,8 +1156,12 @@
         'serv.p': 'Sin sobreprometer: dos formas de acompañarte.',
         'serv.1.tag': 'Online', 'serv.1.t': 'Sesiones individuales',
         'serv.1.p': 'Consulta psicológica online, 1:1, centrada en tu ansiedad y tu momento vital, en un entorno privado, cómodo y seguro.',
+        'serv.1.note': 'Primera sesión gratuita y sin compromiso',
+        'serv.1.cta': 'Escríbeme por WhatsApp',
         'serv.2.tag': 'Formación', 'serv.2.t': 'Formación online',
         'serv.2.p': 'Talleres y programas sobre ansiedad, estrés laboral y herramientas para sostener tu bienestar en el día a día.',
+        'serv.2.note': 'Programa de autotrabajo guiado',
+        'serv.2.cta': 'Descubrir Renacer en casa',
         'testi.eyebrow': 'Opiniones', 'testi.title': 'Lo que cuentan quienes ya dieron el paso.',
         'testi.p': 'Experiencias reales, compartidas con su permiso y con la identidad protegida.',
         'testi.tag.terapia': 'Proceso de terapia', 'testi.tag.formacion': 'Sobre la guía',
@@ -1184,8 +1218,12 @@
         'serv.p': 'Without over-promising: two ways to support you.',
         'serv.1.tag': 'Online', 'serv.1.t': 'Individual sessions',
         'serv.1.p': 'Online psychological support, 1:1, focused on your anxiety and your moment in life, in a private, comfortable, and safe environment.',
+        'serv.1.note': 'Free, no-obligation first session',
+        'serv.1.cta': 'Message me on WhatsApp',
         'serv.2.tag': 'Training', 'serv.2.t': 'Online training',
         'serv.2.p': 'Workshops and programmes on anxiety, work stress and tools to sustain your well-being day to day.',
+        'serv.2.note': 'Guided self-work programme',
+        'serv.2.cta': 'Discover Renacer en casa',
         'testi.eyebrow': 'Testimonials', 'testi.title': 'What those who took the step say.',
         'testi.p': 'Real experiences, shared with permission and with protected identity.',
         'testi.tag.terapia': 'Therapy process', 'testi.tag.formacion': 'About the guide',
@@ -1242,8 +1280,12 @@
         'serv.p': 'Uden at love for meget: to måder at støtte dig på.',
         'serv.1.tag': 'Online', 'serv.1.t': 'Individuelle sessioner',
         'serv.1.p': 'Online psykologisk støtte, 1:1, med fokus på din angst og dit livsøjeblik — i et privat, behageligt og trygt miljø.',
+        'serv.1.note': 'Gratis og uforpligtende første session',
+        'serv.1.cta': 'Skriv til mig på WhatsApp',
         'serv.2.tag': 'Uddannelse', 'serv.2.t': 'Online kurser',
         'serv.2.p': 'Workshops og programmer om angst, arbejdsstress og redskaber til at fastholde din trivsel i hverdagen.',
+        'serv.2.note': 'Guidet selvarbejdsprogram',
+        'serv.2.cta': 'Se Renacer en casa',
         'testi.eyebrow': 'Udtalelser', 'testi.title': 'Hvad de, der tog skridtet, fortæller.',
         'testi.p': 'Virkelige oplevelser, delt med tilladelse og med beskyttet identitet.',
         'testi.tag.terapia': 'Terapiforløb', 'testi.tag.formacion': 'Om guiden',
@@ -1319,12 +1361,21 @@
       }).join('');
     }
 
+    // Mensaje prefijado del CTA de WhatsApp (sesiones individuales), por idioma
+    const waMessages = {
+      es: 'Hola Andrea, vengo de la web de Studio Renacer y me gustaría información sobre las sesiones individuales.',
+      en: "Hi Andrea, I found you through the Studio Renacer website and I'd like more information about individual sessions.",
+      da: 'Hej Andrea, jeg fandt dig via Studio Renacers hjemmeside og vil gerne høre mere om individuelle sessioner.'
+    };
+
     function applyLang(lang) {
       const dict = translations[lang] || translations.es;
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (dict[key]) el.innerHTML = dict[key];
       });
+      const waCta = document.getElementById('serv-wa-cta');
+      if (waCta) waCta.href = 'https://wa.me/34668541597?text=' + encodeURIComponent(waMessages[lang] || waMessages.es);
       document.documentElement.lang = htmlLangMap[lang];
       document.querySelectorAll('.lang-switch button').forEach(b => {
         const active = b.dataset.lang === lang;

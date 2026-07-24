@@ -164,7 +164,11 @@ export default function AdminInicio() {
             <span className="flex flex-col min-w-0">
               <span className="text-sm truncate" style={{ color: 'var(--text)' }}>{r.paciente.nombre}</span>
               <span className="text-xs" style={{ color: 'var(--muted)' }}>
-                {r.tipo === 'bono' ? `${t('home.conBono', 'Bono')}${r.sesiones ? ` ${r.sesiones}` : ''}` : `${t('home.conSesion', 'Sesión')} ${fechaCorta(r.fecha_sesion)}`}
+                {r.tipo === 'cuota'
+                  ? `${t('home.conCuota', 'Cuota')} ${r.numero}/${r.total_cuotas} · ${t('home.conBono', 'Bono')}${r.sesiones ? ` ${r.sesiones}` : ''}`
+                  : r.tipo === 'bono'
+                    ? `${t('home.conBono', 'Bono')}${r.sesiones ? ` ${r.sesiones}` : ''}`
+                    : `${t('home.conSesion', 'Sesión')} ${fechaCorta(r.fecha_sesion)}`}
                 {' · '}{t('home.pagadoEl', 'pagado el')} {fmtDiaMadrid.format(new Date(r.fecha))}
               </span>
             </span>

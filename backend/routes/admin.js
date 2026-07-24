@@ -64,12 +64,20 @@ router.get('/resumen', verifyToken, requireAdmin, async (req, res) => {
     // ── KPIs por mes (funciones para poder calcular sel + prev + serie) ──────
     const sesionesHechas = (m) => sesiones.filter((s) => s.estado === 'completada' && String(s.fecha_hora).slice(0, 7) === m).length;
     const noShows = (m) => sesiones.filter((s) => s.estado === 'no_show' && String(s.fecha_hora).slice(0, 7) === m).length;
-    // Ingresos: sesiones sueltas + bonos marcados pagados con fecha_pago en el mes
-    // (manual y online marcan igual; los bonos fraccionados cuentan al completarse).
+    // Ingresos: sesiones sueltas pagadas + bonos, ambos por su fecha_pago.
+    // Bonos CON cuotas: cuenta cada cuota pagada en su mes (el pack no, para no
+    // duplicar). Bonos sin cuotas: cuenta el pack al marcarse pagado.
     const ingresos = (m) => {
       let total = 0;
       for (const s of sesiones) if (s.estado_pago === 'pagado' && s.fecha_pago && mesMadrid(s.fecha_pago) === m) total += s.precio_cents || 0;
-      for (const pk of packs) if (pk.estado_pago === 'pagado' && pk.fecha_pago && mesMadrid(pk.fecha_pago) === m) total += pk.precio_cents || 0;
+      for (const pk of packs) {
+        const cs = cuotasPorPack[pk.id] || [];
+        if (cs.length > 0) {
+          for (const c of cs) if (c.estado_pago === 'pagado' && c.fecha_pago && mesMadrid(c.fecha_pago) === m) total += c.importe_cents || 0;
+        } else if (pk.estado_pago === 'pagado' && pk.fecha_pago && mesMadrid(pk.fecha_pago) === m) {
+          total += pk.precio_cents || 0;
+        }
+      }
       return total;
     };
 
@@ -115,8 +123,16 @@ router.get('/resumen', verifyToken, requireAdmin, async (req, res) => {
       }
     }
     for (const pk of packs) {
-      if (pk.estado_pago === 'pagado' && pk.fecha_pago && mesMadrid(pk.fecha_pago) === mesSel) {
-        detIngresos.push({ tipo: 'bono', sesiones: pk.num_sesiones_total, fecha: pk.fecha_pago, importe_cents: pk.precio_cents || 0, paciente: pacMap[pk.paciente_id] || { nombre: '—', user_id: null } });
+      const cs = cuotasPorPack[pk.id] || [];
+      const pacPk = pacMap[pk.paciente_id] || { nombre: '—', user_id: null };
+      if (cs.length > 0) {
+        for (const c of cs) {
+          if (c.estado_pago === 'pagado' && c.fecha_pago && mesMadrid(c.fecha_pago) === mesSel) {
+            detIngresos.push({ tipo: 'cuota', numero: c.numero, total_cuotas: cs.length, sesiones: pk.num_sesiones_total, fecha: c.fecha_pago, importe_cents: c.importe_cents || 0, paciente: pacPk });
+          }
+        }
+      } else if (pk.estado_pago === 'pagado' && pk.fecha_pago && mesMadrid(pk.fecha_pago) === mesSel) {
+        detIngresos.push({ tipo: 'bono', sesiones: pk.num_sesiones_total, fecha: pk.fecha_pago, importe_cents: pk.precio_cents || 0, paciente: pacPk });
       }
     }
     detIngresos.sort((a, b) => String(b.fecha).localeCompare(String(a.fecha)));

@@ -7,6 +7,7 @@ const styles = {
   completada:           { bg: '#E9F0E1', color: '#3B6D2A' },
   cancelada:            { bg: '#F6E3DD', color: '#A33B2D' },
   cancelada_con_cargo:  { bg: '#F6E3DD', color: '#A33B2D' },
+  no_show:              { bg: '#F3E3D0', color: '#8A5A1E' },
   solicitada:           { bg: '#ECE6F0', color: '#6A4E8F' },
   ocupado:              { bg: '#EFEAE0', color: '#7A6A53' },
 };

@@ -38,7 +38,35 @@
   "layout": {
     "admin": "Admin",
     "logout": "Sign out",
-    "back": "Go back"
+    "back": "Go back",
+    "navHome": "Home",
+    "navPatients": "Patients",
+    "navAgenda": "Agenda"
+  },
+  "home": {
+    "title": "Home",
+    "loadError": "Failed to load the summary",
+    "kpiIngresos": "Revenue this month",
+    "kpiSesiones": "Sessions held",
+    "kpiNoShows": "No-shows",
+    "kpiActivos": "Active patients",
+    "esteMes": "this month",
+    "hoy": "Today",
+    "hoyVacio": "No sessions today.",
+    "unirse": "Join",
+    "atencion": "Needs attention",
+    "todoAlDia": "All caught up ✨",
+    "sinPagar": "Unpaid sessions",
+    "sinPagarVacio": "None.",
+    "feedback": "Feedback to review",
+    "feedbackVacio": "Nothing new (7 days).",
+    "fbOrs": "ORS (before session)",
+    "fbSrs": "SRS (after session)",
+    "fbCierre": "End-of-therapy",
+    "candidatos": "Bono candidates",
+    "candidatosHint": "≥3 single sessions, no bono",
+    "candidatosVacio": "None.",
+    "sueltas": "single"
   },
   "admin": {
     "myPatients": "My patients",

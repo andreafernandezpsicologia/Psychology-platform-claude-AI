@@ -59,6 +59,7 @@ app.use('/api', globalLimiter);
 // ── Rutas ─────────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/auth/2fa', require('./routes/twofa'));
+app.use('/api/admin', require('./routes/admin'));
 app.use('/api/pacientes', require('./routes/pacientes'));
 app.use('/api/sesiones', require('./routes/sesiones'));
 app.use('/api/calendarios', require('./routes/calendarios'));

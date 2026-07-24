@@ -19,6 +19,7 @@ const localeMap = { es, en: enUS, da };
 const actionStyle = {
   completada:          { bg: '#E9F0E1', color: '#3B6D2A' },
   cancelada_con_cargo: { bg: '#F6E3DD', color: '#A33B2D' },
+  no_show:             { bg: '#F3E3D0', color: '#8A5A1E' },
   reagendar:           { bg: '#F8EFD2', color: '#B07A2B' },
 };
 
@@ -224,7 +225,7 @@ export default function PacienteDetalle() {
     try {
       await api.delete(`/pacientes/${id}`);
       toast.success('Paciente eliminado');
-      navigate('/admin');
+      navigate('/admin/pacientes');
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); setConfirmDelete(false); }
   };
 
@@ -380,7 +381,7 @@ export default function PacienteDetalle() {
         danger
       />
 
-      <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-5">
+      <Button variant="ghost" size="sm" onClick={() => navigate('/admin/pacientes')} className="mb-5">
         ← {t('patientDetail.back')}
       </Button>
 
@@ -786,6 +787,11 @@ export default function PacienteDetalle() {
                     className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
                     style={actionStyle.cancelada_con_cargo}>
                     ✕ {t('patientDetail.cancelLate')}
+                  </button>
+                  <button onClick={() => cambiarEstado(s.id, 'no_show')}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    style={actionStyle.no_show}>
+                    ⊘ {t('patientDetail.markNoShow', 'No asistió')}
                   </button>
                   <button onClick={() => { setReagendando(reagendando === s.id ? null : s.id); setNuevaFecha(''); }}
                     className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"

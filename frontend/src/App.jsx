@@ -6,6 +6,7 @@ import Login from './pages/auth/Login';
 import Activate from './pages/auth/Activate';
 import ResetPassword from './pages/auth/ResetPassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
+import AdminInicio from './pages/admin/Inicio';
 import AdminDashboard from './pages/admin/Dashboard';
 import PacienteDetalle from './pages/admin/Paciente';
 import Calendario from './pages/admin/Calendario';
@@ -29,6 +30,9 @@ export default function App() {
           <Route path="/feedback-sesion/:token" element={<FeedbackSesion />} />
 
           <Route path="/admin" element={
+            <ProtectedRoute role="admin"><AdminInicio /></ProtectedRoute>
+          } />
+          <Route path="/admin/pacientes" element={
             <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>
           } />
           <Route path="/admin/paciente/:id" element={

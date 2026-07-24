@@ -13,9 +13,21 @@ export default function Layout({ children }) {
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
-  // Flecha de volver: visible en cualquier página que no sea la portada del rol
-  const home = user?.role === 'admin' ? '/admin' : '/paciente';
-  const showBack = location.pathname !== home;
+  const isAdmin = user?.role === 'admin';
+  const path = location.pathname;
+
+  // Navegación admin: Inicio · Pacientes · Agenda. "Pacientes" queda activo
+  // también en la ficha de un paciente (/admin/paciente/:id).
+  const navItems = [
+    { to: '/admin', label: t('layout.navHome', 'Inicio'), active: path === '/admin' },
+    { to: '/admin/pacientes', label: t('layout.navPatients', 'Pacientes'), active: path === '/admin/pacientes' || path.startsWith('/admin/paciente/') },
+    { to: '/admin/calendario', label: t('layout.navAgenda', 'Agenda'), active: path === '/admin/calendario' },
+  ];
+
+  // Flecha de volver: solo para el paciente (el admin navega con la barra y las
+  // fichas tienen su propio "Volver").
+  const home = isAdmin ? '/admin' : '/paciente';
+  const showBack = !isAdmin && path !== home;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
@@ -42,10 +54,28 @@ export default function Layout({ children }) {
               Studio Renacer
             </span>
           </a>
-          {user?.role === 'admin' && (
+          {isAdmin && (
             <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: 'var(--brand)', color: 'white' }}>
               {t('layout.admin')}
             </span>
+          )}
+
+          {/* Navegación admin */}
+          {isAdmin && (
+            <nav className="hidden sm:flex items-center gap-1 ml-4">
+              {navItems.map((item) => (
+                <button
+                  key={item.to}
+                  onClick={() => navigate(item.to)}
+                  className="text-sm font-medium px-3 py-1.5 rounded-lg transition"
+                  style={item.active
+                    ? { backgroundColor: 'var(--brand)', color: 'white' }
+                    : { color: 'var(--brand)', backgroundColor: 'transparent' }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
           )}
         </div>
 
@@ -72,18 +102,8 @@ export default function Layout({ children }) {
             })}
           </div>
 
-          <span className="text-sm" style={{ color: 'var(--text)' }}>{user?.nombre_completo}</span>
-          {user?.role === 'admin' && (
-            <button
-              onClick={() => navigate('/admin/calendario')}
-              className="text-sm font-medium transition hover:opacity-70"
-              style={{ color: 'var(--brand)' }}
-              title={t('calendar.title')}
-            >
-              📅
-            </button>
-          )}
-          {user?.role === 'admin' && (
+          <span className="hidden md:inline text-sm" style={{ color: 'var(--text)' }}>{user?.nombre_completo}</span>
+          {isAdmin && (
             <button
               onClick={() => navigate('/admin/seguridad')}
               className="text-sm font-medium transition hover:opacity-70"
@@ -98,6 +118,24 @@ export default function Layout({ children }) {
           </button>
         </div>
       </header>
+
+      {/* Navegación admin en móvil (la barra del header se oculta en pantallas pequeñas) */}
+      {isAdmin && (
+        <nav className="sm:hidden flex items-center gap-1 px-4 py-2 overflow-x-auto" style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--card, #fff)' }}>
+          {navItems.map((item) => (
+            <button
+              key={item.to}
+              onClick={() => navigate(item.to)}
+              className="text-sm font-medium px-3 py-1.5 rounded-lg transition whitespace-nowrap"
+              style={item.active
+                ? { backgroundColor: 'var(--brand)', color: 'white' }
+                : { color: 'var(--brand)', backgroundColor: 'transparent' }}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      )}
 
       <main className="p-6 max-w-5xl mx-auto page-enter">{children}</main>
       <Toaster position="bottom-right" richColors closeButton />

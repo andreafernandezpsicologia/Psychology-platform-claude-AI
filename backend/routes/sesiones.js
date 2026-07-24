@@ -460,7 +460,7 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
 // Admin: marcar sesión (completada / cancelada_con_cargo / cancelada)
 router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
   const { estado } = req.body;
-  const estadosValidos = ['programada', 'completada', 'cancelada', 'cancelada_con_cargo'];
+  const estadosValidos = ['programada', 'completada', 'cancelada', 'cancelada_con_cargo', 'no_show'];
   if (!estadosValidos.includes(estado)) {
     return res.status(400).json({ error: 'Estado no válido' });
   }
@@ -517,8 +517,10 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
       }
     }
 
-    // Descontar del pack solo si la sesión estaba programada (evita doble descuento)
-    const debeDescontar = (estado === 'completada' || estado === 'cancelada_con_cargo')
+    // Descontar del pack solo si la sesión estaba programada (evita doble descuento).
+    // no_show consume la sesión como cancelada_con_cargo: el hueco se reservó y no
+    // se avisó, así que cuenta contra el pack.
+    const debeDescontar = (estado === 'completada' || estado === 'cancelada_con_cargo' || estado === 'no_show')
       && current.estado === 'programada'
       && data.pack_id;
 

@@ -38,7 +38,35 @@
   "layout": {
     "admin": "Admin",
     "logout": "Log ud",
-    "back": "Gå tilbage"
+    "back": "Gå tilbage",
+    "navHome": "Forside",
+    "navPatients": "Patienter",
+    "navAgenda": "Kalender"
+  },
+  "home": {
+    "title": "Forside",
+    "loadError": "Kunne ikke indlæse oversigten",
+    "kpiIngresos": "Indtægt denne måned",
+    "kpiSesiones": "Afholdte sessioner",
+    "kpiNoShows": "Udeblivelser",
+    "kpiActivos": "Aktive patienter",
+    "esteMes": "denne måned",
+    "hoy": "I dag",
+    "hoyVacio": "Ingen sessioner i dag.",
+    "unirse": "Deltag",
+    "atencion": "Kræver opmærksomhed",
+    "todoAlDia": "Alt er ajour ✨",
+    "sinPagar": "Ubetalte sessioner",
+    "sinPagarVacio": "Ingen.",
+    "feedback": "Feedback til gennemgang",
+    "feedbackVacio": "Intet nyt (7 dage).",
+    "fbOrs": "ORS (før session)",
+    "fbSrs": "SRS (efter session)",
+    "fbCierre": "Afslutning af forløb",
+    "candidatos": "Klippekort-kandidater",
+    "candidatosHint": "≥3 løse sessioner, uden klippekort",
+    "candidatosVacio": "Ingen.",
+    "sueltas": "løse"
   },
   "admin": {
     "myPatients": "Mine patienter",

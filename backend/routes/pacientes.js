@@ -162,6 +162,7 @@ async function construirExportPaciente(userId, { incluirNotasAdmin = false } = {
     supabase.from('feedback_sesiones')
       .select('id, sesion_id, tipo, respuestas, creado_en')
       .eq('paciente_id', paciente.id)
+      .not('respondido_en', 'is', null) // no exportar invitaciones aún sin responder
       .order('creado_en', { ascending: true }),
     supabase.from('feedback_final')
       .select('enviado_en, respondido_en, satisfaccion, recomendaria, que_ayudo, que_mejorar, como_te_vas')

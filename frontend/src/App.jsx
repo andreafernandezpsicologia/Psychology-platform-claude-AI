@@ -12,6 +12,7 @@ import Calendario from './pages/admin/Calendario';
 import Seguridad from './pages/admin/Seguridad';
 import PacienteDashboard from './pages/paciente/Dashboard';
 import CuestionarioFinal from './pages/CuestionarioFinal';
+import FeedbackSesion from './pages/FeedbackSesion';
 
 export default function App() {
   return (
@@ -24,6 +25,8 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* Cuestionario de cierre: público con token, fuera de auth y ConsentGate */}
           <Route path="/cuestionario/:token" element={<CuestionarioFinal />} />
+          {/* Feedback de sesión (ORS/SRS): público con token, fuera de auth */}
+          <Route path="/feedback-sesion/:token" element={<FeedbackSesion />} />
 
           <Route path="/admin" element={
             <ProtectedRoute role="admin"><AdminDashboard /></ProtectedRoute>

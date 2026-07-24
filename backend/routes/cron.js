@@ -1,6 +1,7 @@
+const crypto = require('node:crypto');
 const express = require('express');
 const supabase = require('../services/supabaseClient');
-const { sendSessionReminder, sendCuotaReminder } = require('../services/emailService');
+const { sendSessionReminder, sendCuotaReminder, sendSessionFeedbackEmail } = require('../services/emailService');
 const { aParedMadrid } = require('../services/fechaPared');
 const { crearCheckoutSession } = require('../services/stripeService');
 
@@ -171,8 +172,71 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       }
     }
 
-    console.log(`[cron/recordatorios] ${enviados} sesiones, ${cuotasEnviadas} cuotas, ${errores + cuotasErrores} errores — ${new Date().toISOString()}`);
-    res.json({ ok: true, enviados, errores, cuotasEnviadas, cuotasErrores, ventana: { desde, hasta } });
+    // ── Invitaciones de feedback de sesión (ORS antes / SRS después) ──────────
+    // ORS: sesión programada dentro de las próximas ~26h. SRS: sesión completada
+    // en los últimos 2 días (margen por si se marca "completada" con retraso).
+    // Idempotencia: la restricción UNIQUE (sesion_id, tipo) de feedback_sesiones
+    // hace que el 2º INSERT falle (23505); una sesión recibe una sola invitación
+    // por tipo aunque el cron se solape o el paciente ya lo respondiera in-app.
+    const selSesion = 'id, fecha_hora, paciente_id, pacientes ( users ( email, nombre_completo, idioma_preferido ) )';
+    const orsHasta = aParedMadrid(new Date(ahora.getTime() + 26 * 60 * 60 * 1000));
+    const srsDesde = aParedMadrid(new Date(ahora.getTime() - 2 * 86400000));
+    const nowStr = aParedMadrid(ahora);
+
+    const [{ data: orsSes, error: orsErr }, { data: srsSes, error: srsErr }] = await Promise.all([
+      supabase.from('sesiones').select(selSesion)
+        .eq('estado', 'programada').gte('fecha_hora', nowStr).lte('fecha_hora', orsHasta),
+      supabase.from('sesiones').select(selSesion)
+        .eq('estado', 'completada').gte('fecha_hora', srsDesde).lte('fecha_hora', nowStr),
+    ]);
+    if (orsErr) console.error('[cron/recordatorios] Error consultando ORS:', orsErr.message);
+    if (srsErr) console.error('[cron/recordatorios] Error consultando SRS:', srsErr.message);
+
+    const invitaciones = [
+      ...(orsSes || []).map((s) => ({ sesion: s, tipo: 'ors' })),
+      ...(srsSes || []).map((s) => ({ sesion: s, tipo: 'srs' })),
+    ];
+
+    let feedbackEnviados = 0;
+    let feedbackErrores = 0;
+
+    for (const { sesion, tipo } of invitaciones) {
+      const user = sesion.pacientes?.users;
+      if (!user?.email || !sesion.paciente_id) continue;
+
+      const token = crypto.randomBytes(32).toString('hex');
+      // El INSERT es el "claim": si ya existe invitación/respuesta para esta
+      // sesión+tipo falla por UNIQUE (23505) y se salta sin enviar.
+      const { error: insErr } = await supabase.from('feedback_sesiones').insert({
+        paciente_id: sesion.paciente_id, sesion_id: sesion.id, tipo, token,
+        enviado_en: new Date().toISOString(),
+      });
+      if (insErr) {
+        if (insErr.code !== '23505') {
+          console.error(`[cron/recordatorios] Error creando invitación ${tipo} ${sesion.id}:`, insErr.message);
+          feedbackErrores++;
+        }
+        continue;
+      }
+
+      try {
+        const enlace = `${frontendUrl()}/feedback-sesion/${token}`;
+        await sendSessionFeedbackEmail(user.email, user.nombre_completo, enlace, tipo, user.idioma_preferido);
+        feedbackEnviados++;
+      } catch (emailErr) {
+        console.error(`[cron/recordatorios] Error email feedback ${tipo} a ${user.email}:`, emailErr.message);
+        feedbackErrores++;
+        // El email falló: borrar la invitación para reintentar en la próxima ejecución.
+        try {
+          await supabase.from('feedback_sesiones').delete().eq('token', token);
+        } catch (delErr) {
+          console.error(`[cron/recordatorios] No se pudo revertir la invitación ${sesion.id}:`, delErr.message);
+        }
+      }
+    }
+
+    console.log(`[cron/recordatorios] ${enviados} sesiones, ${cuotasEnviadas} cuotas, ${feedbackEnviados} feedback, ${errores + cuotasErrores + feedbackErrores} errores — ${new Date().toISOString()}`);
+    res.json({ ok: true, enviados, errores, cuotasEnviadas, cuotasErrores, feedbackEnviados, feedbackErrores, ventana: { desde, hasta } });
   } catch (err) {
     console.error('[cron/recordatorios] Error inesperado:', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });

@@ -17,6 +17,12 @@ function frontendUrl() {
 // pidiendo SRS hasta 7 días después; una próxima sesión pide ORS desde ya.
 const DIAS_VENTANA_SRS = 7;
 
+// El enlace tokenizado del email de feedback de sesión caduca a los 3 días: es
+// una foto de un momento (antes/después de la sesión), no tiene sentido más.
+const DIAS_VALIDEZ_INVITACION = 3;
+const invitacionCaducada = (enviadoEn) =>
+  !enviadoEn || (Date.now() - new Date(enviadoEn).getTime()) > DIAS_VALIDEZ_INVITACION * 86400000;
+
 async function pacienteIdDe(userId) {
   const { data, error } = await supabase.from('pacientes').select('id').eq('user_id', userId).single();
   if (error) return null;
@@ -89,6 +95,7 @@ router.post('/', verifyToken, async (req, res) => {
       sesion_id,
       tipo,
       respuestas: val.limpio,
+      respondido_en: new Date().toISOString(), // respondido in-app (sin invitación previa)
     }).select().single();
 
     if (error) {
@@ -103,17 +110,75 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
-// ── Admin: serie temporal de un paciente (para la gráfica) ──────────────────
-router.get('/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
+// ── Público (token): datos para pintar el formulario de feedback de sesión ──
+// El paciente responde el ORS/SRS desde el enlace del email, SIN login.
+router.get('/sesion/:token', async (req, res) => {
   try {
     const { data, error } = await supabase
       .from('feedback_sesiones')
+      .select('tipo, enviado_en, respondido_en, pacientes ( users ( nombre_completo, idioma_preferido ) )')
+      .eq('token', req.params.token).single();
+    // 404 genérico: no revelar si el token existe cuando falta o está mal.
+    if (error || !data) return res.status(404).json({ error: 'Cuestionario no encontrado' });
+    res.json({
+      tipo: data.tipo,
+      nombre: data.pacientes?.users?.nombre_completo?.split(' ')[0] || null,
+      idioma: data.pacientes?.users?.idioma_preferido || 'es',
+      respondido: !!data.respondido_en,
+      caducado: !data.respondido_en && invitacionCaducada(data.enviado_en),
+    });
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Público (token): guardar las respuestas del feedback de sesión (una vez) ──
+router.post('/sesion/:token', async (req, res) => {
+  try {
+    const { data: fila, error: fErr } = await supabase
+      .from('feedback_sesiones')
+      .select('id, tipo, enviado_en, respondido_en')
+      .eq('token', req.params.token).single();
+    if (fErr || !fila) return res.status(404).json({ error: 'Cuestionario no encontrado' });
+    if (fila.respondido_en) return res.status(409).json({ error: 'Este cuestionario ya fue respondido' });
+    if (invitacionCaducada(fila.enviado_en)) return res.status(410).json({ error: 'El enlace ha caducado' });
+
+    const val = validarRespuestas(fila.tipo, req.body.respuestas);
+    if (!val.ok) return res.status(400).json({ error: val.error });
+
+    // Guardado idempotente: solo la actualización que pasa respondido_en de NULL
+    // a ahora tiene efecto (evita doble envío por doble toque).
+    const { data, error } = await supabase.from('feedback_sesiones')
+      .update({ respuestas: val.limpio, respondido_en: new Date().toISOString() })
+      .eq('token', req.params.token)
+      .is('respondido_en', null)
+      .select('id');
+    if (error) return res.status(400).json({ error: error.message });
+    if (!data || data.length === 0) return res.status(409).json({ error: 'Este cuestionario ya fue respondido' });
+
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// ── Admin: serie temporal de un paciente (para la gráfica) ──────────────────
+// El :pacienteId de la ruta es en realidad el user_id (convención de toda la
+// app); hay que resolverlo a paciente_id o la consulta nunca casa.
+router.get('/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const pacienteId = await pacienteIdDe(req.params.pacienteId);
+    if (!pacienteId) return res.status(404).json({ error: 'Paciente no encontrado' });
+
+    const { data, error } = await supabase
+      .from('feedback_sesiones')
       .select('id, tipo, respuestas, creado_en, sesiones ( fecha_hora )')
-      .eq('paciente_id', req.params.pacienteId)
+      .eq('paciente_id', pacienteId)
+      .not('respondido_en', 'is', null) // solo respuestas dadas, no invitaciones pendientes
       .order('creado_en', { ascending: true });
     if (error) return res.status(400).json({ error: error.message });
 
-    audit(req, 'view_feedback', 'feedback', req.params.pacienteId);
+    audit(req, 'view_feedback', 'feedback', pacienteId);
     res.json(data);
   } catch (err) {
     console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
@@ -209,15 +274,19 @@ router.post('/final/:token', async (req, res) => {
 });
 
 // ── Admin: cuestionarios de cierre de un paciente (enviados y respondidos) ──
+// El :pacienteId de la ruta es el user_id; resolver a paciente_id (ver arriba).
 router.get('/final/paciente/:pacienteId', verifyToken, requireAdmin, async (req, res) => {
   try {
+    const pacienteId = await pacienteIdDe(req.params.pacienteId);
+    if (!pacienteId) return res.status(404).json({ error: 'Paciente no encontrado' });
+
     const { data, error } = await supabase
       .from('feedback_final')
       .select('id, enviado_en, respondido_en, satisfaccion, recomendaria, que_ayudo, que_mejorar, como_te_vas')
-      .eq('paciente_id', req.params.pacienteId)
+      .eq('paciente_id', pacienteId)
       .order('enviado_en', { ascending: false });
     if (error) return res.status(400).json({ error: error.message });
-    audit(req, 'view_final_feedback', 'feedback', req.params.pacienteId);
+    audit(req, 'view_final_feedback', 'feedback', pacienteId);
     res.json(data);
   } catch (err) {
     console.error('[feedback]', err.message); res.status(500).json({ error: 'Error interno del servidor' });

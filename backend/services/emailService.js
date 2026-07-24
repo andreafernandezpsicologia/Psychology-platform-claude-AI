@@ -134,6 +134,17 @@ const T = {
       cta: 'Responder el cuestionario',
       note: 'Es totalmente voluntario. Tu respuesta la leo solo yo. — Andrea',
     },
+    sessionFeedback: {
+      subject: (tipo) => tipo === 'ors'
+        ? 'Antes de nuestra sesión: ¿cómo estás esta semana?'
+        : '¿Cómo ha ido nuestra sesión?',
+      greeting: (n) => `Hola, ${n}`,
+      line: (tipo) => tipo === 'ors'
+        ? 'Antes de vernos, cuéntame en 30 segundos cómo te has sentido esta semana. Me ayuda a preparar mejor nuestra sesión.'
+        : 'Gracias por tu sesión. ¿Me dedicas 30 segundos para contarme cómo la has vivido? Tu opinión ajusta cómo trabajamos.',
+      cta: 'Responder (30 segundos)',
+      note: 'Es voluntario y solo lo leo yo. El enlace caduca en 3 días. — Andrea',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Restablecer contraseña',
       greeting: (n) => `Hola, ${n}`,
@@ -223,6 +234,17 @@ const T = {
       cta: 'Answer the questionnaire',
       note: 'It’s completely voluntary. Only I read your answer. — Andrea',
     },
+    sessionFeedback: {
+      subject: (tipo) => tipo === 'ors'
+        ? 'Before our session: how are you this week?'
+        : 'How did our session go?',
+      greeting: (n) => `Hi ${n}`,
+      line: (tipo) => tipo === 'ors'
+        ? 'Before we meet, tell me in 30 seconds how you’ve felt this week. It helps me prepare our session better.'
+        : 'Thank you for your session. Could you spare 30 seconds to tell me how it went for you? Your feedback shapes how we work.',
+      cta: 'Answer (30 seconds)',
+      note: 'It’s voluntary and only I read it. The link expires in 3 days. — Andrea',
+    },
     passwordReset: {
       subject: 'Studio Renacer — Reset your password',
       greeting: (n) => `Hi ${n}`,
@@ -311,6 +333,17 @@ const T = {
       line: 'Du har afsluttet dit terapiforløb. Det ville hjælpe mig meget at høre om din oplevelse, så jeg kan blive ved med at forbedre mig. Det er blot få spørgsmål og tager et par minutter.',
       cta: 'Besvar spørgeskemaet',
       note: 'Det er helt frivilligt. Kun jeg læser dit svar. — Andrea',
+    },
+    sessionFeedback: {
+      subject: (tipo) => tipo === 'ors'
+        ? 'Før vores session: hvordan har du det i denne uge?'
+        : 'Hvordan gik vores session?',
+      greeting: (n) => `Hej ${n}`,
+      line: (tipo) => tipo === 'ors'
+        ? 'Før vi ses, fortæl mig på 30 sekunder, hvordan du har haft det i denne uge. Det hjælper mig med at forberede vores session bedre.'
+        : 'Tak for din session. Har du 30 sekunder til at fortælle mig, hvordan den var for dig? Din feedback former, hvordan vi arbejder.',
+      cta: 'Svar (30 sekunder)',
+      note: 'Det er frivilligt, og kun jeg læser det. Linket udløber om 3 dage. — Andrea',
     },
     passwordReset: {
       subject: 'Studio Renacer — Nulstil din adgangskode',
@@ -608,6 +641,25 @@ const sendFinalFeedbackEmail = async (email, nombre, enlace, lang) => {
   });
 };
 
+// Feedback de sesión (ORS antes / SRS después). `enlace` = URL pública
+// tokenizada (/feedback-sesion/:token), generada por el cron. `tipo` = ors|srs.
+const sendSessionFeedbackEmail = async (email, nombre, enlace, tipo, lang) => {
+  const t = T[lng(lang)].sessionFeedback;
+  await enviarEmail({
+    to: email,
+    subject: t.subject(tipo),
+    body: `
+        <h2>${t.greeting(nombre)}</h2>
+        <p>${t.line(tipo)}</p>
+        <a href="${enlace}"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          ${t.cta}
+        </a>
+        <p style="color:#888;font-size:0.9rem;">${t.note}</p>`,
+  });
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendSessionReminder,
@@ -615,6 +667,7 @@ module.exports = {
   sendPackLowAlert,
   sendCuotaReminder,
   sendFinalFeedbackEmail,
+  sendSessionFeedbackEmail,
   sendSessionConfirmation,
   sendSessionRescheduled,
   sendSessionRequestAck,

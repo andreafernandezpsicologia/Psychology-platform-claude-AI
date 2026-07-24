@@ -41,7 +41,8 @@
     "back": "Go back",
     "navHome": "Home",
     "navPatients": "Patients",
-    "navAgenda": "Agenda"
+    "navAgenda": "Agenda",
+    "navFormaciones": "Programs"
   },
   "home": {
     "title": "Home",

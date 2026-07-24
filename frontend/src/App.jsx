@@ -8,6 +8,7 @@ import ResetPassword from './pages/auth/ResetPassword';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import AdminInicio from './pages/admin/Inicio';
 import AdminDashboard from './pages/admin/Dashboard';
+import AdminFormaciones from './pages/admin/Formaciones';
 import PacienteDetalle from './pages/admin/Paciente';
 import Calendario from './pages/admin/Calendario';
 import Seguridad from './pages/admin/Seguridad';
@@ -40,6 +41,9 @@ export default function App() {
           } />
           <Route path="/admin/calendario" element={
             <ProtectedRoute role="admin"><Calendario /></ProtectedRoute>
+          } />
+          <Route path="/admin/formaciones" element={
+            <ProtectedRoute role="admin"><AdminFormaciones /></ProtectedRoute>
           } />
           <Route path="/admin/seguridad" element={
             <ProtectedRoute role="admin"><Seguridad /></ProtectedRoute>

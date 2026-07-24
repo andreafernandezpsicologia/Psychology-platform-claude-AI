@@ -70,6 +70,7 @@ app.use('/api/pagos', require('./routes/pagos'));
 app.use('/api/feedback', require('./routes/feedback'));
 app.use('/api/documentos', require('./routes/documentos'));
 app.use('/api/contratos', require('./routes/contratos'));
+app.use('/api/formaciones', require('./routes/formaciones'));
 app.use('/api/cron', require('./routes/cron'));
 
 // ── Health check ─────────────────────────────────────────────────────────────

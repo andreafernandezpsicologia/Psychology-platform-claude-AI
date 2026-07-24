@@ -41,7 +41,8 @@
     "back": "Gå tilbage",
     "navHome": "Forside",
     "navPatients": "Patienter",
-    "navAgenda": "Kalender"
+    "navAgenda": "Kalender",
+    "navFormaciones": "Programmer"
   },
   "home": {
     "title": "Forside",

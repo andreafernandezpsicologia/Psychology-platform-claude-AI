@@ -22,6 +22,7 @@ export default function Layout({ children }) {
     { to: '/admin', label: t('layout.navHome', 'Inicio'), active: path === '/admin' },
     { to: '/admin/pacientes', label: t('layout.navPatients', 'Pacientes'), active: path === '/admin/pacientes' || path.startsWith('/admin/paciente/') },
     { to: '/admin/calendario', label: t('layout.navAgenda', 'Agenda'), active: path === '/admin/calendario' },
+    { to: '/admin/formaciones', label: t('layout.navFormaciones', 'Formaciones'), active: path === '/admin/formaciones' },
   ];
 
   // Flecha de volver: solo para el paciente (el admin navega con la barra y las

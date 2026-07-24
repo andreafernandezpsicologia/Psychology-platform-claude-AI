@@ -660,6 +660,38 @@ const sendSessionFeedbackEmail = async (email, nombre, enlace, tipo, lang) => {
   });
 };
 
+// ── Formaciones: aviso de lanzamiento a la lista de espera ───────────────────
+// Las páginas de los programas están solo en español, así que el aviso va en
+// español independientemente del idioma guardado en el alta.
+const FORMACIONES = {
+  calma:    { nombre: 'CALMA',    tagline: 'Entiende y calma tu ansiedad',      url: 'https://www.studiorenacer.com/calma' },
+  vinculos: { nombre: 'VÍNCULOS', tagline: 'Deja de perderte en tus relaciones', url: 'https://www.studiorenacer.com/renacer-en-casa' },
+  raices:   { nombre: 'RAÍCES',   tagline: 'Entiende tus heridas',               url: 'https://www.studiorenacer.com/renacer-en-casa' },
+};
+
+const sendLanzamientoFormacion = async (email, nombre, programa) => {
+  const f = FORMACIONES[programa];
+  if (!f) throw new Error(`Programa desconocido: ${programa}`);
+  const saludo = nombre ? `Hola ${nombre},` : 'Hola,';
+  await enviarEmail({
+    to: email,
+    subject: `${f.nombre} ya está aquí 🌿 Tu plaza de la lista de espera te espera`,
+    body: `
+        <h2>${saludo}</h2>
+        <p>Te apuntaste a la lista de espera de <strong>Renacer en casa</strong> y hoy toca la buena noticia:
+        el programa <strong>${f.nombre}</strong> — ${f.tagline} — ya está abierto.</p>
+        <p>Por ser de la lista de espera, tienes acceso al <strong>precio especial de lanzamiento</strong>.</p>
+        <a href="${f.url}"
+           style="display:inline-block;background:#5B4128;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          Ver ${f.nombre}
+        </a>
+        <p>Con cariño,<br>Andrea Fernández<br><i>Psicóloga colegiada · Studio Renacer</i></p>
+        <p style="color:#888;font-size:0.85rem;">Recibes este correo porque te apuntaste a la lista de espera
+        en studiorenacer.com. Si no quieres recibir más avisos, responde a este correo y te elimino de la lista.</p>`,
+  });
+};
+
 module.exports = {
   sendWelcomeEmail,
   sendSessionReminder,
@@ -674,4 +706,5 @@ module.exports = {
   sendSessionRequestToAdmin,
   sendSessionRequestResult,
   sendContratoEmail,
+  sendLanzamientoFormacion,
 };

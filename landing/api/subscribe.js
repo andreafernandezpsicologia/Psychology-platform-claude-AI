@@ -36,6 +36,11 @@ export default async function handler(req, res) {
     const source  = (body.source || '').trim().slice(0, 60);
     const SOURCE_LABELS = { 'renacer-en-casa': 'Renacer en casa (área)', 'calma': 'Programa CALMA' };
     const sourceLabel = SOURCE_LABELS[source] || (source ? escapeHtml(source) : 'Landing principal');
+    // Programa de interés declarado en el formulario. 'general' = alta desde la
+    // landing principal (guía): no entra en los avisos de lanzamiento de programas.
+    const PROGRAMAS = ['calma', 'vinculos', 'raices', 'todos'];
+    const programa = PROGRAMAS.includes(body.programa) ? body.programa : 'general';
+    const PROGRAMA_LABELS = { calma: 'CALMA', vinculos: 'VÍNCULOS', raices: 'RAÍCES', todos: 'Todos los programas', general: 'General (guía)' };
 
     // Validación servidor
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -55,6 +60,42 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Servicio no configurado' });
     }
 
+    // ---------- 0) Guardar el alta en Supabase (lista de espera) ----------
+    // Upsert por (email, programa): si la misma persona se apunta dos veces al
+    // mismo interés, no se duplica. Si Supabase falla, seguimos con los emails
+    // (mejor perder la fila que perder el lead) pero queda en los logs.
+    const sbUrl = process.env.SUPABASE_URL;
+    const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (sbUrl && sbKey) {
+      try {
+        const sbRes = await fetch(`${sbUrl}/rest/v1/formaciones_waitlist?on_conflict=email,programa`, {
+          method: 'POST',
+          headers: {
+            'apikey': sbKey,
+            'Authorization': `Bearer ${sbKey}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates,return=minimal'
+          },
+          body: JSON.stringify({
+            nombre: name || null,
+            email,
+            telefono: phone || null,
+            idioma: lang,
+            source: source || 'landing',
+            programa,
+            consent: true,
+            consent_at: new Date().toISOString()
+          })
+        });
+        if (!sbRes.ok) throw new Error(`Supabase ${sbRes.status}: ${await sbRes.text().catch(() => '')}`);
+        console.log(`[subscribe] ✓ Alta guardada en formaciones_waitlist (${email} · ${programa})`);
+      } catch (err) {
+        console.error('[subscribe] ✗ Error guardando en Supabase (continuamos):', err.message);
+      }
+    } else {
+      console.warn('[subscribe] SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY no configuradas: alta no guardada');
+    }
+
     console.log(`[subscribe] Enviando notificación → from="${from}" to="${notifyTo}" user="${email}"`);
 
     // ---------- 1) Aviso a Andrea ----------
@@ -66,6 +107,7 @@ export default async function handler(req, res) {
         <tr><td style="padding:6px 12px;color:#7e8a9c">Teléfono</td><td style="padding:6px 12px">${escapeHtml(phone) || '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Idioma</td><td style="padding:6px 12px">${lang.toUpperCase()}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Origen</td><td style="padding:6px 12px"><b>${sourceLabel}</b></td></tr>
+        <tr><td style="padding:6px 12px;color:#7e8a9c">Interés</td><td style="padding:6px 12px"><b>${PROGRAMA_LABELS[programa]}</b></td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">RGPD</td><td style="padding:6px 12px">${consent ? '✓ aceptado' : '—'}</td></tr>
         <tr><td style="padding:6px 12px;color:#7e8a9c">Fecha</td><td style="padding:6px 12px">${new Date().toISOString()}</td></tr>
       </table>

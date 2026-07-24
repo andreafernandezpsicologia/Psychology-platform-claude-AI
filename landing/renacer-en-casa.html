@@ -330,6 +330,23 @@
       background: var(--c-surface);
       box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.16);
     }
+    .form-row select {
+      width: 100%; padding: 12px 14px;
+      font-family: var(--font-body); font-size: 0.96rem;
+      border: 1.5px solid var(--c-line);
+      border-radius: var(--radius-sm);
+      background: var(--c-bg);
+      color: var(--c-ink);
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23807663' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .form-row select:focus {
+      outline: none;
+      border-color: var(--c-ocre);
+      background-color: var(--c-surface);
+      box-shadow: 0 0 0 4px rgba(227, 165, 42, 0.16);
+    }
     .privacy {
       display: flex; gap: 0.6rem; align-items: flex-start;
       font-size: 0.82rem; color: var(--c-muted);
@@ -588,7 +605,7 @@
               <li>Tu Plan de Vínculos Sanos por escrito</li>
             </ul>
             <div class="prog-cta">
-              <a href="#waitlist" class="btn btn-ghost">Avísame cuando salga</a>
+              <a href="#waitlist" class="btn btn-ghost" data-programa="vinculos">Avísame cuando salga</a>
             </div>
           </article>
 
@@ -606,7 +623,7 @@
               <li>El puente honesto hacia la terapia 1:1</li>
             </ul>
             <div class="prog-cta">
-              <a href="#waitlist" class="btn btn-ghost">Avísame cuando salga</a>
+              <a href="#waitlist" class="btn btn-ghost" data-programa="raices">Avísame cuando salga</a>
             </div>
           </article>
 
@@ -681,6 +698,15 @@
             <div class="form-row">
               <label for="email">Email <span class="req">*</span></label>
               <input type="email" id="email" name="email" autocomplete="email" required />
+            </div>
+            <div class="form-row">
+              <label for="programa">¿Qué programa te interesa?</label>
+              <select id="programa" name="programa">
+                <option value="todos" selected>Todos — avísame de cada lanzamiento</option>
+                <option value="calma">CALMA — ansiedad y estrés</option>
+                <option value="vinculos">VÍNCULOS — relaciones y límites</option>
+                <option value="raices">RAÍCES — heridas emocionales</option>
+              </select>
             </div>
             <label class="privacy">
               <input type="checkbox" id="consent" name="consent" required />
@@ -780,6 +806,13 @@
     const msg = document.getElementById('form-msg');
     const successState = document.getElementById('form-success');
     const submitBtn = document.getElementById('submit-btn');
+    const programaSelect = document.getElementById('programa');
+
+    // Los botones «Avísame cuando salga» de cada programa preseleccionan
+    // el interés en el formulario (la persona puede cambiarlo).
+    document.querySelectorAll('a[data-programa]').forEach((a) => {
+      a.addEventListener('click', () => { programaSelect.value = a.dataset.programa; });
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -808,7 +841,7 @@
         const res = await fetch('/api/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, consent, lang: 'es', source: 'renacer-en-casa' })
+          body: JSON.stringify({ name, email, consent, lang: 'es', source: 'renacer-en-casa', programa: programaSelect.value })
         });
         if (!res.ok) throw new Error('Request failed');
         form.style.display = 'none';

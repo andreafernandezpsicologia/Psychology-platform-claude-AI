@@ -146,7 +146,7 @@ router.post('/invitar-paciente', verifyToken, requireAdmin, async (req, res) => 
     const activationToken = jwt.sign(
       { id: data.user.id, email, type: 'activacion' },
       process.env.JWT_SECRET,
-      { expiresIn: '48h' }
+      { expiresIn: '7d' }
     );
 
     await sendWelcomeEmail(email, nombre, activationToken, idioma, conGuia);

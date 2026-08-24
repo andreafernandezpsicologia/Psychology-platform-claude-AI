@@ -158,7 +158,7 @@ export default function AdminDashboard() {
           <table className="w-full text-sm">
             <thead style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}>
               <tr>
-                {[t('admin.colName'), t('admin.colEmail'), t('admin.colStatus'), t('admin.colPacks'), ''].map((h) => (
+                {[t('admin.colName'), t('admin.colEmail'), t('admin.colStatus'), t('admin.colAcceso'), t('admin.colPacks'), ''].map((h) => (
                   <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--text)' }}>{h}</th>
                 ))}
               </tr>
@@ -179,6 +179,13 @@ export default function AdminDashboard() {
                     <td className="px-4 py-3" style={{ color: 'var(--text)' }}>{p.email}</td>
                     <td className="px-4 py-3">
                       <Badge estado={estado} label={pac?.estado || t('admin.statusPending')} />
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.registrado ? (
+                        <Badge estado="activo" label={t('admin.accesoRegistrado')} />
+                      ) : (
+                        <Badge estado="pendiente" label={t('admin.accesoPendiente')} />
+                      )}
                     </td>
                     <td className="px-4 py-3" style={{ color: 'var(--text)' }}>
                       {packActivo ? `${packActivo.num_sesiones_usadas}/${packActivo.num_sesiones_total} ${t('admin.sessions')}` : '—'}

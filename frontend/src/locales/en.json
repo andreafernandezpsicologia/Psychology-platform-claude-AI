@@ -103,12 +103,15 @@
     "colName": "Name",
     "colEmail": "Email",
     "colStatus": "Status",
+    "colAcceso": "Access",
     "colPacks": "Packs",
     "viewDetail": "View detail →",
     "sessions": "sessions",
     "statusActive": "active",
     "statusPending": "pending",
-    "statusArchived": "archived"
+    "statusArchived": "archived",
+    "accesoRegistrado": "Registered",
+    "accesoPendiente": "Not activated yet"
   },
   "patientDetail": {
     "back": "Back",

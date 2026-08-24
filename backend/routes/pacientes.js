@@ -67,6 +67,19 @@ router.get('/', verifyToken, requireAdmin, async (req, res) => {
       .order('created_at', { ascending: false });
 
     if (error) return res.status(400).json({ error: error.message });
+
+    // Cuenta de Supabase Auth (activación/último acceso) vive fuera de `users`;
+    // se trae con una sola llamada admin y se cruza por id para no hacer N+1.
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    if (!authError) {
+      const authById = new Map(authData.users.map((u) => [u.id, u]));
+      data.forEach((p) => {
+        const au = authById.get(p.id);
+        p.registrado = !!au?.email_confirmed_at;
+        p.ultimo_acceso = au?.last_sign_in_at || null;
+      });
+    }
+
     audit(req, 'list_patients', 'patients');
     res.json(data);
   } catch (err) {

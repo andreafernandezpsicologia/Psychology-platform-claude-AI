@@ -103,12 +103,15 @@
     "colName": "Navn",
     "colEmail": "E-mail",
     "colStatus": "Status",
+    "colAcceso": "Adgang",
     "colPacks": "Pakker",
     "viewDetail": "Se detaljer →",
     "sessions": "sessioner",
     "statusActive": "aktiv",
     "statusPending": "afventer",
-    "statusArchived": "arkiveret"
+    "statusArchived": "arkiveret",
+    "accesoRegistrado": "Registreret",
+    "accesoPendiente": "Ikke aktiveret endnu"
   },
   "patientDetail": {
     "back": "Tilbage",

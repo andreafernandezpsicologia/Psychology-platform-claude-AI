@@ -474,14 +474,27 @@ router.put('/:id/estado', verifyToken, requireAdmin, async (req, res) => {
 
     if (fetchError) return res.status(404).json({ error: 'Sesión no encontrada' });
 
+    // El UPDATE exige que la sesión siga en el estado que acabamos de leer. Si
+    // llegan dos peticiones a la vez (doble clic en el botón), la segunda no
+    // encuentra fila y sale sin volver a descontar del bono.
     const { data, error } = await supabase
       .from('sesiones')
       .update({ estado, updated_at: new Date().toISOString() })
       .eq('id', req.params.id)
+      .eq('estado', current.estado)
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) return res.status(400).json({ error: error.message });
+
+    if (!data) {
+      const { data: yaActual } = await supabase
+        .from('sesiones')
+        .select()
+        .eq('id', req.params.id)
+        .single();
+      return res.json(yaActual);
+    }
 
     audit(req, 'update_session_status', 'sessions', req.params.id, {
       estado_anterior: current.estado,

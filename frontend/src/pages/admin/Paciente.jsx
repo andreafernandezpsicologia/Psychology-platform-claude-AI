@@ -87,6 +87,7 @@ export default function PacienteDetalle() {
   const [confirmPack, setConfirmPack] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [savingEstado, setSavingEstado] = useState(false);
+  const [cambiandoEstadoId, setCambiandoEstadoId] = useState(null); // sesionId en curso
   const [savingPago, setSavingPago] = useState(null);  // packId en curso
   const [savingPagoSesion, setSavingPagoSesion] = useState(null);  // sesionId en curso
   const [savingPagoOnline, setSavingPagoOnline] = useState(false);
@@ -190,12 +191,17 @@ export default function PacienteDetalle() {
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); setConfirmPack(null); }
   };
 
+  // El guard evita que un doble clic mande dos veces el cambio: si las dos
+  // peticiones se cruzan, la sesión se descuenta dos veces del bono.
   const cambiarEstado = async (sesionId, estado) => {
+    if (cambiandoEstadoId) return;
+    setCambiandoEstadoId(sesionId);
     try {
       await api.put(`/sesiones/${sesionId}/estado`, { estado });
       toast.success(t('patientDetail.updated', 'Actualizado'));
       cargar();
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+    finally { setCambiandoEstadoId(null); }
   };
 
   const confirmarReagendar = async (sesionId) => {
@@ -779,17 +785,20 @@ export default function PacienteDetalle() {
               {(esProxima || (s.estado === 'programada' && parseWall(s.fecha_hora) < ahora)) && (
                 <div className="flex flex-wrap gap-2 mt-2.5">
                   <button onClick={() => cambiarEstado(s.id, 'completada')}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    disabled={!!cambiandoEstadoId}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
                     style={actionStyle.completada}>
                     ✓ {t('patientDetail.confirmAttendance')}
                   </button>
                   <button onClick={() => cambiarEstado(s.id, 'cancelada_con_cargo')}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    disabled={!!cambiandoEstadoId}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
                     style={actionStyle.cancelada_con_cargo}>
                     ✕ {t('patientDetail.cancelLate')}
                   </button>
                   <button onClick={() => cambiarEstado(s.id, 'no_show')}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90"
+                    disabled={!!cambiandoEstadoId}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
                     style={actionStyle.no_show}>
                     ⊘ {t('patientDetail.markNoShow', 'No asistió')}
                   </button>

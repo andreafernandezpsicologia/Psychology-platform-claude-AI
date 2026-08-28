@@ -13,7 +13,8 @@ import { parseWall } from '../../utils/fechaPared';
 const localeMap = { es, en: enUS, da };
 
 // Detalle de una cita al clicarla en el calendario. Si está programada permite
-// confirmar asistencia, cancelar (con o sin cargo) o reagendar.
+// confirmar asistencia, cancelar (con o sin cargo), marcar que no asistió o
+// reagendar: las mismas acciones que la ficha del paciente.
 export default function EventModal({ open, event, onClose, onChanged, onReschedule }) {
   const { t, i18n } = useTranslation();
   const locale = localeMap[i18n.language] || es;
@@ -166,6 +167,10 @@ export default function EventModal({ open, event, onClose, onChanged, onReschedu
               <button disabled={saving} onClick={() => setConfirmando('cancelada')}
                 className={accion} style={{ backgroundColor: '#F1EBDE', color: '#7A6A53' }}>
                 ✕ {t('calendar.cancelSession')}
+              </button>
+              <button disabled={saving} onClick={() => cambiarEstado('no_show')}
+                className={accion} style={{ backgroundColor: '#F3E3D0', color: '#8A5A1E' }}>
+                ⊘ {t('patientDetail.markNoShow', 'No asistió')}
               </button>
               <button disabled={saving} onClick={() => onReschedule(event)}
                 className={accion} style={{ backgroundColor: '#F8EFD2', color: '#B07A2B' }}>

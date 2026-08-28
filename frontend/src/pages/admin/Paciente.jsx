@@ -16,18 +16,21 @@ import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
+// Estos objetos se pasan tal cual a style={...}, así que la clave del fondo
+// tiene que ser backgroundColor (con 'bg' React la ignora y el botón sale sin
+// fondo). Badge.jsx sí usa 'bg' porque lo traduce él mismo.
 const actionStyle = {
-  completada:          { bg: '#E9F0E1', color: '#3B6D2A' },
-  cancelada_con_cargo: { bg: '#F6E3DD', color: '#A33B2D' },
-  cancelada:           { bg: '#F1EBDE', color: '#7A6A53' },
-  no_show:             { bg: '#F3E3D0', color: '#8A5A1E' },
-  reagendar:           { bg: '#F8EFD2', color: '#B07A2B' },
+  completada:          { backgroundColor: '#E9F0E1', color: '#3B6D2A' },
+  cancelada_con_cargo: { backgroundColor: '#F6E3DD', color: '#A33B2D' },
+  cancelada:           { backgroundColor: '#F1EBDE', color: '#7A6A53' },
+  no_show:             { backgroundColor: '#F3E3D0', color: '#8A5A1E' },
+  reagendar:           { backgroundColor: '#F8EFD2', color: '#B07A2B' },
 };
 
 const pagoStyles = {
-  pagado:       { bg: '#E9F0E1', color: '#3B6D2A' },
-  pago_parcial: { bg: '#F8EFD2', color: '#B07A2B' },
-  no_pagado:    { bg: '#F6E3DD', color: '#A33B2D' },
+  pagado:       { backgroundColor: '#E9F0E1', color: '#3B6D2A' },
+  pago_parcial: { backgroundColor: '#F8EFD2', color: '#B07A2B' },
+  no_pagado:    { backgroundColor: '#F6E3DD', color: '#A33B2D' },
 };
 
 function escapeHtml(str) {

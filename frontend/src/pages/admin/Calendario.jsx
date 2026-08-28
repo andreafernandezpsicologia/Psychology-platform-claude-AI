@@ -20,7 +20,7 @@ import { parseWall } from '../../utils/fechaPared';
 import { HORA_INICIO, HORA_FIN, DIAS_LABORALES } from '../../utils/calendarConfig';
 
 const localeMap = { es, en: enUS, da };
-const ESTADOS_LEYENDA = ['programada', 'solicitada', 'completada', 'cancelada', 'ocupado'];
+const ESTADOS_LEYENDA = ['programada', 'solicitada', 'completada', 'cancelada', 'no_show', 'ocupado'];
 
 export default function Calendario() {
   const { t, i18n } = useTranslation();

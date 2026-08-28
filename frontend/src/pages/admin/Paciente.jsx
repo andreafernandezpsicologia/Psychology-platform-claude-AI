@@ -19,6 +19,7 @@ const localeMap = { es, en: enUS, da };
 const actionStyle = {
   completada:          { bg: '#E9F0E1', color: '#3B6D2A' },
   cancelada_con_cargo: { bg: '#F6E3DD', color: '#A33B2D' },
+  cancelada:           { bg: '#F1EBDE', color: '#7A6A53' },
   no_show:             { bg: '#F3E3D0', color: '#8A5A1E' },
   reagendar:           { bg: '#F8EFD2', color: '#B07A2B' },
 };
@@ -795,6 +796,12 @@ export default function PacienteDetalle() {
                     className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
                     style={actionStyle.cancelada_con_cargo}>
                     ✕ {t('patientDetail.cancelLate')}
+                  </button>
+                  <button onClick={() => cambiarEstado(s.id, 'cancelada')}
+                    disabled={!!cambiandoEstadoId}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition hover:opacity-90 disabled:opacity-50"
+                    style={actionStyle.cancelada}>
+                    ✕ {t('calendar.cancelSession')}
                   </button>
                   <button onClick={() => cambiarEstado(s.id, 'no_show')}
                     disabled={!!cambiandoEstadoId}

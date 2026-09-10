@@ -486,6 +486,8 @@
       display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 1.5rem;
     }
+    /* Una sola opinión: no estirarla a todo el ancho (la línea de texto queda larguísima). */
+    .testimonials-grid:has(.testimonial-card:only-child) { max-width: 640px; margin-inline: auto; }
     .testimonial-card {
       position: relative;
       background: var(--c-surface);
@@ -1319,6 +1321,17 @@
     //   quote: texto (string) o por idioma { es:'…', en:'…', da:'…' }
     // La sección se oculta sola si el array está vacío. Nunca poner testimonios falsos.
     const TESTIMONIALS = [
+      // Jorge O. · terapia · permiso de publicación registrado el 2026-09-07 (formulario /opinar).
+      //   Texto ES verbatim, tal cual lo escribió. EN/DA son traducción fiel para las otras versiones.
+      {
+        tipo: 'terapia',
+        name: 'Jorge O.',
+        quote: {
+          es: 'Decidí ponerme en manos de una profesional para tratar de sanar una serie de problemas que había vivido en el último año, quería volver a una normalidad y sobretodo aprender o sacar algo de todo lo vivido. Conocí a Andrea a través de las RRSS, desde un primer momento sentí una conexión con su forma de expresarse y de explicar las cosas, por lo que quise que fuese ella quién me ayudase en todo este proceso. Sinceramente fue la mejor decisión que pude tomar, es una gran profesional, una persona muy cercana, me ha ayudado muchísimo a poder sanar esas heridas y volver a sentirme bien, además con el trabajo vas descubriendo más cosas que cada uno tenemos para trabajar y pulir, cosas que nos cuestan mucho, y ella sabe como ayudarte en todo el proceso. La recomendaría al 300% :)',
+          en: "I decided to put myself in the hands of a professional to try to heal a series of things I had been through over the past year. I wanted to get back to normal and, above all, to learn something from everything I had lived. I found Andrea through social media, and from the very first moment I felt a connection with the way she expresses herself and explains things, so I wanted her to be the one to help me through this whole process. Honestly, it was the best decision I could have made: she is a great professional and a very warm person. She has helped me enormously to heal those wounds and to feel well again. And as you do the work you keep discovering more things each of us has to work on and polish, things that are hard for us, and she knows how to help you through all of it. I would recommend her 300% :)",
+          da: "Jeg besluttede at lægge mig i hænderne på en fagperson for at forsøge at hele en række ting, jeg havde været igennem det seneste år. Jeg ville tilbage til en normal hverdag og frem for alt lære noget af alt det, jeg havde oplevet. Jeg fandt Andrea gennem de sociale medier, og fra første øjeblik følte jeg en forbindelse til den måde, hun udtrykker sig og forklarer tingene på, så jeg ønskede, at det skulle være hende, der hjalp mig gennem hele processen. Helt ærligt var det den bedste beslutning, jeg kunne tage: hun er en dygtig fagperson og et meget nærværende menneske. Hun har hjulpet mig enormt med at hele de sår og få det godt igen. Undervejs opdager man flere ting, vi hver især har at arbejde med og finpudse, ting der er svære for os, og hun ved, hvordan hun hjælper dig gennem det hele. Jeg vil anbefale hende 300% :)"
+        }
+      },
       // ── EJEMPLOS (comentados). Cuando tengas una opinión REAL con consentimiento,
       //    copia el patrón, pon el texto y el nombre protegido reales, y quítale el "// ".
       // { tipo: 'terapia', name: 'María G.', quote: 'Llegué sintiendo que no podía con todo y con una ansiedad que no me dejaba desconectar. Andrea me ayudó a entender de dónde venía y a poner límites al trabajo sin sentirme culpable. No fue una solución rápida: fuimos a la raíz, a mi ritmo. Hoy el domingo vuelve a ser mío.' },

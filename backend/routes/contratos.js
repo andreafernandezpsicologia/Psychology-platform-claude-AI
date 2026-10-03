@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
-const { sendContratoEmail } = require('../services/emailService');
+const { sendContratoEmail, sendContratoFirmadoToAdmin } = require('../services/emailService');
 const { audit } = require('../services/auditLog');
 
 const router = express.Router();
@@ -86,6 +86,18 @@ router.post('/pack/:packId/subir-paciente', verifyToken, upload.single('archivo'
     }).eq('id', packId);
 
     res.json({ message: 'Contrato subido correctamente' });
+
+    // Avisar a Andrea con copia del contrato (fire-and-forget: no afecta al paciente)
+    try {
+      const [{ data: admin }, { data: yo }] = await Promise.all([
+        supabase.from('users').select('email').eq('role', 'admin').limit(1).single(),
+        supabase.from('users').select('nombre_completo, email').eq('id', req.user.id).single(),
+      ]);
+      if (admin?.email) {
+        sendContratoFirmadoToAdmin(admin.email, yo?.nombre_completo || yo?.email || 'Paciente', { buffer: file.buffer, ext })
+          .catch((e) => console.error('[subir-paciente] email admin:', e.message));
+      }
+    } catch (e) { console.error('[subir-paciente] aviso admin:', e.message); }
   } catch (err) {
     console.error('[subir-paciente]', err.message);
     res.status(500).json({ error: 'Error interno del servidor' });

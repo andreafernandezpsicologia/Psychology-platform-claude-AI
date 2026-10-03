@@ -587,7 +587,28 @@ const sendContratoEmail = async (email, nombre, lang) => {
   });
 };
 
-const sendPackLowAlert = async (email, nombre, sesionesRestantes, lang) => {
+// Aviso a Andrea cuando un paciente sube su contrato firmado desde la app, con
+// copia del archivo adjunta. Siempre en español (emails a la admin).
+const sendContratoFirmadoToAdmin = async (adminEmail, pacienteNombre, { buffer, ext }) => {
+  const nombreArchivo = `Contrato_firmado_${String(pacienteNombre).replace(/[^\p{L}\p{N}]+/gu, '_')}.${ext}`;
+  await enviarEmail({
+    to: adminEmail,
+    subject: `Contrato firmado — ${pacienteNombre}`,
+    body: `
+        <h2>Contrato firmado</h2>
+        <p><strong>${pacienteNombre}</strong> ha subido su contrato firmado desde la app.
+        Tienes una copia adjunta.</p>
+        <p>Cuando lo firmes tú, sube la versión definitiva desde su ficha.</p>
+        <a href="${FRONTEND_URL}/admin"
+           style="display:inline-block;background:#1a2d4a;color:#fff;padding:12px 24px;
+                  text-decoration:none;border-radius:6px;font-weight:bold;margin:16px 0;">
+          Abrir el panel
+        </a>`,
+    attachments: [{ filename: nombreArchivo, content: buffer.toString('base64') }],
+  });
+};
+
+const sendPackLowAlert = async(email, nombre, sesionesRestantes, lang) => {
   const t = T[lng(lang)].packLow;
   await enviarEmail({
     to: email,
@@ -706,5 +727,6 @@ module.exports = {
   sendSessionRequestToAdmin,
   sendSessionRequestResult,
   sendContratoEmail,
+  sendContratoFirmadoToAdmin,
   sendLanzamientoFormacion,
 };

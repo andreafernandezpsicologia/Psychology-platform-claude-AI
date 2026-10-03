@@ -297,6 +297,14 @@ export default function PacienteDetalle() {
     } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
   };
 
+  // Contrato definitivo (firmado en papel o firmado por ambos) que subió la admin
+  const descargarContratoDefinitivo = async (packId) => {
+    try {
+      const res = await api.get(`/contratos/pack/${packId}/firmado-admin`);
+      window.open(res.data.url, '_blank');
+    } catch (err) { toast.error('Error: ' + (err.response?.data?.error || '')); }
+  };
+
   const subirContratoAdmin = async (packId, file) => {
     if (!file) return;
     setUploadingContrato(packId);
@@ -599,6 +607,11 @@ export default function PacienteDetalle() {
                 {contratoEstado === 'firmado_paciente' && (
                   <Button variant="ghost" size="sm" onClick={() => descargarFirmadoPaciente(pk.id)}>
                     ⬇ {t('patientDetail.contratoDescargarFirmadoPaciente')}
+                  </Button>
+                )}
+                {pk.contrato_path_admin && (
+                  <Button variant="ghost" size="sm" onClick={() => descargarContratoDefinitivo(pk.id)}>
+                    📄 {t('patientDetail.contratoVerDefinitivo')}
                   </Button>
                 )}
 

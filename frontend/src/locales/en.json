@@ -162,6 +162,7 @@
     "contratoFirmadoPaciente": "Signed by patient",
     "contratoCompletado": "Contract complete",
     "contratoDescargarFirmadoPaciente": "Download patient contract",
+    "contratoVerDefinitivo": "View signed contract",
     "contratoSubirFirmado": "Upload signed contract (final)",
     "contratoSubirPapel": "Upload paper-signed contract",
     "contratoEnviarPlantilla": "Send default contract",

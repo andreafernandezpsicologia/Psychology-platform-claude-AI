@@ -162,6 +162,7 @@
     "contratoFirmadoPaciente": "Firmado por paciente",
     "contratoCompletado": "Contrato completo",
     "contratoDescargarFirmadoPaciente": "Descargar contrato del paciente",
+    "contratoVerDefinitivo": "Ver contrato firmado",
     "contratoSubirFirmado": "Subir contrato firmado (definitivo)",
     "contratoSubirPapel": "Subir contrato firmado en papel",
     "contratoEnviarPlantilla": "Enviar contrato predeterminado",

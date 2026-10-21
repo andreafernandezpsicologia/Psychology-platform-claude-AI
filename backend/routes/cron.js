@@ -3,11 +3,7 @@ const express = require('express');
 const supabase = require('../services/supabaseClient');
 const { sendSessionReminder, sendCuotaReminder, sendSessionFeedbackEmail } = require('../services/emailService');
 const { aParedMadrid } = require('../services/fechaPared');
-const { crearCheckoutSession } = require('../services/stripeService');
-
-function frontendUrl() {
-  return process.env.FRONTEND_URL || 'https://app.studiorenacer.com';
-}
+const { urlPagoPack, finDeMes, frontendUrl } = require('../services/enlacePago');
 
 const router = express.Router();
 
@@ -106,23 +102,30 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
       }
     }
 
-    // ── 2ª cuota de bonos fraccionados: recordatorio único cuando quedan ≤5 días
-    // para la fecha límite. Idempotente por el mismo patrón CAS de arriba
-    // (recordatorio_enviado false→true reclama el envío una sola vez).
-    const hoyStr = aParedMadrid(ahora).slice(0, 10);
-    const limiteStr = aParedMadrid(new Date(ahora.getTime() + 5 * 86400000)).slice(0, 10);
+    // ── 2ª cuota de bonos fraccionados: recordatorio único el día 10 del mes
+    // en que vence (la 2ª cuota vence el último día de ese mes). Se envía a
+    // partir de las 9:00 de Madrid del día 10, o en cuanto el cron corra si se
+    // saltó ese día. Solo si la 1ª ya está pagada (pack en pago_parcial).
+    // Idempotente por el mismo patrón CAS de arriba (recordatorio_enviado
+    // false→true reclama el envío una sola vez).
+    const paredAhora = aParedMadrid(ahora);
+    const hoyStr = paredAhora.slice(0, 10);
+    const tocaRecordatorioCuota = Number(paredAhora.slice(8, 10)) >= 10 && Number(paredAhora.slice(11, 13)) >= 9;
 
-    const { data: cuotas, error: cuotasErr } = await supabase
-      .from('cuotas_pack')
-      .select(`
-        id, importe_cents, fecha_limite, pack_id,
-        packs ( paciente_id, pacientes ( users ( email, nombre_completo, idioma_preferido ) ) )
-      `)
-      .eq('numero', 2)
-      .eq('estado_pago', 'no_pagado')
-      .eq('recordatorio_enviado', false)
-      .gte('fecha_limite', hoyStr)
-      .lte('fecha_limite', limiteStr);
+    const { data: cuotas, error: cuotasErr } = tocaRecordatorioCuota
+      ? await supabase
+        .from('cuotas_pack')
+        .select(`
+          id, importe_cents, fecha_limite, pack_id,
+          packs!inner ( paciente_id, estado_pago, pacientes ( users ( email, nombre_completo, idioma_preferido ) ) )
+        `)
+        .eq('numero', 2)
+        .eq('estado_pago', 'no_pagado')
+        .eq('recordatorio_enviado', false)
+        .eq('packs.estado_pago', 'pago_parcial')
+        .gte('fecha_limite', hoyStr)
+        .lte('fecha_limite', finDeMes(0, ahora))
+      : { data: [], error: null };
 
     let cuotasEnviadas = 0;
     let cuotasErrores = 0;
@@ -145,19 +148,12 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
         if (!claimed || claimed.length === 0) continue;
 
         try {
-          const base = frontendUrl();
-          const sesionStripe = await crearCheckoutSession({
-            importeCents: cuota.importe_cents,
-            concepto: 'Bono de sesiones — Studio Renacer — cuota 2/2',
-            metadata: { origen: 'terapia', tipo: 'cuota', cuota_id: cuota.id, pack_id: cuota.pack_id, paciente_id: cuota.packs?.paciente_id },
-            successUrl: `${base}/paciente?pago=ok`,
-            cancelUrl: `${base}/paciente?pago=cancelado`,
-            customerEmail: user.email,
-          });
+          // Enlace a la página de pago (no caduca), no a Stripe directo: una
+          // sesión de Checkout caduca en 24 h y tienen hasta fin de mes.
           await sendCuotaReminder(user.email, user.nombre_completo, {
             importeCents: cuota.importe_cents,
             fechaLimite: cuota.fecha_limite,
-            enlacePago: sesionStripe.url,
+            enlacePago: urlPagoPack(cuota.pack_id),
           }, user.idioma_preferido);
           cuotasEnviadas++;
         } catch (emailErr) {

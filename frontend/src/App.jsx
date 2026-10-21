@@ -15,6 +15,7 @@ import Seguridad from './pages/admin/Seguridad';
 import PacienteDashboard from './pages/paciente/Dashboard';
 import CuestionarioFinal from './pages/CuestionarioFinal';
 import FeedbackSesion from './pages/FeedbackSesion';
+import PagarBono from './pages/PagarBono';
 
 export default function App() {
   return (
@@ -29,6 +30,8 @@ export default function App() {
           <Route path="/cuestionario/:token" element={<CuestionarioFinal />} />
           {/* Feedback de sesión (ORS/SRS): público con token, fuera de auth */}
           <Route path="/feedback-sesion/:token" element={<FeedbackSesion />} />
+          {/* Pago de un bono (público, enlace firmado): pago único o en 2 pagos */}
+          <Route path="/pagar/:token" element={<PagarBono />} />
 
           <Route path="/admin" element={
             <ProtectedRoute role="admin"><AdminInicio /></ProtectedRoute>

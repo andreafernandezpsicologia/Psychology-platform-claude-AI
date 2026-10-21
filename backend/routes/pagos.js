@@ -3,12 +3,9 @@ const supabase = require('../services/supabaseClient');
 const { verifyToken, requireAdmin } = require('../middleware/auth');
 const { audit } = require('../services/auditLog');
 const { verifyStripeSignature, crearCheckoutSession } = require('../services/stripeService');
+const { urlPagoPack, packIdDeToken, tokenPagoPack, finDeMes, frontendUrl } = require('../services/enlacePago');
 
 const router = express.Router();
-
-function frontendUrl() {
-  return process.env.FRONTEND_URL || 'https://app.studiorenacer.com';
-}
 
 // Concepto genérico en la línea de pago: nunca motivo de consulta ni datos
 // clínicos (Stripe es un encargado de tratamiento, minimización RGPD).
@@ -16,14 +13,6 @@ const CONCEPTO = {
   sesion: 'Sesión de psicología — Studio Renacer',
   pack: 'Bono de sesiones — Studio Renacer',
 };
-
-// Último día del mes siguiente al actual, en formato YYYY-MM-DD. Fecha límite
-// de la 2ª cuota: si hoy es 19-jul, el límite es 31-ago (no 31-jul).
-function finDeMesSiguiente(desde = new Date()) {
-  // día 0 del mes+2 = último día del mes+1 (mes siguiente al actual)
-  const fin = new Date(Date.UTC(desde.getUTCFullYear(), desde.getUTCMonth() + 2, 0));
-  return fin.toISOString().slice(0, 10);
-}
 
 // ── Webhook de Stripe (terapia) ──────────────────────────────────────────────
 // Sin auth (Stripe no envía JWT). Verifica la firma con STRIPE_WEBHOOK_SECRET
@@ -79,6 +68,10 @@ router.post('/stripe/webhook', async (req, res) => {
         .update({ estado_pago: 'pagado', fecha_pago: ahora, updated_at: ahora })
         .eq('id', md.pack_id);
       if (error) throw new Error('marcar pack pagado: ' + error.message);
+      // Si antes había empezado el plan fraccionado y lo abandonó, las cuotas
+      // sin pagar sobran: se borran para que el cron no recuerde una 2ª cuota.
+      await supabase.from('cuotas_pack').delete().eq('pack_id', md.pack_id).eq('estado_pago', 'no_pagado');
+      await supabase.from('packs').update({ num_cuotas: 1 }).eq('id', md.pack_id);
     } else if (tipo === 'cuota' && md.cuota_id) {
       const { error: cuotaErr } = await supabase.from('cuotas_pack')
         .update({ estado_pago: 'pagado', fecha_pago: ahora })
@@ -180,6 +173,8 @@ async function prepararCobro(tipo, { sesion_id, pack_id }, { pacienteId = null }
 // 2 cuotas si es la primera vez ("plan":"fraccionado" elegido por el paciente
 // al pagar) y devuelve el cobro de la cuota 1. Si las cuotas ya existían
 // (reintento tras abandonar el pago), reutiliza la cuota 1 sin duplicar filas.
+// Plazos: 1ª antes de que acabe el mes en curso, 2ª antes de que acabe el
+// mes siguiente (recordatorio por email el día 10 de ese mes, ver cron).
 async function prepararCobroFraccionado(pack_id, { pacienteId = null } = {}) {
   const prep = await prepararCobro('pack', { pack_id }, { pacienteId });
   if (prep.error) return prep;
@@ -194,8 +189,8 @@ async function prepararCobroFraccionado(pack_id, { pacienteId = null } = {}) {
     const mitad = Math.round(pk.precio_cents / 2);
     const resto = pk.precio_cents - mitad;
     const { data: nuevas, error: insErr } = await supabase.from('cuotas_pack').insert([
-      { pack_id: pk.id, numero: 1, importe_cents: mitad, fecha_limite: null },
-      { pack_id: pk.id, numero: 2, importe_cents: resto, fecha_limite: finDeMesSiguiente() },
+      { pack_id: pk.id, numero: 1, importe_cents: mitad, fecha_limite: finDeMes(0) },
+      { pack_id: pk.id, numero: 2, importe_cents: resto, fecha_limite: finDeMes(1) },
     ]).select();
     if (insErr) return { status: 500, error: insErr.message };
     await supabase.from('packs').update({ num_cuotas: 2, updated_at: new Date().toISOString() }).eq('id', pk.id);
@@ -270,11 +265,27 @@ router.post('/checkout', verifyToken, async (req, res) => {
 });
 
 // ── Admin: generar un enlace de pago para copiar/enviar ──────────────────────
+// Bonos (y sus cuotas): enlace a la página /pagar/<token>, donde el paciente
+// elige pago único o en 2 pagos y que no caduca. Sesiones sueltas: enlace
+// directo de Stripe Checkout, como siempre.
 router.post('/enlace', verifyToken, requireAdmin, async (req, res) => {
   const { tipo } = req.body;
   if (!['sesion', 'pack', 'cuota'].includes(tipo)) return res.status(400).json({ error: 'tipo inválido' });
 
   try {
+    if (tipo === 'pack' || tipo === 'cuota') {
+      let packId = req.body.pack_id;
+      if (tipo === 'cuota') {
+        const { data: c } = await supabase.from('cuotas_pack').select('pack_id').eq('id', req.body.cuota_id).single();
+        packId = c?.pack_id;
+      }
+      const { data: pk } = await supabase.from('packs').select('id, estado_pago').eq('id', packId).single();
+      if (!pk) return res.status(404).json({ error: 'Bono no encontrado' });
+      if (pk.estado_pago === 'pagado') return res.status(400).json({ error: 'El bono ya está pagado' });
+      audit(req, 'create_payment_link', 'payments', pk.id, { tipo: 'pack_eleccion' });
+      return res.json({ url: urlPagoPack(pk.id) });
+    }
+
     const prep = await prepararSegunTipo(tipo, req.body, {});
     if (prep.error) return res.status(prep.status).json({ error: prep.error });
 
@@ -293,6 +304,91 @@ router.post('/enlace', verifyToken, requireAdmin, async (req, res) => {
   } catch (err) {
     console.error('[pagos enlace]', err.message);
     res.status(502).json({ error: 'No se pudo generar el enlace de pago' });
+  }
+});
+
+// ── Público (enlace firmado): página de pago de un bono ──────────────────────
+// Sin login: el paciente llega desde el enlace que le envía Andrea o desde el
+// recordatorio de la 2ª cuota. Solo devuelve importes, plazos y estado; nunca
+// nombre, email ni datos clínicos. 404 genérico ante cualquier token inválido.
+async function packDeToken(token) {
+  const packId = packIdDeToken(token);
+  if (!packId) return null;
+  const { data: pk } = await supabase
+    .from('packs')
+    .select('id, estado_pago, precio_cents, num_sesiones_total, pacientes ( pago_online_habilitado, users ( idioma_preferido ) ), cuotas_pack ( id, numero, importe_cents, fecha_limite, estado_pago )')
+    .eq('id', packId).single();
+  return pk || null;
+}
+
+router.get('/publico/:token', async (req, res) => {
+  try {
+    const pk = await packDeToken(req.params.token);
+    if (!pk) return res.status(404).json({ error: 'Enlace no válido' });
+    const cuotas = pk.cuotas_pack || [];
+    const cuota2 = cuotas.find((c) => c.numero === 2);
+    const mitad = pk.precio_cents ? Math.round(pk.precio_cents / 2) : null;
+    res.json({
+      estado_pago: pk.estado_pago || 'no_pagado',
+      disponible: !!pk.pacientes?.pago_online_habilitado && !!pk.precio_cents,
+      idioma: pk.pacientes?.users?.idioma_preferido || 'es',
+      num_sesiones: pk.num_sesiones_total,
+      precio_cents: pk.precio_cents,
+      // Plan fraccionado propuesto (si aún no ha elegido): mitad + resto
+      fraccionado: mitad == null ? null : {
+        cuota1_cents: mitad, cuota1_limite: cuotas.find((c) => c.numero === 1)?.fecha_limite || finDeMes(0),
+        cuota2_cents: pk.precio_cents - mitad, cuota2_limite: cuota2?.fecha_limite || finDeMes(1),
+      },
+      // 2ª cuota pendiente (si ya pagó la 1ª)
+      cuota2_pendiente: pk.estado_pago === 'pago_parcial' && cuota2 && cuota2.estado_pago !== 'pagado'
+        ? { importe_cents: cuota2.importe_cents, fecha_limite: cuota2.fecha_limite }
+        : null,
+    });
+  } catch (err) {
+    console.error('[pagos publico]', err.message); res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// plan: 'unico' | 'fraccionado' (1ª cuota) | 'cuota2'
+router.post('/publico/:token/checkout', async (req, res) => {
+  const { plan } = req.body || {};
+  if (!['unico', 'fraccionado', 'cuota2'].includes(plan)) return res.status(400).json({ error: 'plan inválido' });
+
+  try {
+    const pk = await packDeToken(req.params.token);
+    if (!pk) return res.status(404).json({ error: 'Enlace no válido' });
+    if (!pk.pacientes?.pago_online_habilitado) return res.status(403).json({ error: 'pago_online_no_habilitado' });
+
+    let prep;
+    if (plan === 'cuota2') {
+      if (pk.estado_pago !== 'pago_parcial') return res.status(400).json({ error: 'No hay una 2ª cuota pendiente' });
+      const cuota2 = (pk.cuotas_pack || []).find((c) => c.numero === 2);
+      if (!cuota2) return res.status(400).json({ error: 'No hay una 2ª cuota pendiente' });
+      prep = await prepararCobroCuota(cuota2.id);
+    } else {
+      // Con la 1ª cuota ya pagada no se puede volver a elegir plan.
+      if (pk.estado_pago === 'pago_parcial') return res.status(400).json({ error: 'Ya pagaste la 1ª cuota' });
+      prep = plan === 'fraccionado'
+        ? await prepararCobroFraccionado(pk.id)
+        : await prepararCobro('pack', { pack_id: pk.id });
+    }
+    if (prep.error) return res.status(prep.status).json({ error: prep.error });
+
+    const vuelta = `${frontendUrl()}/pagar/${tokenPagoPack(pk.id)}`;
+    const sesionStripe = await crearCheckoutSession({
+      importeCents: prep.importe,
+      concepto: prep.concepto,
+      metadata: prep.metadata,
+      successUrl: `${vuelta}?pago=ok`,
+      cancelUrl: `${vuelta}?pago=cancelado`,
+      customerEmail: prep.email,
+    });
+
+    audit(req, 'create_checkout_public', 'payments', pk.id, { plan });
+    res.json({ url: sesionStripe.url });
+  } catch (err) {
+    console.error('[pagos publico checkout]', err.message);
+    res.status(502).json({ error: 'No se pudo iniciar el pago' });
   }
 });
 

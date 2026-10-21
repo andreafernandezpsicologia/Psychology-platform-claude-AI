@@ -14,6 +14,9 @@ import { parseWall, ahoraParedDate } from '../../utils/fechaPared';
 
 const localeMap = { es, en: enUS, da };
 
+// Último día del mes actual (+n): plazos del pago fraccionado (ver backend).
+const finDeMes = (n) => { const h = new Date(); return new Date(h.getFullYear(), h.getMonth() + n + 1, 0); };
+
 
 export default function PacienteDashboard() {
   const [data, setData] = useState(null);
@@ -279,6 +282,13 @@ export default function PacienteDashboard() {
                     {t('patientDashboard.enDosPagos', 'En 2 pagos')}: {eur(mitad)} + {eur(resto)}
                   </Button>
                 </div>
+                <p className="text-xs mt-2" style={{ color: 'var(--muted)' }}>
+                  {t('patientDashboard.enDosPagosHint', {
+                    defaultValue: 'En 2 pagos: la mitad antes del {{fin1}} y la otra mitad hasta el {{fin2}} (te avisaremos por email).',
+                    fin1: format(finDeMes(0), "d 'de' MMMM", { locale }),
+                    fin2: format(finDeMes(1), "d 'de' MMMM", { locale }),
+                  })}
+                </p>
               </div>
             );
           })()}

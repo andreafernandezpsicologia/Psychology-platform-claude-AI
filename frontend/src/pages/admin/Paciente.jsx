@@ -276,8 +276,9 @@ export default function PacienteDetalle() {
     finally { setSavingPagoOnline(false); }
   };
 
-  // Generar un enlace de pago (Stripe Checkout) y copiarlo al portapapeles para
-  // enviárselo al paciente. `ids` = { sesion_id } o { pack_id }.
+  // Generar un enlace de pago y copiarlo al portapapeles para enviárselo al
+  // paciente. `ids` = { sesion_id } (Stripe directo) o { pack_id } / { cuota_id }
+  // (página /pagar/… donde elige pago único o en 2 pagos; no caduca).
   const copiarEnlacePago = async (tipo, ids) => {
     const key = ids.sesion_id || ids.cuota_id || ids.pack_id;
     setEnlacePagoId(key);
@@ -553,8 +554,9 @@ export default function PacienteDetalle() {
                     onClick={() => copiarEnlacePago('pack', { pack_id: pk.id })}
                     className="text-xs font-medium px-2.5 py-1 rounded-full transition hover:opacity-80"
                     style={{ backgroundColor: 'var(--bg)', color: 'var(--brand)', border: '1.5px solid var(--border)' }}
+                    title={t('patientDetail.enlacePagoBonoHint', 'El paciente elige en el enlace: pagarlo todo o en 2 pagos (mitad este mes, mitad el siguiente)')}
                   >
-                    🔗 {enlacePagoId === pk.id ? t('patientDetail.generando', 'Generando…') : t('patientDetail.copiarEnlacePago', 'Copiar enlace de pago')}
+                    🔗 {enlacePagoId === pk.id ? t('patientDetail.generando', 'Generando…') : t('patientDetail.copiarEnlacePagoBono', 'Copiar enlace de pago (todo o en 2 pagos)')}
                   </button>
                 )}
               </div>

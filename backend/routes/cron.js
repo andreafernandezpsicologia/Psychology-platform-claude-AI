@@ -24,21 +24,24 @@ function requireCronSecret(req, res, next) {
 
 // ── POST /api/cron/recordatorios ──────────────────────────────────────────────
 // Busca sesiones programadas en las próximas ~24h y envía recordatorio si aún
-// no se ha enviado. Diseñado para ejecutarse cada hora desde un servicio externo.
+// no se ha enviado. Programado cada hora desde GitHub Actions, pero GitHub NO
+// garantiza la cadencia de los crons: hay huecos de varias horas entre
+// ejecuciones (medido en oct-2026: media 4,7h, máximo 9,5h).
 //
-// Ventana: desde NOW+20h hasta NOW+26h. Es ancha (6h) a propósito para tolerar
-// ejecuciones del cron retrasadas o saltadas, así que cada sesión cae en varias
-// ventanas horarias (y el cambio de hora puede desplazarla ±1h). La idempotencia
-// NO la da la ventana sino un update condicional (CAS) sobre recordatorio_enviado:
-// solo la ejecución que lo pasa de false→true envía, por lo que el solape de
-// ventanas nunca genera recordatorios duplicados.
+// Ventana: desde NOW+2h hasta NOW+26h. Es muy ancha (24h) a propósito para que
+// ninguna sesión caiga en un hueco del cron: con ejecuciones puntuales se
+// recuerda ~24-26h antes; si el cron se retrasa, en la siguiente ejecución, con
+// algo menos de antelación (nunca a menos de 2h de la cita). Por eso el texto
+// del email no dice "mañana". La idempotencia NO la da la ventana sino un update
+// condicional (CAS) sobre recordatorio_enviado: solo la ejecución que lo pasa de
+// false→true envía, por lo que el solape de ventanas nunca genera duplicados.
 router.post('/recordatorios', requireCronSecret, async (req, res) => {
   try {
     // fecha_hora está en hora de pared de Madrid (TIMESTAMP naive), así que la
     // ventana se calcula también en hora de Madrid — nunca en UTC con toISOString(),
     // que la descuadraría 1-2h según el horario de verano.
     const ahora = new Date();
-    const desde = aParedMadrid(new Date(ahora.getTime() + 20 * 60 * 60 * 1000));
+    const desde = aParedMadrid(new Date(ahora.getTime() + 2 * 60 * 60 * 1000));
     const hasta = aParedMadrid(new Date(ahora.getTime() + 26 * 60 * 60 * 1000));
 
     const { data: sesiones, error } = await supabase
@@ -104,13 +107,15 @@ router.post('/recordatorios', requireCronSecret, async (req, res) => {
 
     // ── 2ª cuota de bonos fraccionados: recordatorio único el día 10 del mes
     // en que vence (la 2ª cuota vence el último día de ese mes). Se envía a
-    // partir de las 9:00 de Madrid del día 10, o en cuanto el cron corra si se
-    // saltó ese día. Solo si la 1ª ya está pagada (pack en pago_parcial).
+    // partir de las 9:00 de Madrid del día 10, o a cualquier hora de los días
+    // siguientes en cuanto el cron corra (tolera huecos largos del cron).
+    // Solo si la 1ª ya está pagada (pack en pago_parcial).
     // Idempotente por el mismo patrón CAS de arriba (recordatorio_enviado
     // false→true reclama el envío una sola vez).
     const paredAhora = aParedMadrid(ahora);
     const hoyStr = paredAhora.slice(0, 10);
-    const tocaRecordatorioCuota = Number(paredAhora.slice(8, 10)) >= 10 && Number(paredAhora.slice(11, 13)) >= 9;
+    const diaMes = Number(paredAhora.slice(8, 10));
+    const tocaRecordatorioCuota = diaMes > 10 || (diaMes === 10 && Number(paredAhora.slice(11, 13)) >= 9);
 
     const { data: cuotas, error: cuotasErr } = tocaRecordatorioCuota
       ? await supabase

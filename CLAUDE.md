@@ -35,6 +35,7 @@ Email: andreafernandez.psicologia@gmail.com
 - **Orquestador**: GitHub Actions (`.github/workflows/send-reminders.yml`)
 - **Secret**: `CRON_SECRET` (debe estar en cron-job.org si se usa servicio externo)
 - **Endpoint**: `POST /api/cron` en backend (verifica cabecera `x-cron-secret`)
+- ⚠️ **GitHub no garantiza la cadencia**: el workflow está programado cada hora, pero GitHub retrasa o salta ejecuciones (oct-2026: media 4,7 h entre ejecuciones, máximo 9,5 h). Las ventanas de `backend/routes/cron.js` deben tolerar huecos de ~10 h (recordatorio de sesión: de ahora+2 h a ahora+26 h, idempotente por CAS)
 
 ### Version Control → GitHub
 - **CLI disponible**: `gh` (para PRs, issues, secrets, etc.)
